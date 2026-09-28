@@ -1,0 +1,254 @@
+.login-page {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-background);
+}
+
+.brand-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 20px 12px;
+}
+
+.brand-icon img {
+    width: 110px;
+    height: auto;
+    display: block;
+}
+
+.login-columns {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    padding: 20px 60px 60px;
+}
+
+/* Left side of the login page */
+.login-brand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+
+    padding: 60px;
+}
+
+.login-brand-content {
+    max-width: 480px;
+    text-align: center;
+}
+
+
+.login-brand-content h1 {
+    margin-bottom: 16px;
+
+    font-size: clamp(56px, 6vw, 86px);
+    font-weight: 600;
+    line-height: 0.95;
+    letter-spacing: -1px;
+}
+
+.login-brand-content p {
+    margin-bottom: 32px;
+
+    font-size: 18px;
+    line-height: 1.6;
+    color: #E9DCCB;
+}
+
+.decorative-line {
+    width: 60px;
+    height: 3px;
+
+    margin: 0 auto 24px;
+    background-color: var(--color-ochre);
+    border-radius: 10px;
+}
+
+.login-brand-content span {
+    color: var(--color-highlight);
+
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Right side of the login page */
+
+.login-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    padding: 60px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 450px;
+
+    padding: 48px;
+    border-radius: 24px;
+
+    background-color: var(--color-surface);
+    box-shadow: 0 12px 40px rgba(59, 45, 38, 0.08);
+}
+
+/*Login header within the login card */
+.login-heading {
+    margin-bottom: 32px;
+}
+
+.eyebrow {
+    display: block;
+    margin-bottom: 10px;
+
+    color: var(--color-terracotta);
+
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+}
+
+.login-heading h2 {
+    margin-bottom: 10px;
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.login-heading p {
+    color: var(--color-muted);
+
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Login form within the login card */
+
+.login-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.forgot-password-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -8px;
+}
+
+.forgot-password-button {
+    border: none;
+    background: none;
+
+    color: var(--color-deep-accent);
+
+    font-size: 13px;
+    font-weight: 600; 
+    
+    cursor: pointer;
+}  
+
+.forgot-password-button:hover {
+    text-decoration: underline;
+}
+
+/*Message container within the login card */
+
+.login-message {
+    margin-top: 20px;
+    padding: 12px;
+
+    border-radius: 8px;
+
+    background-color: var(--color-highlight);
+
+    color: var(--color-text);
+
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/*Create account link within the login card */
+
+.signup-container {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+
+    margin-top: 32px;
+
+    color: var(--color-muted);
+
+    font-size: 13px;
+}
+
+.signup-button {
+    color: var(--color-primary);
+}
+
+.signup-button:hover {
+    text-decoration: underline;
+}
+
+/*Responsive design for the login page */
+
+@media (max-width: 800px) {
+
+    .login-page {
+        flex-direction: column;
+    }
+
+    .login-brand {
+        padding: 40px 24px;
+    }
+
+    .login-brand-content h1 {
+        font-size: 58px;
+    }
+
+    .login-section {
+        padding: 40px 20px;
+    }
+
+    .login-card {
+        padding: 32px 24px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .login-brand {
+        padding: 32px 20px;
+    }
+
+    .login-brand-content h1 {
+        font-size: 48px;
+    }
+    
+    .login-brand-content p {
+        font-size: 16px;
+    }
+
+    .login-section {
+        padding: 24px 16px;
+    }
+
+    .login-card {
+        padding: 28px 20px;
+        border-radius: 18px;
+    }
+
+    .login-heading h2 {
+        font-size: 32px;
+    }
+
+}

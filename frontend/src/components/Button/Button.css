@@ -1,0 +1,24 @@
+.primary-button {
+    width: 100%;
+    padding: 14px 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+
+    font-size: 15px;
+    font-weight: 600;
+
+    transition: background-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.primary-button:active {
+    transform: translateY(1px);
+}
+
+.primary-button:hover {
+    background-color: var(--color-deep-accent);
+}
