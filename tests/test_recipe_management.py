@@ -3,10 +3,11 @@ import pytest
 # Recipe Creation
  
 #TC-16-01: User can create a new recipe with all required fields filled out
-@pytest.mark.skip(reason="Recipe creation UI not yet implemented")
 def test_create_recipe_with_all_fields():
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and has navigated to the recipe creation page
+
+
  
     # Steps:
     # 1. Enter recipe name
@@ -99,6 +100,7 @@ def test_deleted_recipe_not_in_list():
 def test_search_by_recipe_name_filters_list():
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and is on the Recipes page with multiple recipes available
+    
  
     # Steps:
     # 1. Type a recipe name (or partial name) into the search field
