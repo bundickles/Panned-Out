@@ -3,42 +3,42 @@ import pytest
 # Calendar Navigation
 
 #TC-17-01: Navigate to the next month
-@pytest.mark.skip(reason="Calendar UI not yet implemented")
-def test_navigate_to_the_next_month():
-    # Precondition: a user account already exists, user has successfully logged in
-    # and has an active session and is on Calendar home page viewing the current month
+def test_navigate_to_the_next_month(page):
+    page.goto("http://localhost:5173/calendar")
+    current_month = page.locator("h1").inner_text()
 
-    # Steps:
-    # 1. Click forward arrow
+    page.get_by_role("button", name="Next Month").click()
 
-    # Expected Result: Calendar view will display the month following the current one
-    assert False  # placeholder, replace with real check once calendar ui exists
+    new_month = page.locator("h1").inner_text()
+    assert new_month != current_month
 
 
 #TC-17-02: Navigate to the previous month
-@pytest.mark.skip(reason="Calendar UI not yet implemented")
-def test_navigate_to_the_previous_month():
-    # Precondition: 
+def test_navigate_to_the_previous_month(page):
+    page.goto("http://localhost:5173/calendar")
+    current_month = page.locator("h1").inner_text()
 
     # Steps:
     # 1. Click backward arrow
+    page.get_by_role("button", name="Previous Month").click()
 
     # Expected Result: Calendar view will display the month preceding the current one
-    assert False  # placeholder, replace with real check once calendar ui exists
-
+    new_month = page.locator("h1").inner_text()
+    assert new_month != current_month
 
 #TC-17-03: Selecting a date registers correctly 
-@pytest.mark.skip(reason="Calendar UI not yet implemented")
-def test_select_specific_date():
+def test_select_specific_date(page):
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and is on Calendar home page viewing the current month
+    page.goto("http://localhost:5173/calendar")
+    day_button = page.locator(".calendar-cell:not(.empty)").first
 
     # Steps:
     # 1. Click any date in the calendar grid
+    day_button.click()
 
     # Expected Result: Calendar responds to the click and date becomes highlighted
-    assert False  # placeholder, replace with real check once calendar ui exists
-
+    assert "selected" in day_button.get_attribute("class")
 
 #TC-17-04: The selected date's associated meals display correctly
 @pytest.mark.skip(reason="Calendar UI not yet implemented")
@@ -140,14 +140,22 @@ def test_date_with_no_meals_shows_empty_state():
 
 
 #TC-17-10: Navigating across a year boundary (December → January) works correctly
-@pytest.mark.skip(reason="Calendar UI not yet implemented")
-def test_navigation_across_the_year():
+def test_navigation_across_the_year(page):
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and is on Calendar home page viewing the month of December,
+    page.goto("http://localhost:5173/calendar")
+    next_button = page.get_by_role("button", name="Next Month")
+
+    for _ in range(12):
+        month_label = page.locator("h1").inner_text()
+        if month_label.startswith("December"):
+            break
+        next_button.click()
 
     # Steps:
     # 1. Click the forward arrow
-
+    next_button.click()
+    new_label = page.locator("h1").inner_text()
     # Expected Result: The month of January's calendar view is displayed 
-    assert False  # placeholder, replace with real check once calendar ui exists
 
+    assert new_label.startswith("January")
