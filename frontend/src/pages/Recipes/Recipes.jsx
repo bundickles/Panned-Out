@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 import './Recipes.css';
+import RecipeForm from './RecipeForm';
+import { getRecipes, createRecipe, removeRecipe } from '../../api/recipes';
 import { filterRecipes } from './filterRecipes.js';
 
 function Recipes() {
@@ -12,53 +14,45 @@ function Recipes() {
     const [activeCategory, setActiveCategory] = useState('All');
     const [search, setSearch] = useState('');
     
-    // These are placeholder recipes to make sure the UI works
-    const [recipes, setRecipes] = useState([
-        {
-            id: 1,
-            name: "Creamy Tuscan Chicken",
-            category: "High Protein",
-            difficulty: "Easy",
-            prepTime: 30,
-            calories: 480,
-            protein: 42,
-            fat: 24,
-            carbohydrates: 12,
-            fiber: 3,
-            image: ""
-        },
-        {
-            id: 2,
-            name: "Avocado Chicken Bowl",
-            category: "Low Calorie",
-            difficulty: "Easy",
-            prepTime: 20,
-            calories: 350,
-            protein: 35,
-            fat: 18,
-            carbohydrates: 10,
-            fiber: 2,
-            image: ""
-        },
-        {
-            id: 3,
-            name: "Keto Taco Bowl",
-            category: "Keto",
-            difficulty: "Medium",
-            prepTime: 25,
-            calories: 510,
-            protein: 38,
-            fat: 28,
-            carbohydrates: 6,
-            fiber: 4,
-            image: ""
-        }
-    ]);
+    const [recipes, setRecipes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [showForm, setShowForm] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
+    const [reload, setReload] = useState(0);
 
-    function deleteRecipe(id) {
-        setRecipes(
-            recipes.filter(recipe => recipe.id !== id)
-        );
+    useEffect(() => {
+        let active = true;
+        getRecipes().then(data => {
+            if (active) setRecipes(data);
+        }).catch(err => {
+            if (active) setError(err.message);
+        }).finally(() => {
+            if (active) setLoading(false);
+        });
+        return () => { active = false; };
+    }, [reload]);
+
+    async function saveRecipe(fields) {
+        const saved = await createRecipe(fields);
+        setRecipes(current => [...current, saved]);
+        setSearch('');
+        setActiveCategory('All');
+        setError('');
+        setShowForm(false);
+    }
+
+    async function deleteRecipe(id) {
+        setDeletingId(id);
+        setError('');
+        try {
+            await removeRecipe(id);
+            setRecipes(current => current.filter(recipe => recipe.id !== id));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setDeletingId(null);
+        }
     }
 
     const filteredRecipes = filterRecipes(recipes, search, activeCategory);
@@ -115,10 +109,14 @@ function Recipes() {
                         <p>Discover and manage your favorite recipes.</p>
                     </div>
 
-                    <button className="add-recipe-button">
+                    <button className="add-recipe-button" disabled={loading} onClick={() => setShowForm(true)}>
                         + Add Recipe
                     </button>
                 </header>
+
+                {showForm && <RecipeForm onSave={saveRecipe} onCancel={() => setShowForm(false)} />}
+                {loading && <p role="status">Loading recipes…</p>}
+                {error && <div role="alert"><p>{error}</p><button onClick={() => { setLoading(true); setError(''); setReload(value => value + 1); }}>Retry loading recipes</button></div>}
 
                 <div className="recipe-search">
                     <label htmlFor="recipe-search">Search recipes</label>
@@ -145,7 +143,7 @@ function Recipes() {
                     ))}
                 </div>
 
-                <p role="status" className="recipe-result-count">
+                <p role="status" className="recipe-result-count" hidden={loading || !!error}>
                     {filteredRecipes.length} {filteredRecipes.length === 1 ? 'recipe' : 'recipes'} found
                 </p>
 
@@ -165,7 +163,7 @@ function Recipes() {
                         </div>
                     </div>
 
-                    {filteredRecipes.length > 0 ? (
+                    {loading ? null : filteredRecipes.length > 0 ? (
                         
                         <div className="recipe-grid">
 
@@ -174,12 +172,13 @@ function Recipes() {
                                     key={recipe.id}
                                     recipe={recipe}
                                     onDelete={deleteRecipe}
+                                    deleting={deletingId !== null}
                                 />
                             ))}
                         </div>
                     ) : (
 
-                        <div className="empty-recipes">
+                        <div className="empty-recipes" hidden={!!error}>
                             <h3>No recipes found.</h3>
 
                             <p>{hasFilters
@@ -193,7 +192,7 @@ function Recipes() {
                                     Clear filters
                                 </button>
                             ) : (
-                                <button className="add-recipe-button">
+                                <button className="add-recipe-button" disabled={loading} onClick={() => setShowForm(true)}>
                                     + Add Recipe
                                 </button>
                             )}
