@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 import './Recipes.css';
-import { filterRecipes } from './filterRecipes.js';
 
 function Recipes() {
     const navigate = useNavigate();
@@ -10,7 +9,6 @@ function Recipes() {
     const categories = ['All', 'High Protein', 'Low Calorie', 'Keto', 'My Recipes'];
 
     const [activeCategory, setActiveCategory] = useState('All');
-    const [search, setSearch] = useState('');
     
     // These are placeholder recipes to make sure the UI works
     const [recipes, setRecipes] = useState([
@@ -61,8 +59,11 @@ function Recipes() {
         );
     }
 
-    const filteredRecipes = filterRecipes(recipes, search, activeCategory);
-    const hasFilters = search.trim() !== '' || activeCategory !== 'All';
+    const filteredRecipes = activeCategory === 'All'
+        ? recipes
+        : activeCategory === "My Recipes"
+            ? recipes.filter(recipe => recipe.category === "My Recipes")
+            : recipes.filter(recipe => recipe.category === activeCategory);
 
     return (
         <main className="recipes-page">
@@ -120,23 +121,11 @@ function Recipes() {
                     </button>
                 </header>
 
-                <div className="recipe-search">
-                    <label htmlFor="recipe-search">Search recipes</label>
-                    <input
-                        id="recipe-search"
-                        type="search"
-                        placeholder="Search by recipe name"
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                    />
-                </div>
-
                 {/*Categories */}
                 <div className="recipes-categories">
                     {categories.map((category) => (
                         <button
                             key={category}
-                            aria-pressed={activeCategory === category}
                             className={`category-button ${activeCategory === category ? 'active' : ''}`}
                             onClick={() => setActiveCategory(category)}
                         >
@@ -144,10 +133,6 @@ function Recipes() {
                         </button>
                     ))}
                 </div>
-
-                <p role="status" className="recipe-result-count">
-                    {filteredRecipes.length} {filteredRecipes.length === 1 ? 'recipe' : 'recipes'} found
-                </p>
 
                 {/* Recipes List */}
 
@@ -182,21 +167,10 @@ function Recipes() {
                         <div className="empty-recipes">
                             <h3>No recipes found.</h3>
 
-                            <p>{hasFilters
-                                ? 'Try another recipe name or category, or clear your filters.'
-                                : 'Start by adding your favorite recipes to your collection.'}</p>
-                            {hasFilters ? (
-                                <button className="add-recipe-button" onClick={() => {
-                                    setSearch('');
-                                    setActiveCategory('All');
-                                }}>
-                                    Clear filters
-                                </button>
-                            ) : (
-                                <button className="add-recipe-button">
-                                    + Add Recipe
-                                </button>
-                            )}
+                            <p>Start by adding your favorite recipes to your collection.</p>
+                            <button className="add-recipe-button">
+                                + Add Recipe
+                            </button>
                         </div>
                     )}
                 </section>

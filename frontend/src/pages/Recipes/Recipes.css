@@ -116,41 +116,6 @@
 
 /* Categories */
 
-.recipe-search {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.recipe-search label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-text);
-}
-
-.recipe-search input {
-    width: 100%;
-    padding: 14px 16px;
-    border: 1px solid #D8CDC0;
-    border-radius: 10px;
-    background-color: #FFFFFF;
-    color: var(--color-text);
-    font: inherit;
-    font-size: 15px;
-}
-
-.recipe-search input:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-}
-
-.recipe-result-count {
-    color: var(--color-text);
-    font-size: 14px;
-    margin-bottom: 20px;
-}
-
 .recipes-categories {
     display: flex;
     gap: 6px;
@@ -269,3 +234,4 @@
     font-weight: 600;
     cursor: pointer;
 }
+
