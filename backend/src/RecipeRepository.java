@@ -46,6 +46,17 @@ public class RecipeRepository {
         }
     }
 
+    public synchronized boolean deleteRecipe(int id) {
+        try {
+            List<Recipe> recipes = readRecipes();
+            boolean removed = recipes.removeIf(recipe -> recipe.getId() == id);
+            if (removed) writeRecipes(recipes);
+            return removed;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to delete recipe", e);
+        }
+    }
+
     private List<Recipe> readRecipes() throws IOException {
         Properties data = new Properties();
         try (Reader reader = Files.newBufferedReader(storageFile, StandardCharsets.UTF_8)) {

@@ -1,6 +1,6 @@
 import './RecipeCard.css';
 
-function RecipeCard({ recipe, onDelete }) {
+function RecipeCard({ recipe, onDelete, deleting }) {
     return (
         <article className="recipe-card">
 
@@ -21,6 +21,7 @@ function RecipeCard({ recipe, onDelete }) {
 
                     <button
                         className="recipe-delete"
+                        disabled={deleting}
                         onClick={() => onDelete(recipe.id)}
                         aria-label={`Delete ${recipe.name}`}
                     >
@@ -36,6 +37,15 @@ function RecipeCard({ recipe, onDelete }) {
                     <span>{recipe.difficulty}</span>
                     <span>{recipe.prepTime} mins</span>
                 </div>
+
+                <details>
+                    <summary>Recipe details</summary>
+                    <p>{recipe.mealType}</p>
+                    <h4>Ingredients</h4>
+                    <p style={{ whiteSpace: 'pre-wrap' }}>{recipe.ingredients}</p>
+                    <h4>Instructions</h4>
+                    <p style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</p>
+                </details>
 
                 <div className="recipe-nutrition">
 
