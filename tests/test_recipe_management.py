@@ -7,7 +7,7 @@ import pytest
 def test_create_recipe_with_all_fields():
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and has navigated to the recipe creation page
-
+ 
     # Steps:
     # 1. Enter recipe name
     # 2. Enter recipe description
@@ -101,6 +101,7 @@ def test_deleted_recipe_not_in_list(page):
 def test_search_by_recipe_name_filters_list(page):
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and is on the Recipes page with multiple recipes available
+    
  
     # Steps:
     # 1. Type a recipe name (or partial name) into the search field
