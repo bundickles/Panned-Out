@@ -4,17 +4,24 @@ import pytest
 
 #TC-17-01: Navigate to the next month
 def test_navigate_to_the_next_month(page):
+    # Precondition: a user account already exists, user has successfully logged in
+    # and has an active session and is on Calendar home page viewing the current month
     page.goto("http://localhost:5173/calendar")
     current_month = page.locator("h1").inner_text()
 
+    # Steps:
+    # 1. Click forward arrow
     page.get_by_role("button", name="Next Month").click()
 
+    # Expected Result: Calendar view will display the month following the current one
     new_month = page.locator("h1").inner_text()
     assert new_month != current_month
 
 
 #TC-17-02: Navigate to the previous month
 def test_navigate_to_the_previous_month(page):
+    # Precondition: a user account already exists, user has successfully logged in
+    # and has an active session and is on Calendar home page viewing the current month
     page.goto("http://localhost:5173/calendar")
     current_month = page.locator("h1").inner_text()
 
@@ -126,17 +133,18 @@ def test_multiple_meal_cards_display_correctly_with_more_than_one_recipe():
 # Edge Cases
 
 #TC-17-09: A date with no meals shows an empty state rather than breaking
-@pytest.mark.skip(reason="Calendar UI not yet implemented")
-def test_date_with_no_meals_shows_empty_state():
+def test_date_with_no_meals_shows_empty_state(page):
     # Precondition: a user account already exists, user has successfully logged in
     # and has an active session and is on Calendar home page viewing the current month,
     # and the selected date has no meal assignment
+    page.goto("http://localhost:5173/calendar")
 
     # Steps:
     # 1. Click on any date in the calendar grid without assigned meal(s)
-   
+    page.locator(".calendar-cell:not(.empty)").first.click()
+
     # Expected Result: Selected date shows an empty state and does not break
-    assert False  # placeholder, replace with real check once calendar ui exists
+    assert page.get_by_text("No meals for this day.").is_visible()
 
 
 #TC-17-10: Navigating across a year boundary (December → January) works correctly
