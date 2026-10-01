@@ -20,3 +20,5 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+# Python test artifacts
+__pycache__/
