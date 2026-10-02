@@ -1,20 +1,21 @@
 """Run from the repository root after compiling backend/src/*.java."""
 import json
+import http.cookiejar
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
 from urllib.error import HTTPError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request, build_opener, HTTPCookieProcessor
 
 
 class RecipeApiTest(unittest.TestCase):
     def request(self, method='GET', path='/api/recipes', fields=None):
         body = urlencode(fields).encode() if fields is not None else None
-        request = Request(self.url + path, data=body, method=method)
+        request = Request(self.url + path, data=body, method=method, headers={"X-Panned-Out-Request": "1"})
         try:
-            response = urlopen(request, timeout=5)
+            response = self.client.open(request, timeout=15)
         except HTTPError as error:
             response = error
         with response:
@@ -26,6 +27,13 @@ class RecipeApiTest(unittest.TestCase):
             stdout=subprocess.PIPE, text=True,
         )
         self.url = self.process.stdout.readline().strip().split('Recipe API: ')[1]
+        self.client = build_opener(HTTPCookieProcessor(http.cookiejar.CookieJar()))
+        credentials = dict(email='recipe-test@example.com', password='long enough test password')
+        status, account = self.request('POST', '/api/auth/register', credentials)
+        if status == 409:
+            status, account = self.request('POST', '/api/auth/login', credentials)
+        self.assertIn(status, (200, 201))
+        self.private_storage = Path(str(storage) + '.accounts') / 'users' / account['id'] / 'recipes.properties'
 
     def stop(self):
         self.process.terminate()
@@ -56,10 +64,10 @@ class RecipeApiTest(unittest.TestCase):
                 self.stop()
                 self.start(storage)
                 self.assertEqual(self.request(), (200, []))
-                storage.write_text('broken storage')
+                self.private_storage.write_text('broken storage')
                 self.assertEqual(self.request()[0], 500)
                 self.assertEqual(self.request('POST', fields=fields)[0], 500)
-                self.assertEqual(storage.read_text(), 'broken storage')
+                self.assertEqual(self.private_storage.read_text(), 'broken storage')
             finally:
                 self.stop()
 
