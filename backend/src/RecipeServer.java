@@ -14,8 +14,9 @@ import java.util.stream.Collectors;
 public class RecipeServer {
     public static void main(String[] args) throws IOException {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
-        RecipeRepository repository = args.length > 1
-                ? new RecipeRepository(Path.of(args[1])) : new RecipeRepository();
+        Path storage = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
+                : RecipeRepository.defaultStorageFile();
+        RecipeRepository repository = new RecipeRepository(storage);
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.createContext("/api/recipes", exchange -> {
             try {
@@ -30,6 +31,7 @@ public class RecipeServer {
         });
         server.start();
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
+        System.out.println("Recipe storage: " + storage);
     }
 
     private static void handle(HttpExchange exchange, RecipeRepository repository) throws IOException {
