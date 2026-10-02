@@ -35,11 +35,12 @@ public class RecipeServer {
     private static void handle(HttpExchange exchange, RecipeRepository repository) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
-        if (path.equals("/api/recipes")) {
-            if (method.equals("GET")) {
+        boolean updating = path.matches("/api/recipes/[0-9]+") && method.equals("PUT");
+        if (path.equals("/api/recipes") || updating) {
+            if (method.equals("GET") && !updating) {
                 respond(exchange, 200, repository.getRecipes().stream()
                         .map(RecipeServer::json).collect(Collectors.joining(",", "[", "]")));
-            } else if (method.equals("POST")) {
+            } else if (method.equals("POST") || updating) {
                 String type = exchange.getRequestHeaders().getFirst("Content-Type");
                 if (type == null || !type.split(";")[0].trim().equalsIgnoreCase("application/x-www-form-urlencoded")) {
                     respond(exchange, 415, "{\"error\":\"Expected form-encoded recipe\"}");
@@ -66,13 +67,19 @@ public class RecipeServer {
                 if (!java.util.List.of("Easy", "Medium", "Hard").contains(difficulty))
                     throw new IllegalArgumentException("Choose a valid difficulty");
                 synchronized (repository) {
-                    int id = Math.addExact(repository.getRecipes().stream().mapToInt(Recipe::getId).max().orElse(0), 1);
+                    int id = updating ? Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)) : Math.addExact(repository.getRecipes().stream().mapToInt(Recipe::getId).max().orElse(0), 1);
+                    Recipe existing = updating ? repository.getRecipes().stream().filter(r -> r.getId() == id).findFirst().orElse(null) : null;
+                    if (updating && existing == null) {
+                        respond(exchange, 404, "{\"error\":\"Recipe not found\"}");
+                        return;
+                    }
                     Recipe recipe = new Recipe(id, name, category, difficulty,
                             number(fields, "prepTime"), number(fields, "calories"), number(fields, "protein"),
-                            number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), "",
+                            number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), updating ? existing.getImage() : "",
                             ingredients, instructions, required(fields, "mealType"));
-                    repository.addRecipe(recipe);
-                    respond(exchange, 201, json(recipe));
+                    if (updating) repository.updateRecipe(recipe);
+                    else repository.addRecipe(recipe);
+                    respond(exchange, updating ? 200 : 201, json(recipe));
                 }
             } else {
                 exchange.getResponseHeaders().set("Allow", "GET, POST");

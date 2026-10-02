@@ -1,6 +1,6 @@
 import './RecipeCard.css';
 
-function RecipeCard({ recipe, onDelete, deleting }) {
+function RecipeCard({ recipe, onEdit, onDelete, deleting }) {
     return (
         <article className="recipe-card">
 
@@ -31,6 +31,7 @@ function RecipeCard({ recipe, onDelete, deleting }) {
                 </div>
 
                 <h3>{recipe.name}</h3>
+                <button type="button" disabled={deleting} onClick={() => onEdit(recipe)} aria-label={`Edit ${recipe.name}`}>Edit</button>
 
                 <div className="recipe-details">
 
