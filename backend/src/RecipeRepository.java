@@ -67,6 +67,23 @@ public class RecipeRepository {
         }
     }
 
+    public synchronized boolean updateRecipe(Recipe updated) {
+        Objects.requireNonNull(updated, "recipe");
+        try {
+            List<Recipe> recipes = readRecipes();
+            for (int i = 0; i < recipes.size(); i++) {
+                if (recipes.get(i).getId() == updated.getId()) {
+                    recipes.set(i, updated);
+                    writeRecipes(recipes);
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to update recipe", e);
+        }
+    }
+
     private List<Recipe> readRecipes() throws IOException {
         Properties data = new Properties();
         try (Reader reader = Files.newBufferedReader(storageFile, StandardCharsets.UTF_8)) {

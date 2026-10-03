@@ -72,7 +72,7 @@ Calendar meal scheduling is not connected by this recipe integration.
 
 No mock recipes are loaded. Use **Add Recipe** to enter a name, category,
 difficulty, meal type, ingredients, instructions, prep time and nutrition values.
-Saved recipes can be searched, filtered, inspected and deleted. “My Recipes” is
+Saved recipes can be searched, filtered, inspected, edited and deleted. “My Recipes” is
 currently a category, not an ownership filter. Nutrition values are entered by
 the user, not calculated. Changes survive API restarts.
 
@@ -84,6 +84,8 @@ the user, not calculated. Changes survive API restarts.
   `instructions`. Optional integer fields default to zero: `prepTime`, `calories`,
   `protein`, `fat`, `carbohydrates`, `fiber`. Numbers must be between 0 and 100000.
   IDs are assigned by the server. Requests over 64 KiB are rejected.
+- `PUT /api/recipes/{id}`: same fields as POST; returns 200 with the updated recipe,
+  or 404 for an unknown ID. Preserves the recipe ID and image.
 - `DELETE /api/recipes/{id}`: 200 on deletion, 404 for an unknown ID.
 - Errors return a JSON `error` message; invalid input is 400 and storage failures
   are 500. Failed storage reads do not overwrite the existing data.
