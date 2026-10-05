@@ -68,7 +68,7 @@ Open the Vite URL and go to `/recipes`. Vite forwards `/api` to
 needs a server routing `/api` to the backend. The Java API binds to loopback and
 is intended for local integration/testing. Registration and login use server-side sessions;
 each account has its own private recipe collection.
-Calendar meal scheduling is not connected by this recipe integration.
+Calendar meal scheduling is available through the authenticated meal API below.
 
 No mock recipes are loaded. Use **Add Recipe** to enter a name, category,
 difficulty, meal type, ingredients, instructions, prep time and nutrition values.
@@ -178,8 +178,7 @@ The server remains loopback-only for local development. HTTP cookies intentional
 omit `Secure` for local HTTP testing. For an HTTPS deployment, set
 `PANNED_OUT_SECURE_COOKIES=true`, terminate HTTPS at a trusted same-origin proxy,
 and keep the Java port private. Public deployment and email verification/password
-recovery are not implemented here. Calendar scheduling is still a separate task;
-this change protects the calendar page, but adds no calendar storage.
+recovery are not implemented here. Calendar meals use the same session and account isolation as recipes.
 
 The frontend proxy uses `PANNED_OUT_API_TARGET` when set, otherwise port 8080.
 For example, point it at `http://127.0.0.1:8082` when running an isolated demo.
@@ -205,3 +204,40 @@ unchanged. The API lifecycle test now signs in after each server start.
 
 Security references: [OWASP password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 and [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+
+## Add Meal on the calendar
+
+Sign in, create a recipe on the Recipes page, then return to Calendar. Select a
+calendar date and choose **Add Meal**, a saved recipe, and a meal type. **Save meal**
+adds a card to that date. **Remove meal** removes the calendar entry, not the recipe.
+Meals remain after refresh, logout/login, and server restart. Each account has its
+own calendar; requests cannot select another account's storage.
+
+- `GET /api/meals`: list the signed-in account's scheduled meals.
+- `POST /api/meals`: form fields `recipeId`, `date` (`YYYY-MM-DD`), and `mealType`
+  (`Breakfast`, `Lunch`, `Dinner`, or `Snack`); returns 201 with the saved meal.
+- `DELETE /api/meals/{id}`: remove one scheduled meal; 404 if it does not belong
+  to the current account or no longer exists.
+
+These endpoints require the existing session cookie and request verification
+header. Files use the same UTF-8 properties and atomic-write approach as recipes:
+`<recipe-filename>.accounts/users/<account-UUID>/meals.properties`. Only one server
+process should write a given store. Dates represent local calendar days, without
+UTC conversion. Meal cards store a snapshot of the recipe's name, difficulty,
+and prep time at scheduling time. Editing/deleting that recipe later does not
+change an already scheduled card. The same recipe can be scheduled more than once.
+Week/day views, recurring schedules, and shopping lists are outside this change.
+
+After compiling the backend, run the focused checks from the repository root:
+
+```sh
+python -m unittest discover -s tests -p test_meal_api.py
+python -m unittest discover -s tests -p test_meal_ui.py
+```
+
+The browser test requires the Playwright/Edge setup described above. It checks
+empty recipes, save failure/retry, date selection, refresh, account isolation,
+and removal. API tests cover restart persistence, authentication, invalid dates,
+private recipe selection, and storage errors. On Windows, put the actual JDK
+`bin` directory on PATH when testing; the Oracle `javapath` launcher can leave a
+child server running after the test terminates its parent.

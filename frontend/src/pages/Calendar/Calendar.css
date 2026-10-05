@@ -342,4 +342,51 @@
     font-weight: 600;
 }
 
-    
+.add-meal-form {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #D8CDC0;
+    border-radius: 12px;
+    background-color: var(--color-surface);
+}
+
+.add-meal-form fieldset {
+    display: grid;
+    gap: 10px;
+    border: 0;
+    padding: 16px 0;
+    max-width: 440px;
+}
+
+.add-meal-form select {
+    padding: 10px;
+    width: 100%;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 1px solid #D8CDC0;
+    border-radius: 6px;
+}
+
+.meal-count {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--color-primary);
+}
+
+.add-meal-form > button,
+.remove-meal-button {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border: 1px solid #D8CDC0;
+    border-radius: 8px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.add-meal-form button:disabled,
+.remove-meal-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
