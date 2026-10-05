@@ -16,6 +16,7 @@ final class AuthService {
     private final Map<String, Session> sessions = new HashMap<>();
     private final Map<String, AttemptWindow> attempts = new HashMap<>();
     private final Map<String, RecipeRepository> repositories = new HashMap<>();
+    private final Map<String, MealPlanRepository> mealPlans = new HashMap<>();
     private final AccountRepository accounts;
     private final Path recipeDirectory;
     private final Clock clock;
@@ -50,6 +51,12 @@ final class AuthService {
         // The directory comes only from a server-generated account UUID, never request fields.
         return repositories.computeIfAbsent(account.id,
                 id -> new RecipeRepository(recipeDirectory.resolve(id).resolve("recipes.properties")));
+    }
+
+    synchronized MealPlanRepository meals(HttpExchange exchange) {
+        AccountRepository.Account account = requireSession(exchange).account;
+        return mealPlans.computeIfAbsent(account.id,
+                id -> new MealPlanRepository(recipeDirectory.resolve(id).resolve("meals.properties")));
     }
 
     synchronized void handle(HttpExchange exchange) throws IOException {
