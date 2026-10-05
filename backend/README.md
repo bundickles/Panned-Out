@@ -72,7 +72,7 @@ Calendar meal scheduling is not connected by this recipe integration.
 
 No mock recipes are loaded. Use **Add Recipe** to enter a name, category,
 difficulty, meal type, ingredients, instructions, prep time and nutrition values.
-Saved recipes can be searched, filtered, inspected and deleted. “My Recipes” is
+Saved recipes can be searched, filtered, inspected, edited and deleted. “My Recipes” is
 currently a category, not an ownership filter. Nutrition values are entered by
 the user, not calculated. Changes survive API restarts.
 
@@ -84,6 +84,8 @@ the user, not calculated. Changes survive API restarts.
   `instructions`. Optional integer fields default to zero: `prepTime`, `calories`,
   `protein`, `fat`, `carbohydrates`, `fiber`. Numbers must be between 0 and 100000.
   IDs are assigned by the server. Requests over 64 KiB are rejected.
+- `PUT /api/recipes/{id}`: same fields as POST; returns 200 with the updated recipe,
+  or 404 for an unknown ID. Preserves the recipe ID and image.
 - `DELETE /api/recipes/{id}`: 200 on deletion, 404 for an unknown ID.
 - Errors return a JSON `error` message; invalid input is 400 and storage failures
   are 500. Failed storage reads do not overwrite the existing data.
@@ -131,8 +133,7 @@ the selected legacy recipe file, in `<recipe-filename>.accounts/`:
 
 The default server path is resolved from `backend/build` to
 `backend/data/recipes.properties.accounts`, independent of the terminal's working
-directory. The repository class's standalone no-argument constructor retains its
-original behavior. An explicit server storage argument chooses an isolated store:
+directory. The repository class and server share the same stable default path resolver. An explicit server storage argument chooses an isolated store:
 `java -cp backend/build RecipeServer 8080 /absolute/path/recipes.properties`.
 Only one server process should write a given store. Protect and back up the data
 directory; file storage is not encryption against someone with filesystem access.
@@ -161,9 +162,8 @@ registration attempts per 15 minutes (including successful attempts); 429 includ
 All recipe operations require a valid session and resolve the repository from
 that session's account. Supplying an owner/user ID in a request cannot select
 another account's storage. Recipe IDs are local to an account. Unknown IDs in
-that account return 404. Recipe editing is not present on the main branch this
-change starts from; the teammate's separate editing change must retain this
-account-scoped dispatch when integrated.
+that account return 404. Recipe editing from PR #10 uses this same account-scoped dispatch and the shared
+form parser; edits cannot select another account's repository.
 
 All non-GET API requests require `X-Panned-Out-Request: 1`. Cross-site browser
 requests are rejected and the API does not grant CORS permission. This prevents

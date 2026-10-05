@@ -65,6 +65,7 @@ class AuthApiTest(unittest.TestCase):
         self.assertEqual(self.request(anonymous, '/api/recipes')[0], 401)
         self.assertEqual(self.request(anonymous, '/api/recipes', 'POST', RECIPE)[0], 401)
         self.assertEqual(self.request(anonymous, '/api/recipes/1', 'DELETE')[0], 401)
+        self.assertEqual(self.request(anonymous, '/api/recipes/1', 'PUT', RECIPE)[0], 401)
         account, headers = self.register(alice, 'Alice@Example.com')
         self.assertEqual(account['email'], 'alice@example.com')
         cookie = headers['Set-Cookie']
@@ -92,7 +93,15 @@ class AuthApiTest(unittest.TestCase):
         self.assertEqual(self.request(alice, '/api/recipes')[1], [saved])
         # Per-account IDs may coincide; operations still target only the caller's storage.
         bob_recipe = self.request(bob, '/api/recipes', 'POST', {**RECIPE, 'name': 'Bob only'})[1]
-        self.assertEqual(self.request(bob, '/api/recipes/' + str(bob_recipe['id']), 'DELETE')[0], 200)
+        self.assertEqual(bob_recipe['id'], saved['id'])
+        path = '/api/recipes/' + str(bob_recipe['id'])
+        self.assertEqual(self.request(bob, path, 'PUT', RECIPE, verified=False)[0], 403)
+        status, updated, _ = self.request(bob, path, 'PUT', {**RECIPE, 'name': 'Bob edited', 'ownerId': account['id']})
+        self.assertEqual(status, 200)
+        self.assertEqual(updated['name'], 'Bob edited')
+        self.assertEqual(self.request(bob, '/api/recipes')[1], [updated])
+        self.assertEqual(self.request(alice, '/api/recipes')[1], [saved])
+        self.assertEqual(self.request(bob, path, 'DELETE')[0], 200)
         self.assertEqual(self.request(alice, '/api/recipes')[1], [saved])
         self.stop()
         self.start()

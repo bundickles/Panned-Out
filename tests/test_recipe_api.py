@@ -24,11 +24,12 @@ class RecipeApiTest(unittest.TestCase):
 
     def start(self, storage=None, cwd=None, classpath=None):
         self.process = subprocess.Popen(
-            ['java', '-cp', str(classpath or Path('backend/build').resolve()), 'RecipeServer', '0']
+            ['java', '-cp', str(classpath or Path('backend/build')), 'RecipeServer', '0']
             + ([str(storage)] if storage is not None else []),
             cwd=cwd,
             stdout=subprocess.PIPE, text=True,
         )
+        self.addCleanup(self.stop)
         self.url = self.process.stdout.readline().strip().split('Recipe API: ')[1]
         self.client = build_opener(HTTPCookieProcessor(http.cookiejar.CookieJar()))
         credentials = dict(email='recipe-test@example.com', password='long enough test password')
@@ -40,7 +41,8 @@ class RecipeApiTest(unittest.TestCase):
         self.private_storage = Path(str(legacy) + '.accounts') / 'users' / account['id'] / 'recipes.properties'
 
     def stop(self):
-        self.process.terminate()
+        if self.process.poll() is None:
+            self.process.terminate()
         self.process.wait(timeout=5)
         self.process.stdout.close()
 
@@ -91,7 +93,19 @@ class RecipeApiTest(unittest.TestCase):
                 self.stop()
                 self.start(storage)
                 self.assertEqual(self.request(), (200, [saved]))
-                self.assertEqual(self.request('DELETE', '/api/recipes/' + str(saved['id']))[0], 200)
+                path = '/api/recipes/' + str(saved['id'])
+                self.assertEqual(self.request('PUT', path, {**fields, 'protein': '-1'})[0], 400)
+                self.assertEqual(self.request(), (200, [saved]))
+                status, updated = self.request('PUT', path, {**fields, 'name': 'Updated bowl', 'protein': '25'})
+                self.assertEqual(status, 200)
+                self.assertEqual(updated['id'], saved['id'])
+                self.assertEqual(updated['name'], 'Updated bowl')
+                self.assertEqual(updated['protein'], 25)
+                self.stop()
+                self.start(storage)
+                self.assertEqual(self.request(), (200, [updated]))
+                self.assertEqual(self.request('PUT', '/api/recipes/999', fields)[0], 404)
+                self.assertEqual(self.request('DELETE', path)[0], 200)
                 self.assertEqual(self.request('DELETE', '/api/recipes/' + str(saved['id']))[0], 404)
                 self.stop()
                 self.start(storage)
