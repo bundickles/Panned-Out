@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { SessionStatus } from "../../auth/Auth";
+import { useAuth } from "../../auth/AuthContext";
 import Button from "../../components/Button/Button";
 import "./Login.css";
 import Input from "../../components/Input/Input";
@@ -7,16 +9,23 @@ import PannedOutLogo from "../../assets/logo/Panned_Out_Logo.PNG";
 
 function Login() {
     const [message, setMessage] = useState("");
-    const navigate = useNavigate();
+    const { user, loading, error, signIn } = useAuth();
+    const [registering, setRegistering] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [busy, setBusy] = useState(false);
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault();
-        
-        // Placeholder for backend login integration, takeout once connected
-        navigate("/calendar");
-        
+        setBusy(true);
+        setMessage('');
+        try { await signIn(registering ? 'register' : 'login', { email, password }); }
+        catch (err) { setMessage(err.message); }
+        finally { setBusy(false); }
     }
 
+    if (loading || error) return <SessionStatus />;
+    if (user) return <Navigate to="/calendar" replace />;
     return(
         <main className="login-page">
 
@@ -56,57 +65,57 @@ function Login() {
                             PANNED OUT
                         </span>
 
-                        <h2>Welcome back!</h2>
+                        <h2>{registering ? "Create your account" : "Welcome back!"}</h2>
 
                         <p>
-                            Please sign in to continue your
-                            meal planning journey.
+                            {registering ? "Keep your recipes private in your own account." : "Sign in to continue your meal planning journey."}
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
 
                         <Input
+                        id="login-email"
+                        name="email" required autoComplete="email" maxLength={254}
+                        value={email} onChange={event => setEmail(event.target.value)}
                         label="Email address"
                         type="email"
                         placeholder="you@example.com"
                         />
 
                         <Input
+                        id="login-password"
+                        name="password" required minLength={registering ? 15 : 1} maxLength={128}
+                        autoComplete={registering ? "new-password" : "current-password"}
+                        value={password} onChange={event => setPassword(event.target.value)}
                         label="Password"
                         type="password"
                         placeholder="Enter your password"
                         />
 
-                        <div className="forgot-password-container">
-                            <button
-                                type="button"
-                                className="forgot-password-button"
-                            >
-                                Forgot Password?
-                            </button>
-                        </div>
+                        {registering && <p>Use a password with 15 to 128 characters.</p>}
 
-                        <Button type="submit">
-                            Sign In
+                        <Button type="submit" disabled={busy}>
+                            {busy ? "Please wait..." : registering ? "Create account" : "Sign In"}
                         </Button>
 
                     </form>
 
                     {message && (
-                        <p className="login-message">
+                        <p className="login-message" role="alert">
                             {message}
                         </p>
                     )}
 
                     <div className="signup-container">
-                        <span>New to Panned Out?</span>
+                        <span>{registering ? "Already have an account?" : "New to Panned Out?"}</span>
 
                         <button
                             type="button"
-                            className="signup-button"
+                            className="signup-button" disabled={busy}
+                            onClick={() => { setRegistering(value => !value); setMessage(""); setPassword(""); }}
                         >
-                            Create an account
+                            {registering ? "Sign in" : "Create an account"}
                         </button>
                     </div>
 
