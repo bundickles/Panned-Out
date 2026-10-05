@@ -16,9 +16,11 @@ Ingredients and instructions are text and may contain multiple lines.
 list when no storage file exists. Null recipes are rejected.
 
 Recipes are saved in UTF-8 Java properties format at
-`backend/data/recipes.properties`, relative to the application's working directory.
-The directory is created on the first save and is ignored by Git. Use the same
-working directory across runs, or supply a stable storage path explicitly:
+`backend/data/recipes.properties`, resolved from the compiled classes in `backend/build`, independent of the terminal's working directory.
+The directory is created on the first save and is ignored by Git. The default is
+`data/recipes.properties` beside the compiled build directory (or JAR). Keep the
+compiled classes in `backend/build` to retain the existing project storage. You
+can also supply a stable storage path explicitly:
 
 ```java
 RecipeRepository repository = new RecipeRepository(Path.of("/path/to/recipes.properties"));
@@ -88,6 +90,10 @@ the user, not calculated. Changes survive API restarts.
 
 An optional port and storage path can isolate a test/demo instance:
 `java -cp backend/build RecipeServer 8080 /absolute/path/recipes.properties`.
+Use an absolute override to keep that location stable across working directories.
+The server prints the resolved storage path at startup. Existing files previously
+created under another working directory are not merged automatically: stop the
+server and explicitly select the intended file with the absolute override.
 
 ### Verification and QA handoff
 

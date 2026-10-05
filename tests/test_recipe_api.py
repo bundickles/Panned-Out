@@ -1,6 +1,7 @@
 """Run from the repository root after compiling backend/src/*.java."""
 import json
 import http.cookiejar
+import shutil
 from pathlib import Path
 import subprocess
 import tempfile
@@ -21,9 +22,11 @@ class RecipeApiTest(unittest.TestCase):
         with response:
             return response.status, json.load(response)
 
-    def start(self, storage):
+    def start(self, storage=None, cwd=None, classpath=None):
         self.process = subprocess.Popen(
-            ['java', '-cp', 'backend/build', 'RecipeServer', '0', str(storage)],
+            ['java', '-cp', str(classpath or Path('backend/build').resolve()), 'RecipeServer', '0']
+            + ([str(storage)] if storage is not None else []),
+            cwd=cwd,
             stdout=subprocess.PIPE, text=True,
         )
         self.url = self.process.stdout.readline().strip().split('Recipe API: ')[1]
@@ -33,12 +36,41 @@ class RecipeApiTest(unittest.TestCase):
         if status == 409:
             status, account = self.request('POST', '/api/auth/login', credentials)
         self.assertIn(status, (200, 201))
-        self.private_storage = Path(str(storage) + '.accounts') / 'users' / account['id'] / 'recipes.properties'
+        legacy = Path(storage) if storage is not None else Path(classpath).parent / 'data' / 'recipes.properties'
+        self.private_storage = Path(str(legacy) + '.accounts') / 'users' / account['id'] / 'recipes.properties'
 
     def stop(self):
         self.process.terminate()
         self.process.wait(timeout=5)
         self.process.stdout.close()
+
+    def test_default_storage_survives_working_directory_change(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            build = root / 'backend' / 'build'
+            build.mkdir(parents=True)
+            for compiled in Path('backend/build').glob('*.class'):
+                shutil.copy2(compiled, build)
+            first = root / 'first'
+            second = root / 'second'
+            first.mkdir()
+            second.mkdir()
+            self.start(cwd=first, classpath=build)
+            try:
+                fields = dict(name='Saved across folders', ingredients='Rice',
+                              instructions='Cook', category='My Recipes',
+                              difficulty='Easy', mealType='Dinner')
+                status, saved = self.request('POST', fields=fields)
+                self.assertEqual(status, 201)
+                self.stop()
+                self.start(cwd=second, classpath=build)
+                self.assertEqual(self.request(), (200, [saved]))
+                self.assertTrue(self.private_storage.is_file())
+                self.assertFalse((root / 'backend/data/recipes.properties').exists())
+                self.assertFalse((first / 'backend').exists())
+                self.assertFalse((second / 'backend').exists())
+            finally:
+                self.stop()
 
     def test_recipe_lifecycle(self):
         with tempfile.TemporaryDirectory() as directory:

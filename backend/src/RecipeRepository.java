@@ -16,13 +16,23 @@ import java.util.Properties;
 public class RecipeRepository {
     private final Path storageFile;
 
-    /** Default path is relative to the application's working directory. */
+    /** Default storage lives beside the compiled build directory, independent of cwd. */
     public RecipeRepository() {
-        this(Path.of("backend", "data", "recipes.properties"));
+        this(defaultStorageFile());
+    }
+
+    public static Path defaultStorageFile() {
+        try {
+            Path codeLocation = Path.of(RecipeRepository.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI()).toAbsolutePath().normalize();
+            return codeLocation.getParent().resolve("data").resolve("recipes.properties");
+        } catch (java.net.URISyntaxException | NullPointerException e) {
+            throw new IllegalStateException("Cannot locate recipe storage; supply an explicit storage path", e);
+        }
     }
 
     public RecipeRepository(Path storageFile) {
-        this.storageFile = Objects.requireNonNull(storageFile, "storageFile").toAbsolutePath();
+        this.storageFile = Objects.requireNonNull(storageFile, "storageFile").toAbsolutePath().normalize();
     }
 
     /** Returns only after the recipe has been written successfully. */

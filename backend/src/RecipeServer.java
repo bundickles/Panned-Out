@@ -22,12 +22,11 @@ public class RecipeServer {
 
     public static void main(String[] args) throws Exception {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
-        // Keep legacy shared data untouched. Resolve default storage from the compiled backend,
-        // not the launch directory. An explicit legacy path selects its adjacent private store.
-        Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath()
-                : Path.of(RecipeServer.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                        .resolve("../data/recipes.properties").normalize();
-        AuthService auth = new AuthService(legacy.resolveSibling(legacy.getFileName() + ".accounts"));
+        // Keep legacy shared data untouched and use the team's stable default path.
+        Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
+                : RecipeRepository.defaultStorageFile();
+        Path accounts = legacy.resolveSibling(legacy.getFileName() + ".accounts");
+        AuthService auth = new AuthService(accounts);
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.createContext("/api/", exchange -> {
             try {
@@ -55,6 +54,7 @@ public class RecipeServer {
         });
         server.start();
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
+        System.out.println("Account storage: " + accounts);
     }
     private static void handle(HttpExchange exchange, RecipeRepository repository) throws IOException {
         String path = exchange.getRequestURI().getPath();
