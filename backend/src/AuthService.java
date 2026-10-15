@@ -69,13 +69,20 @@ final class AuthService {
             cookie(exchange, "", 0);
             RecipeServer.respond(exchange, 200, "{}");
         } else if ((path.equals("/api/auth/login") || path.equals("/api/auth/register")) && method.equals("POST")) {
-            throttle(exchange);
             Map<String, String> fields = RecipeServer.form(exchange);
             String email = fields.getOrDefault("email", "");
             String password = fields.getOrDefault("password", "");
+            String attemptKey = email.trim().toLowerCase(java.util.Locale.ROOT);
+            throttle(exchange, attemptKey);
             boolean registering = path.endsWith("/register");
-            AccountRepository.Account account = registering
-                    ? accounts.register(email, password) : accounts.authenticate(email, password);
+            AccountRepository.Account account;
+            try {
+                account = registering ? accounts.register(email, password) : accounts.authenticate(email, password);
+            } catch (IllegalArgumentException | RecipeServer.ApiError failure) {
+                attempts.get(attemptKey).count++;
+                throw failure;
+            }
+            attempts.remove(attemptKey);
             sessions.remove(token(exchange));
             long now = clock.millis();
             sessions.values().removeIf(session -> session.expires <= now);
@@ -101,12 +108,11 @@ final class AuthService {
         return session;
     }
 
-    private void throttle(HttpExchange exchange) {
+    private void throttle(HttpExchange exchange, String attemptKey) {
         long now = clock.millis();
         attempts.values().removeIf(window -> window.expires <= now);
-        String address = exchange.getRemoteAddress().getAddress().getHostAddress();
-        AttemptWindow window = attempts.computeIfAbsent(address, ignored -> new AttemptWindow(now + ATTEMPT_WINDOW_MS));
-        if (++window.count > 20) {
+        AttemptWindow window = attempts.computeIfAbsent(attemptKey, ignored -> new AttemptWindow(now + ATTEMPT_WINDOW_MS));
+        if (window.count >= 20) {
             exchange.getResponseHeaders().set("Retry-After", Long.toString((window.expires - now + 999) / 1000));
             throw new RecipeServer.ApiError(429, "Too many sign-in attempts. Please try again later.");
         }

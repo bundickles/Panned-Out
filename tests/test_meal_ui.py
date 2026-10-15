@@ -66,7 +66,7 @@ class MealUiTest(unittest.TestCase):
                         page.get_by_label('Instructions', exact=True).fill('Cook rice')
                         page.get_by_role('button', name='Save recipe', exact=True).click()
                         expect(page.get_by_role('heading', name='Calendar dinner')).to_be_visible()
-                        page.locator('.sidebar-nav button').filter(has_text='Calendar').click()
+                        page.get_by_role('link', name='Calendar', exact=True).click()
                         selected = page.locator('.calendar-cell.selected').get_attribute('aria-label')
                         page.get_by_role('button', name='+ Add Meal', exact=True).first.click()
                         page.get_by_label('Recipe', exact=True).select_option(label='Calendar dinner')

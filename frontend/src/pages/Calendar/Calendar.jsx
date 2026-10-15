@@ -1,5 +1,5 @@
+import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import "./Calendar.css";    
 import MealCard from "../../components/MealCard/MealCard";
@@ -10,7 +10,6 @@ import { getMeals, addMeal, removeMeal } from "../../api/meals";
 const dateKey = day => `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
 function Calendar() {
-    const navigate = useNavigate();
     const today = new Date();
 
     const [currentDate, setCurrentDate] = useState(
@@ -132,35 +131,7 @@ function Calendar() {
         <main className="calendar-page">
             {/*Sidebar*/}
 
-            <aside className="calendar-sidebar">
-
-                <div className="sidebar-logo">
-                    Panned Out
-                </div>
-
-                <nav className="sidebar-nav">
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/calendar")}>
-                        <span>▦</span>
-                        Calendar
-                    </button>
-
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/recipes")}>
-                        <span>🍽</span>
-                        Recipes
-                    </button>
-                </nav>
-
-                <div className="sidebar-bottom">
-                    <button className="nav-item">
-                        <span>⚙️</span>
-                        Settings
-                    </button>
-                </div>
-            </aside>
+            <Sidebar />
 
             {/*Main Calendar*/}
             <section className="calendar-content">

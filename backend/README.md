@@ -155,8 +155,8 @@ Session tokens are random opaque values in an `HttpOnly; SameSite=Strict` cookie
 scoped to `/api`, with an eight-hour absolute lifetime. Sessions remain valid across
 page refreshes/browser restarts during that lifetime, but an API restart signs
 users out. Accounts and recipes survive the restart. Login rotates the current
-token; logout invalidates it on the server. A per-address limit allows 20 login or
-registration attempts per 15 minutes (including successful attempts); 429 includes
+token; logout invalidates it on the server. A per-email limit allows 20 failed login or
+registration attempts per 15 minutes (successful attempts clear the counter); 429 includes
 `Retry-After`. Limits and sessions reset on API restart.
 
 All recipe operations require a valid session and resolve the repository from
@@ -241,3 +241,7 @@ and removal. API tests cover restart persistence, authentication, invalid dates,
 private recipe selection, and storage errors. On Windows, put the actual JDK
 `bin` directory on PATH when testing; the Oracle `javapath` launcher can leave a
 child server running after the test terminates its parent.
+
+## Generated shopping lists
+
+See [SCRUM-57 API contract and QA handoff](GENERATED_SHOPPING_LIST_API.md) for the authenticated date-range endpoint and Shopping List page.

@@ -57,7 +57,7 @@ class AuthUiTest(unittest.TestCase):
                         page.get_by_label('Password', exact=True).fill(PASSWORD)
                         page.get_by_role('button', name='Create account', exact=True).click()
                         expect(page).to_have_url(url + '/calendar')
-                        page.locator('.sidebar-nav button').filter(has_text='Recipes').click()
+                        page.get_by_role('link', name='Recipes', exact=True).click()
                         expect(page.get_by_role('heading', name='No recipes found.')).to_be_visible()
                         page.get_by_role('button', name='+ Add Recipe', exact=True).first.click()
                         page.get_by_label('Recipe name').fill('Alice private dinner')

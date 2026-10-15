@@ -39,6 +39,8 @@ public class RecipeServer {
                     auth.handle(exchange);
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
                     handle(exchange, auth.recipes(exchange));
+                } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
+                    GeneratedShoppingListApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/meals")) {
                     MealPlanApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
                 } else {
@@ -78,7 +80,7 @@ public class RecipeServer {
                 if (!java.util.List.of("Easy", "Medium", "Hard").contains(difficulty))
                     throw new IllegalArgumentException("Choose a valid difficulty");
                 synchronized (repository) {
-                    int id = updating ? Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)) : Math.addExact(repository.getRecipes().stream().mapToInt(Recipe::getId).max().orElse(0), 1);
+                    int id = updating ? Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)) : repository.nextId();
                     Recipe existing = updating ? repository.getRecipes().stream().filter(r -> r.getId() == id).findFirst().orElse(null) : null;
                     if (updating && existing == null) {
                         respond(exchange, 404, "{\"error\":\"Recipe not found\"}");

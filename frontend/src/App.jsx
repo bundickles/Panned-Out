@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
 import Calendar from './pages/Calendar/Calendar';
+import Shopping from './pages/Shopping/Shopping';
 import Recipes from './pages/Recipes/Recipes';
 import { AuthProvider, PrivatePages } from './auth/Auth';
 
@@ -14,6 +15,7 @@ function App() {
           <Route element={<PrivatePages />}>
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/recipes" element={<Recipes />} />
+            <Route path="/shopping" element={<Shopping />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
