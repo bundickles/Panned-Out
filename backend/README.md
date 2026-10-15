@@ -115,3 +115,14 @@ by part of its name and change categories; expand recipe details; delete and
 refresh to confirm deletion persists. Stop the API and try loading/saving: the
 UI should show an error, preserve unsaved form fields, and allow retry after the
 API is restarted. Check the form at a narrow mobile width as well.
+
+### Recipe editing review fixes (PR #10)
+
+Create and edit requests share the `form()` parser from PR #11, including content
+type and 64 KiB size validation. The update flow still preserves the recipe ID
+and image. Authentication/account scoping remains in PR #11.
+
+Recipe storage persists a `lastId` counter atomically with the recipe collection.
+Deleting the highest ID or all recipes and restarting does not reuse those IDs.
+Legacy files initialize the counter from their highest surviving recipe ID;
+historical IDs deleted before this upgrade cannot be recovered automatically.
