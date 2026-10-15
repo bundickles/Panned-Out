@@ -1,5 +1,6 @@
 """Run from the repository root after compiling backend/src/*.java."""
 import json
+import shutil
 from pathlib import Path
 import subprocess
 import tempfile
@@ -20,9 +21,11 @@ class RecipeApiTest(unittest.TestCase):
         with response:
             return response.status, json.load(response)
 
-    def start(self, storage):
+    def start(self, storage=None, cwd=None, classpath=None):
         self.process = subprocess.Popen(
-            ['java', '-cp', 'backend/build', 'RecipeServer', '0', str(storage)],
+            ['java', '-cp', str(classpath or Path('backend/build').resolve()), 'RecipeServer', '0']
+            + ([str(storage)] if storage is not None else []),
+            cwd=cwd,
             stdout=subprocess.PIPE, text=True,
         )
         self.url = self.process.stdout.readline().strip().split('Recipe API: ')[1]
@@ -31,6 +34,31 @@ class RecipeApiTest(unittest.TestCase):
         self.process.terminate()
         self.process.wait(timeout=5)
         self.process.stdout.close()
+
+    def test_default_storage_survives_working_directory_change(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            build = root / 'backend' / 'build'
+            shutil.copytree(Path('backend/build'), build)
+            first = root / 'first'
+            second = root / 'second'
+            first.mkdir()
+            second.mkdir()
+            self.start(cwd=first, classpath=build)
+            try:
+                fields = dict(name='Saved across folders', ingredients='Rice',
+                              instructions='Cook', category='My Recipes',
+                              difficulty='Easy', mealType='Dinner')
+                status, saved = self.request('POST', fields=fields)
+                self.assertEqual(status, 201)
+                self.stop()
+                self.start(cwd=second, classpath=build)
+                self.assertEqual(self.request(), (200, [saved]))
+                self.assertTrue((root / 'backend/data/recipes.properties').is_file())
+                self.assertFalse((first / 'backend').exists())
+                self.assertFalse((second / 'backend').exists())
+            finally:
+                self.stop()
 
     def test_recipe_lifecycle(self):
         with tempfile.TemporaryDirectory() as directory:
