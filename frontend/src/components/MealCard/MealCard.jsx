@@ -1,12 +1,20 @@
 import "./MealCard.css";
 
-function MealCard({
-    meal,
-    onClick
-}) {
+function MealCard({meal, onClick }) {
+
+    // Gets difficulty and converts it to lowercase
+    const difficulty = String(meal.difficulty || "Medium")
+        .trim()
+        .toLowerCase();
+
+    // Chooses CSS class based on difficulty
+    const difficultyClass = ["easy", "medium", "hard"].includes(difficulty)
+        ? ` difficulty-${difficulty}`
+        : " difficulty-medium";
+
     return (
         <article
-        className="meal-card"
+        className={`meal-card${difficultyClass}`}
         onClick={onClick}
         >
             <div className="meal-card-header">

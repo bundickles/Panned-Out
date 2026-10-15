@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import "./Login.css";
+import "../../styles/Logintheme.css";
 import Input from "../../components/Input/Input";
 import PannedOutLogo from "../../assets/logo/Panned_Out_Logo.PNG";
 
@@ -20,14 +21,17 @@ function Login() {
     return(
         <main className="login-page">
 
-            <div className="brand-icon">
-                        <img src={PannedOutLogo} alt="Brand Icon" />
-
-                    </div>
-
             {/* Left Side of page */}
             <section className="login-brand">
                 <div className="login-brand-content">
+
+                    {/* Panned Out Logo */}
+                    <div className="brand-icon">
+                        <img
+                            src={PannedOutLogo}
+                            alt="Panned Out Logo"
+                        />
+                    </div>
 
                     <h1>Panned Out</h1>
 

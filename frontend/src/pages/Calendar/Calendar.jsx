@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "./Calendar.css";    
+import "./Calendar.css"; 
+import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import MealCard from "../../components/MealCard/MealCard";
 
 function Calendar() {
     const navigate = useNavigate();
     const today = new Date();
+    const [view, setView] = useState("month");
 
     const [currentDate, setCurrentDate] = useState(
         new Date(today.getFullYear(), today.getMonth(), 1)
@@ -43,19 +45,99 @@ function Calendar() {
         calendarDays.push(new Date(year, month, day));
     }
 
-    // Navigation
-    function goToPreviousMonth () {
-        setCurrentDate(new Date(year, month - 1, 1));
-    };
+    
+    const weekStart = new Date(selectedDate);
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(
+        weekStart.getDate() - weekStart.getDay()
+    );
 
-    function goToNextMonth () {
-        setCurrentDate(new Date(year, month + 1, 1));
-    };
+    const weekDays = Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + index);
+        return day;
+    });
+
+    function getDateKey(date) {
+        return `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            date.getDate()
+        ).padStart(2, "0")}`;
+    }
+
+    // Navigation
+
+    function goToPreviousMonth() {
+        if (view === "month") {
+            setCurrentDate(
+                new Date(year, month - 1, 1)
+            );
+        } else {
+            const nextSelectedDate = new Date(selectedDate);
+
+            if (view === "week") {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() - 7
+                );
+            } else {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() - 1
+                );
+            }
+
+            setSelectedDate(nextSelectedDate);
+            setCurrentDate(
+                new Date(
+                    nextSelectedDate.getFullYear(),
+                    nextSelectedDate.getMonth(),
+                    1
+                )
+            );
+        }
+    }
+
+    function goToNextMonth() {
+        if (view === "month") {
+            setCurrentDate(
+                new Date(year, month + 1, 1)
+            );
+        } else {
+            const nextSelectedDate = new Date(selectedDate);
+
+            if (view === "week") {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() + 7
+                );
+            } else {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() + 1
+                );
+            }
+
+            setSelectedDate(nextSelectedDate);
+            setCurrentDate(
+                new Date(
+                    nextSelectedDate.getFullYear(),
+                    nextSelectedDate.getMonth(),
+                    1
+                )
+            );
+        }
+    }
 
     function goToToday() {
-        setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
-        setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
-    };
+        const now = new Date();
+
+        setCurrentDate(
+            new Date(now.getFullYear(), now.getMonth(), 1)
+        );
+
+        setSelectedDate(
+            new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        );
+    }
+
 
     // Date selection
 
@@ -102,35 +184,8 @@ function Calendar() {
         <main className="calendar-page">
             {/*Sidebar*/}
 
-            <aside className="calendar-sidebar">
-
-                <div className="sidebar-logo">
-                    Panned Out
-                </div>
-
-                <nav className="sidebar-nav">
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/calendar")}>
-                        <span>▦</span>
-                        Calendar
-                    </button>
-
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/recipes")}>
-                        <span>🍽</span>
-                        Recipes
-                    </button>
-                </nav>
-
-                <div className="sidebar-bottom">
-                    <button className="nav-item">
-                        <span>⚙️</span>
-                        Settings
-                    </button>
-                </div>
-            </aside>
+           <Sidebar />
+            {/* <div>Sidebar test</div> */}
 
             {/*Main Calendar*/}
             <section className="calendar-content">
@@ -142,7 +197,18 @@ function Calendar() {
                         </span>
 
                         <h1>
-                            {monthName} {year}
+                            {view === "month"
+                                ? `${monthName} ${year}`
+                                : view === "week"
+                                    ? `Week of ${weekStart.toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric"
+                                    })}`
+                                    : selectedDate.toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric"
+                                    })}
                         </h1>
                     </div>
 
@@ -173,70 +239,174 @@ function Calendar() {
                 </header>
 
                 {/*Future view controls*/}
+                
                 <div className="calendar-view-controls">
-
-                    <button className="view-button active">
+                    <button
+                        className={`view-button ${view === "month" ? "active" : ""}`}
+                        onClick={() => setView("month")}
+                        aria-pressed={view === "month"}
+                    >
                         Month
                     </button>
-                    <button className="view-button">
+
+                    <button
+                        className={`view-button ${view === "week" ? "active" : ""}`}
+                        onClick={() => setView("week")}
+                        aria-pressed={view === "week"}
+                    >
                         Week
                     </button>
-                    <button className="view-button">
+
+                    <button
+                        className={`view-button ${view === "day" ? "active" : ""}`}
+                        onClick={() => setView("day")}
+                        aria-pressed={view === "day"}
+                    >
                         Day
                     </button>
                 </div>
 
+
                 {/*Actual Calendar*/}
+                {view === "month" && (
+                    <div className="calendar">
+                        {/*Weekdays Header*/}
+                        <div className="calendar-weekdays">
+                            <span>Sun</span>
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                        </div>
 
-                <div className="calendar">
-                    {/*Weekdays Header*/}
-                    <div className="calendar-weekdays">
-                        <span>Sun</span>
-                        <span>Mon</span>
-                        <span>Tue</span>
-                        <span>Wed</span>
-                        <span>Thu</span>
-                        <span>Fri</span>
-                        <span>Sat</span>
-                    </div>
+                        {/*Calendar Days*/}
+                        <div className="calendar-grid">
 
-                    {/*Calendar Days*/}
-                    <div className="calendar-grid">
+                            {calendarDays.map((day, index) => {
 
-                        {calendarDays.map((day, index) => {
+                                if(!day){
+                                    return(
+                                        <div
+                                            key={`empty-${index}`}
+                                            className="calendar-cell empty"
+                                        ></div>
+                                    );
+                                }
 
-                            if(!day){
                                 return(
-                                    <div
-                                        key={`empty-${index}`}
-                                        className="calendar-cell empty"
-                                    ></div>
-                                );
-                            }
-
-                            return(
-                                <button
-                                    key={day.toISOString()}
-                                    className={`
-                                        calendar-cell
-                                        ${isSelected(day) ? "selected" : ""}
-                                        ${isToday(day) ? "today" : ""}`}
+                                    <button
+                                        key={day.toISOString()}
+                                        className={`
+                                            calendar-cell
+                                            ${isSelected(day) ? "selected" : ""}
+                                            ${isToday(day) ? "today" : ""}`}
                                     
+                                        onClick={() => selectDay(day)}
+                                    >
+                                        <span className="calendar-date">
+                                            {day.getDate()}
+                                        </span>
+
+                                        {/*Future meal indicators can be added here*/}
+                                        {isToday(day) && (
+                                            <span className="today-label">Today</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/*Add week and day layouts*/}
+                
+                {/* Week View */}
+                {view === "week" && (
+                    <div className="calendar-week-grid">
+                        {weekDays.map((day) => {
+                            const key = getDateKey(day);
+                            const dayMeals = meals[key] || [];
+
+                            return (
+                                <button
+                                    type="button"
+                                    key={key}
+                                    className={[
+                                        "calendar-week-day",
+                                        isSelected(day) ? "selected" : "",
+                                        isToday(day) ? "today" : ""
+                                    ].filter(Boolean).join(" ")}
                                     onClick={() => selectDay(day)}
                                 >
-                                    <span className="calendar-date">
+                                    <span className="week-day-name">
+                                        {day.toLocaleDateString("en-US", {
+                                            weekday: "short"
+                                        })}
+                                    </span>
+
+                                    <span className="week-day-number">
                                         {day.getDate()}
                                     </span>
 
-                                    {/*Future meal indicators can be added here*/}
-                                    {isToday(day) && (
-                                        <span className="today-label">Today</span>
-                                    )}
+                                    <div className="week-day-meals">
+                                        {dayMeals.length === 0 ? (
+                                            <span className="no-meals">
+                                                No meals
+                                            </span>
+                                        ) : (
+                                            dayMeals.map((meal, index) => (
+                                                <div
+                                                    className="week-meal"
+                                                    key={meal.id ?? `${key}-${index}`}
+                                                >
+                                                    {meal.name}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </button>
                             );
                         })}
                     </div>
-                </div>
+                )}
+
+                {/* Day View */}
+                {view === "day" && (
+                    <div className="calendar-single-day">
+                        <span className="calendar-eyebrow">
+                            DAILY MEAL PLAN
+                        </span>
+
+                        <h2>{selectedDateText}</h2>
+
+                        <p>
+                            {selectedMeals.length === 0
+                                ? "No meals planned for this day yet."
+                                : `${selectedMeals.length} meal${selectedMeals.length === 1 ? "" : "s"} planned`}
+                        </p>
+
+                        <div className="day-navigation">
+                            <button
+                                type="button"
+                                onClick={goToPreviousMonth}
+                                aria-label="Previous day"
+                            >
+                                ← Previous day
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={goToNextMonth}
+                                aria-label="Next day"
+                            >
+                                Next day →
+                            </button>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Selected Day's Meals */}
                 <section className="meals-selection">

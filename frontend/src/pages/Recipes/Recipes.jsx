@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 import './Recipes.css';
+import Sidebar from '../../components/Sidebar/Sidebar.jsx';
 import RecipeForm from './RecipeForm';
 import { getRecipes, createRecipe, removeRecipe } from '../../api/recipes';
 import { filterRecipes } from './filterRecipes.js';
@@ -62,35 +63,8 @@ function Recipes() {
         <main className="recipes-page">
             {/* Sidebar */}
 
-            <aside className="recipes-sidebar">
-                <div className="sidebar-logo">
-                    Panned Out
-                </div>
-
-                <nav className="sidebar-nav">
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/calendar")}>
-                        <span>▦</span>
-                        Calendar
-                    </button>
-
-                    <button
-                        className="nav-item active"
-                        onClick={() => navigate("/recipes")}>
-                        <span>🍽</span>
-                        Recipes
-                    </button>
-                </nav>
-
-                <div className="sidebar-bottom">
-
-                    <button className="nav-item">
-                        <span>⚙️</span>
-                        Settings
-                    </button>
-                </div>
-            </aside>
+            <Sidebar />
+            {/* <div>Sidebar test</div> */}
 
             {/* Main Content */}
 
@@ -171,6 +145,7 @@ function Recipes() {
                                 <RecipeCard
                                     key={recipe.id}
                                     recipe={recipe}
+                                    onClick={() => navigate(`/recipes/${recipe.id}`)}
                                     onDelete={deleteRecipe}
                                     deleting={deletingId !== null}
                                 />

@@ -1,62 +1,66 @@
-import './RecipeCard.css';
 
-function RecipeCard({ recipe, onDelete, deleting }) {
+import "./RecipeCard.css";
+
+function RecipeCard({ recipe, onClick, onDelete, deleting }) {
+    const difficulty = String(recipe.difficulty || "Medium")
+        .trim()
+        .toLowerCase();
+
+    const difficultyClass = ["easy", "medium", "hard"].includes(difficulty)
+        ? `difficulty-${difficulty}`
+        : "difficulty-medium";
+
     return (
-        <article className="recipe-card">
+        <article
+            className={`recipe-card ${difficultyClass}`}
+        >
+            <button
+                type="button"
+                className="recipe-card-open"
+                onClick={onClick}
+                aria-label={`Open recipe: ${recipe.name}`}
+            >
+                <div className="recipe-image">
+                    {recipe.image ? (
+                        <img src={recipe.image} alt={recipe.name} />
+                    ) : (
+                        <span aria-hidden="true">🍲</span>
+                    )}
+                </div>
 
-            <div className="recipe-image">
-                {recipe.image ? (
-                    <img src={recipe.image} alt={recipe.name} />
-                ) : (
-                    <span>🍽</span>
-                )}
-            </div>
+                <div className="recipe-card-content">
+                    <div className="recipe-card-top">
+                        <span className="recipe-category">
+                            {recipe.category || "My Recipes"}
+                        </span>
 
-            <div className="recipe-card-content">
+                        <span className="recipe-difficulty">
+                            {recipe.difficulty || "Medium"}
+                        </span>
+                    </div>
 
-                <div className="recipe-card-top">
-                    <span className="recipe-category">
-                        {recipe.category}
+                    <h3>{recipe.name}</h3>
+
+                    <div className="recipe-details">
+                        <span>{recipe.prepTime} min</span>
+                        <span>{recipe.mealType || "Recipe"}</span>
+                    </div>
+
+                    <span className="recipe-card-link">
+                        Open recipe →
                     </span>
-
-                    <button
-                        className="recipe-delete"
-                        disabled={deleting}
-                        onClick={() => onDelete(recipe.id)}
-                        aria-label={`Delete ${recipe.name}`}
-                    >
-                        🗑
-                    </button>
-
                 </div>
+            </button>
 
-                <h3>{recipe.name}</h3>
-
-                <div className="recipe-details">
-
-                    <span>{recipe.difficulty}</span>
-                    <span>{recipe.prepTime} mins</span>
-                </div>
-
-                <details>
-                    <summary>Recipe details</summary>
-                    <p>{recipe.mealType}</p>
-                    <h4>Ingredients</h4>
-                    <p style={{ whiteSpace: 'pre-wrap' }}>{recipe.ingredients}</p>
-                    <h4>Instructions</h4>
-                    <p style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</p>
-                </details>
-
-                <div className="recipe-nutrition">
-
-                    <span>{recipe.calories} cal</span>
-                    <span>{recipe.protein} g protein</span>
-                    <span>{recipe.fat} g fat</span>
-                    <span>{recipe.carbohydrates} g carbs</span>
-                    <span>{recipe.fiber} g fiber</span>
-
-                </div>
-            </div>
+            <button
+                type="button"
+                className="recipe-delete"
+                disabled={deleting}
+                onClick={() => onDelete(recipe.id)}
+                aria-label={`Delete ${recipe.name}`}
+            >
+                🗑
+            </button>
         </article>
     );
 }

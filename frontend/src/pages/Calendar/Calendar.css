@@ -342,4 +342,224 @@
     font-weight: 600;
 }
 
+/*Add for week and day view in calendar*/
+
+/* Active view button */
+.view-button.active {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 3px rgba(59, 45, 38, 0.12);
+}
+
+/* Week view */
+.calendar-week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.calendar-week-day {
+    min-width: 0;
+    min-height: 180px;
+    padding: 12px 8px;
+    color: var(--color-text);
+    text-align: left;
+    background: var(--color-surface);
+    border: 1px solid #D8CDC0;
+    border-radius: 12px;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.calendar-week-day:hover {
+    border-color: var(--color-secondary);
+    background-color: #F5EEE4;
+}
+
+.calendar-week-day.selected {
+    background-color: var(--color-highlight);
+    border-color: var(--color-primary);
+}
+
+.calendar-week-day.today {
+    box-shadow: inset 0 0 0 1px var(--color-terracotta);
+}
+
+.week-day-name,
+.week-day-number {
+    display: block;
+    text-align: center;
+}
+
+.week-day-name {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.week-day-number {
+    margin: 8px 0 14px;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.week-day-meals {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.week-meal {
+    padding: 7px;
+    overflow-wrap: anywhere;
+    background: #F3E8C9;
+    border-left: 3px solid var(--color-terracotta);
+    border-radius: 5px;
+    font-size: 11px;
+}
+
+.no-meals {
+    color: var(--color-muted);
+    font-size: 11px;
+    text-align: center;
+}
+
+/* Day view */
+.calendar-single-day {
+    padding: 32px;
+    background-color: var(--color-surface);
+    border: 1px solid #D8CDC0;
+    border-radius: 16px;
+}
+
+.calendar-single-day h2 {
+    margin: 10px 0;
+    color: var(--color-primary);
+    font-size: 32px;
+}
+
+.calendar-single-day > p {
+    color: var(--color-muted);
+    font-size: 14px;
+}
+
+.day-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.day-navigation button {
+    padding: 10px 14px;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    border: 1px solid #D8CDC0;
+    border-radius: 8px;
+}
+
+.day-navigation button:hover {
+    border-color: var(--color-primary);
+}
+
+/* Responsive calendar layouts */
+@media (max-width: 1100px) {
+    .calendar-content {
+        padding: 36px 28px;
+    }
+
+    .calendar-week-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .meals-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .calendar-sidebar {
+        width: 76px;
+        padding: 24px 10px;
+    }
+
+    .sidebar-logo {
+        padding: 0;
+        font-size: 0;
+    }
+
+    .sidebar-logo::first-letter {
+        font-size: 28px;
+    }
+
+    .nav-item {
+        justify-content: center;
+        gap: 0;
+        font-size: 0;
+    }
+
+    .nav-item span {
+        font-size: 18px;
+    }
+
+    .calendar-content {
+        min-width: 0;
+        padding: 24px 14px;
+    }
+
+    .calendar-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .calendar-header h1 {
+        font-size: 34px;
+    }
+
+    .calendar-week-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .calendar-week-day {
+        min-height: 150px;
+    }
+
+    .calendar-weekdays span {
+        padding: 8px 2px;
+        font-size: 9px;
+        letter-spacing: 0;
+    }
+
+    .calendar-cell {
+        min-height: 65px;
+        padding: 4px;
+    }
+
+    .calendar-date {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .today-label {
+        font-size: 9px;
+    }
+
+    .meals-list {
+        grid-template-columns: 1fr;
+    }
+
+    .meals-heading {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .calendar-single-day {
+        padding: 22px 16px;
+    }
+}
+
     
