@@ -72,7 +72,7 @@ final class AuthService {
             Map<String, String> fields = RecipeServer.form(exchange);
             String email = fields.getOrDefault("email", "");
             String password = fields.getOrDefault("password", "");
-            String attemptKey = email.trim().toLowerCase(java.util.Locale.ROOT);
+            String attemptKey = clientAddress(exchange) + "\n" + email.trim().toLowerCase(java.util.Locale.ROOT);
             throttle(exchange, attemptKey);
             boolean registering = path.endsWith("/register");
             AccountRepository.Account account;
@@ -106,6 +106,20 @@ final class AuthService {
             throw new RecipeServer.ApiError(401, "Please sign in to continue.");
         }
         return session;
+    }
+
+    private static String clientAddress(HttpExchange exchange) {
+        java.net.InetAddress peer = exchange.getRemoteAddress().getAddress();
+        // The local Vite proxy overwrites this header with its socket's peer address.
+        // Never trust forwarding information from a non-loopback connection.
+        String forwarded = exchange.getRequestHeaders().getFirst("X-Forwarded-For");
+        if (peer.isLoopbackAddress() && forwarded != null
+                && (forwarded.matches("[0-9]{1,3}(\\.[0-9]{1,3}){3}")
+                    || (forwarded.contains(":") && forwarded.matches("[0-9a-fA-F:]+")))) {
+            try { return java.net.InetAddress.getByName(forwarded).getHostAddress(); }
+            catch (java.net.UnknownHostException ignored) { /* Fall back to the socket peer. */ }
+        }
+        return peer.getHostAddress();
     }
 
     private void throttle(HttpExchange exchange, String attemptKey) {

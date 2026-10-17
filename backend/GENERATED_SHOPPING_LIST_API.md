@@ -81,10 +81,14 @@ counter from their maximum surviving ID. Historical IDs deleted before this
 upgrade cannot be reconstructed; existing ambiguous meal references need manual
 review. The authenticated update handler continues to use `form()`.
 
-Authentication throttling now keys by normalized email and counts failed
-credential/validation attempts, clearing failures on success. A blocked address
-behind Vite no longer blocks unrelated accounts; 20 failures for the same email
-still enforce the existing 15-minute window.
+Authentication throttling now keys by client address plus normalized email and counts failed
+credential/validation attempts, clearing failures on success. The Vite proxy
+overwrites forwarded client addresses, so one client's failures
+cannot lock out the same account from another address. A blocked client/email
+pair does not block other emails. Twenty failures for the same client/email pair
+still enforce the existing 15-minute window. Clients sharing a public address
+and email still share a limit. The loopback API trusts forwarding information
+only from a local proxy; any deployment proxy must overwrite the header.
 
 ## Verification and QA handoff
 
@@ -92,6 +96,7 @@ still enforce the existing 15-minute window.
 java -cp backend/build RecipeRepositoryTest
 java -cp backend/build AuthSessionTest
 python3 -m unittest discover -s tests -p '*_api.py'
+python3 -m unittest discover -s tests -p test_auth_proxy.py
 node --test tests/*.mjs
 # Requires Python Playwright and installed Edge (or PLAYWRIGHT_CHANNEL=chrome):
 python3 -m unittest discover -s tests -p 'test_*_ui.py'

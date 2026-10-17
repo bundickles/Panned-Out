@@ -155,9 +155,17 @@ Session tokens are random opaque values in an `HttpOnly; SameSite=Strict` cookie
 scoped to `/api`, with an eight-hour absolute lifetime. Sessions remain valid across
 page refreshes/browser restarts during that lifetime, but an API restart signs
 users out. Accounts and recipes survive the restart. Login rotates the current
-token; logout invalidates it on the server. A per-email limit allows 20 failed login or
-registration attempts per 15 minutes (successful attempts clear the counter); 429 includes
-`Retry-After`. Limits and sessions reset on API restart.
+token; logout invalidates it on the server. A limit of 20 failures per client
+address and normalized email applies to login/registration over 15 minutes.
+Successful attempts clear that pair's counter; 429 includes
+`Retry-After`. Limits and sessions reset on API restart. The local Vite proxy
+replaces `X-Forwarded-For` with the connecting client's socket address. The API
+trusts a single numeric forwarded address only from a loopback peer, otherwise
+using the direct peer address. This prevents failures for one source from locking
+out the same email at another source, including clients sharing the Vite proxy.
+Keep this loopback-only API behind a trusted proxy that overwrites this header;
+do not expose it through a proxy that forwards caller-supplied values unchanged.
+Clients sharing an actual public address and email share the same limit.
 
 All recipe operations require a valid session and resolve the repository from
 that session's account. Supplying an owner/user ID in a request cannot select

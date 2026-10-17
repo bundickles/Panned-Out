@@ -66,6 +66,7 @@ class ShoppingUiTest(unittest.TestCase):
                         page.get_by_label('Start date').fill('2026-10-08')
                         expect(page.get_by_role('alert')).to_contain_text('Start date must be')
                         page.get_by_label('Start date').fill('2026-10-01')
+                        expect(page.get_by_text('No ingredients found', exact=False)).to_be_visible()
                         page.route('**/api/shopping-list?**', lambda route: route.abort())
                         page.get_by_label('End date').fill('2026-10-07')
                         expect(page.get_by_role('alert')).to_contain_text('Cannot reach')

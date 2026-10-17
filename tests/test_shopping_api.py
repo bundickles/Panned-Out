@@ -65,3 +65,21 @@ class ShoppingApiTest(unittest.TestCase):
             self.assertEqual(self.request(alice, '/api/auth/login', 'POST', dict(email='bad', password=''))[0], 400)
         self.assertEqual(self.request(alice, '/api/auth/login', 'POST', dict(email='bad', password=''))[0], 429)
         self.assertEqual(self.request(alice, '/api/auth/login', 'POST', fields)[0], 200)
+
+    def test_attack_on_email_cannot_lock_out_another_client(self):
+        victim, attacker = self.client(), self.client()
+        self.register(victim, 'victim@example.com')
+        attacker_source = {'X-Forwarded-For': '192.0.2.10'}
+        victim_source = {'X-Forwarded-For': '192.0.2.20'}
+        bad = dict(email=' VICTIM@EXAMPLE.COM ', password='wrong password')
+        for _ in range(20):
+            self.assertEqual(self.request(attacker, '/api/auth/login', 'POST', bad, headers=attacker_source)[0], 401)
+        # Email casing/spacing cannot evade the limit for the attacking source.
+        good = dict(email='victim@example.com', password=auth.PASSWORD)
+        status, _, headers = self.request(attacker, '/api/auth/login', 'POST', good, headers=attacker_source)
+        self.assertEqual(status, 429)
+        self.assertGreater(int(headers['Retry-After']), 0)
+        # Another client can still sign into the SAME targeted account via the proxy.
+        self.assertEqual(self.request(victim, '/api/auth/login', 'POST', good, headers=victim_source)[0], 200)
+        # That successful login must not clear the attacker's limit.
+        self.assertEqual(self.request(attacker, '/api/auth/login', 'POST', good, headers=attacker_source)[0], 429)
