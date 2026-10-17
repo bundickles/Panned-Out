@@ -12,6 +12,14 @@ import java.util.stream.Collectors;
 
 /** Local demo API. Bind to loopback; authentication is a separate team task. */
 public class RecipeServer {
+    static final class ApiError extends RuntimeException {
+        final int status;
+        ApiError(int status, String message) {
+            super(message);
+            this.status = status;
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
         Path storage = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
@@ -21,6 +29,8 @@ public class RecipeServer {
         server.createContext("/api/recipes", exchange -> {
             try {
                 handle(exchange, repository);
+            } catch (ApiError e) {
+                respond(exchange, e.status, "{\"error\":" + quote(e.getMessage()) + "}");
             } catch (IllegalArgumentException e) {
                 respond(exchange, 400, "{\"error\":" + quote(e.getMessage()) + "}");
             } catch (UncheckedIOException e) {
@@ -37,27 +47,13 @@ public class RecipeServer {
     private static void handle(HttpExchange exchange, RecipeRepository repository) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
-        if (path.equals("/api/recipes")) {
-            if (method.equals("GET")) {
+        boolean updating = path.matches("/api/recipes/[0-9]+") && method.equals("PUT");
+        if (path.equals("/api/recipes") || updating) {
+            if (method.equals("GET") && !updating) {
                 respond(exchange, 200, repository.getRecipes().stream()
                         .map(RecipeServer::json).collect(Collectors.joining(",", "[", "]")));
-            } else if (method.equals("POST")) {
-                String type = exchange.getRequestHeaders().getFirst("Content-Type");
-                if (type == null || !type.split(";")[0].trim().equalsIgnoreCase("application/x-www-form-urlencoded")) {
-                    respond(exchange, 415, "{\"error\":\"Expected form-encoded recipe\"}");
-                    return;
-                }
-                byte[] body = exchange.getRequestBody().readNBytes(65537);
-                if (body.length > 65536) {
-                    respond(exchange, 413, "{\"error\":\"Recipe is too large\"}");
-                    return;
-                }
-                Map<String, String> fields = new HashMap<>();
-                for (String pair : new String(body, StandardCharsets.UTF_8).split("&")) {
-                    String[] parts = pair.split("=", 2);
-                    fields.put(URLDecoder.decode(parts[0], StandardCharsets.UTF_8),
-                            parts.length == 2 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : "");
-                }
+            } else if (method.equals("POST") || updating) {
+                Map<String, String> fields = form(exchange);
                 String name = required(fields, "name");
                 String ingredients = required(fields, "ingredients");
                 String instructions = required(fields, "instructions");
@@ -68,13 +64,19 @@ public class RecipeServer {
                 if (!java.util.List.of("Easy", "Medium", "Hard").contains(difficulty))
                     throw new IllegalArgumentException("Choose a valid difficulty");
                 synchronized (repository) {
-                    int id = Math.addExact(repository.getRecipes().stream().mapToInt(Recipe::getId).max().orElse(0), 1);
+                    int id = updating ? Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)) : repository.nextId();
+                    Recipe existing = updating ? repository.getRecipes().stream().filter(r -> r.getId() == id).findFirst().orElse(null) : null;
+                    if (updating && existing == null) {
+                        respond(exchange, 404, "{\"error\":\"Recipe not found\"}");
+                        return;
+                    }
                     Recipe recipe = new Recipe(id, name, category, difficulty,
                             number(fields, "prepTime"), number(fields, "calories"), number(fields, "protein"),
-                            number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), "",
+                            number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), updating ? existing.getImage() : "",
                             ingredients, instructions, required(fields, "mealType"));
-                    repository.addRecipe(recipe);
-                    respond(exchange, 201, json(recipe));
+                    if (updating) repository.updateRecipe(recipe);
+                    else repository.addRecipe(recipe);
+                    respond(exchange, updating ? 200 : 201, json(recipe));
                 }
             } else {
                 exchange.getResponseHeaders().set("Allow", "GET, POST");
@@ -88,6 +90,20 @@ public class RecipeServer {
         }
     }
 
+    static Map<String, String> form(HttpExchange exchange) throws IOException {
+        String type = exchange.getRequestHeaders().getFirst("Content-Type");
+        if (type == null || !type.split(";")[0].trim().equalsIgnoreCase("application/x-www-form-urlencoded"))
+            throw new ApiError(415, "Expected form-encoded fields.");
+        byte[] body = exchange.getRequestBody().readNBytes(65537);
+        if (body.length > 65536) throw new ApiError(413, "Request is too large.");
+        Map<String, String> fields = new HashMap<>();
+        for (String pair : new String(body, StandardCharsets.UTF_8).split("&")) {
+            String[] parts = pair.split("=", 2);
+            fields.put(URLDecoder.decode(parts[0], StandardCharsets.UTF_8),
+                    parts.length == 2 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : "");
+        }
+        return fields;
+    }
     private static String required(Map<String, String> fields, String key) {
         String value = fields.getOrDefault(key, "").trim();
         if (value.isEmpty() || value.length() > 10000) throw new IllegalArgumentException("Enter a valid " + key);

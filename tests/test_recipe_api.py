@@ -79,7 +79,19 @@ class RecipeApiTest(unittest.TestCase):
                 self.stop()
                 self.start(storage)
                 self.assertEqual(self.request(), (200, [saved]))
-                self.assertEqual(self.request('DELETE', '/api/recipes/' + str(saved['id']))[0], 200)
+                path = '/api/recipes/' + str(saved['id'])
+                self.assertEqual(self.request('PUT', path, {**fields, 'protein': '-1'})[0], 400)
+                self.assertEqual(self.request(), (200, [saved]))
+                status, updated = self.request('PUT', path, {**fields, 'name': 'Updated bowl', 'protein': '25'})
+                self.assertEqual(status, 200)
+                self.assertEqual(updated['id'], saved['id'])
+                self.assertEqual(updated['name'], 'Updated bowl')
+                self.assertEqual(updated['protein'], 25)
+                self.stop()
+                self.start(storage)
+                self.assertEqual(self.request(), (200, [updated]))
+                self.assertEqual(self.request('PUT', '/api/recipes/999', fields)[0], 404)
+                self.assertEqual(self.request('DELETE', path)[0], 200)
                 self.assertEqual(self.request('DELETE', '/api/recipes/' + str(saved['id']))[0], 404)
                 self.stop()
                 self.start(storage)
@@ -88,6 +100,58 @@ class RecipeApiTest(unittest.TestCase):
                 self.assertEqual(self.request()[0], 500)
                 self.assertEqual(self.request('POST', fields=fields)[0], 500)
                 self.assertEqual(storage.read_text(), 'broken storage')
+            finally:
+                self.stop()
+
+    def test_ids_never_reused_after_delete_or_restart(self):
+        with tempfile.TemporaryDirectory() as directory:
+            storage = Path(directory) / 'recipes.properties'
+            self.start(storage)
+            try:
+                fields = dict(name='Stable identity', ingredients='Rice', instructions='Cook',
+                              category='My Recipes', difficulty='Easy', mealType='Dinner')
+                first = self.request('POST', fields=fields)[1]
+                second = self.request('POST', fields=fields)[1]
+                self.assertGreater(second['id'], first['id'])
+                self.request('DELETE', '/api/recipes/' + str(second['id']))
+                self.stop()
+                self.start(storage)
+                third = self.request('POST', fields=fields)[1]
+                self.assertGreater(third['id'], second['id'])
+                for recipe in [first, third]:
+                    self.request('DELETE', '/api/recipes/' + str(recipe['id']))
+                self.stop()
+                self.start(storage)
+                fourth = self.request('POST', fields=fields)[1]
+                self.assertGreater(fourth['id'], third['id'])
+                # Legacy files seed the counter from their highest surviving ID.
+                self.stop()
+                storage.write_text('\n'.join(line for line in storage.read_text().splitlines()
+                                             if not line.startswith('lastId=')) + '\n')
+                self.start(storage)
+                fifth = self.request('POST', fields=fields)[1]
+                self.assertGreater(fifth['id'], fourth['id'])
+            finally:
+                self.stop()
+
+    def test_shared_form_helper_validates_create_and_edit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.start(Path(directory) / 'recipes.properties')
+            try:
+                fields = dict(name='Rice', ingredients='Rice', instructions='Cook',
+                              category='My Recipes', difficulty='Easy', mealType='Dinner')
+                recipe = self.request('POST', fields=fields)[1]
+                for method, path in [('POST', '/api/recipes'), ('PUT', '/api/recipes/' + str(recipe['id']))]:
+                    for body, content_type, expected in [(b'{}', 'application/json', 415),
+                                                          (b'x=' + b'a' * 65535, 'application/x-www-form-urlencoded', 413)]:
+                        request = Request(self.url + path, data=body, method=method,
+                                          headers={'Content-Type': content_type})
+                        with self.assertRaises(HTTPError) as caught:
+                            urlopen(request, timeout=5)
+                        with caught.exception as response:
+                            self.assertEqual(response.status, expected)
+                            self.assertIn('error', json.load(response))
+                self.assertEqual(self.request(), (200, [recipe]))
             finally:
                 self.stop()
 

@@ -18,3 +18,5 @@ async function request(path = '', options = {}) {
 export const getRecipes = () => request();
 export const createRecipe = (fields) => request('', { method: 'POST', body: new URLSearchParams(fields) });
 export const removeRecipe = (id) => request(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
+export const updateRecipe = (id, fields) => request(`/${encodeURIComponent(id)}`, { method: 'PUT', body: new URLSearchParams(fields) });
