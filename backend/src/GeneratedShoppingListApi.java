@@ -41,8 +41,13 @@ final class GeneratedShoppingListApi {
                 continue;
             }
             // Preserve quantities in each line; only case and whitespace are normalized for grouping.
-            for (String line : recipe.getIngredients().split("\\R")) {
-                String name = line.strip().replaceAll("\\s+", " ");
+            String ingredients = recipe.getIngredients();
+            if (ingredients == null || ingredients.isBlank()) {
+                warnings.add("{\"message\":\"Recipe has no ingredients; its ingredients were omitted.\",\"source\":" + source + "}");
+                continue;
+            }
+            for (String line : ingredients.split("\\R")) {
+                String name = line.replaceAll("(?U)\\s+", " ").strip();
                 if (name.isEmpty()) continue;
                 Item item = items.computeIfAbsent(name.toLowerCase(Locale.ROOT), ignored -> new Item(name));
                 item.sources.add(source);

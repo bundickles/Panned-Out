@@ -1,6 +1,7 @@
 # SCRUM-57: generated shopping-list integration
 
-This branch builds on PR #12 (calendar storage), which builds on PR #11
+This UI integration now builds on the separate SCRUM-132 generation endpoint
+branch, which builds on PR #12 (calendar storage), which builds on PR #11
 (authentication and private recipes, including PR #10's edit logic).
 It reuses the Shopping page styling and shared Sidebar from PR #14. It does not
 merge those pull requests. Merge dependencies first and coordinate the overlapping
@@ -69,9 +70,11 @@ protected route remounts when the account changes.
 
 This singular generation endpoint is separate from PR #13's plural
 `/api/shopping-lists` saved snapshots. Saved lists and purchased-state persistence
-are outside SCRUM-57. Coordinate generation ownership and this schema with Aayush;
-review the reused layout with Pratap and QA scenarios with Jamiyah. Team review
-and endpoint-owner agreement remain required before closing Jira.
+are outside SCRUM-57. Pranaya owns generation in SCRUM-132; its contract and
+validation suites are tracked separately in SCRUM-119 and SCRUM-120. See
+[the backend generation contract](SHOPPING_LIST_GENERATION.md). Review the reused
+layout with Pratap/Vanny and QA scenarios with Jamiyah. The UI collaboration
+item remains unchanged, and team review remains required before closing Jira.
 
 ## Review fixes included
 
