@@ -15,6 +15,7 @@ import java.util.Properties;
 /** File-backed recipe storage. Use one shared instance per storage file. */
 public class RecipeRepository {
     private final Path storageFile;
+    private int highWaterMark;
 
     /** Default storage lives beside the compiled build directory, independent of cwd. */
     public RecipeRepository() {
@@ -33,6 +34,12 @@ public class RecipeRepository {
 
     public RecipeRepository(Path storageFile) {
         this.storageFile = Objects.requireNonNull(storageFile, "storageFile").toAbsolutePath().normalize();
+    }
+
+    /** Called under the repository lock by the API; persisted with the next save. */
+    public synchronized int nextId() {
+        getRecipes();
+        return Math.addExact(highWaterMark, 1);
     }
 
     /** Returns only after the recipe has been written successfully. */
@@ -67,6 +74,23 @@ public class RecipeRepository {
         }
     }
 
+    public synchronized boolean updateRecipe(Recipe updated) {
+        Objects.requireNonNull(updated, "recipe");
+        try {
+            List<Recipe> recipes = readRecipes();
+            for (int i = 0; i < recipes.size(); i++) {
+                if (recipes.get(i).getId() == updated.getId()) {
+                    recipes.set(i, updated);
+                    writeRecipes(recipes);
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to update recipe", e);
+        }
+    }
+
     private List<Recipe> readRecipes() throws IOException {
         Properties data = new Properties();
         try (Reader reader = Files.newBufferedReader(storageFile, StandardCharsets.UTF_8)) {
@@ -96,6 +120,9 @@ public class RecipeRepository {
                         data.getProperty(prefix + "image"), data.getProperty(prefix + "ingredients"),
                         data.getProperty(prefix + "instructions"), data.getProperty(prefix + "mealType")));
             }
+            int maximum = recipes.stream().mapToInt(Recipe::getId).max().orElse(0);
+            highWaterMark = Integer.parseInt(data.getProperty("lastId", Integer.toString(maximum)));
+            if (highWaterMark < maximum || highWaterMark < 0) throw new IllegalArgumentException("Invalid lastId");
             return recipes;
         } catch (IllegalArgumentException e) {
             throw new IOException("Invalid recipe storage", e);
@@ -105,6 +132,8 @@ public class RecipeRepository {
     private void writeRecipes(List<Recipe> recipes) throws IOException {
         Properties data = new Properties();
         data.setProperty("version", "1");
+        int maximum = Math.max(highWaterMark, recipes.stream().mapToInt(Recipe::getId).max().orElse(0));
+        data.setProperty("lastId", Integer.toString(maximum));
         data.setProperty("count", Integer.toString(recipes.size()));
         for (int i = 0; i < recipes.size(); i++) {
             String prefix = "recipe." + i + ".";
@@ -133,6 +162,7 @@ public class RecipeRepository {
             // Keep the previous file intact if writing or atomic replacement fails.
             Files.move(temporary, storageFile, StandardCopyOption.ATOMIC_MOVE,
                     StandardCopyOption.REPLACE_EXISTING);
+            highWaterMark = maximum;
         } finally {
             Files.deleteIfExists(temporary);
         }

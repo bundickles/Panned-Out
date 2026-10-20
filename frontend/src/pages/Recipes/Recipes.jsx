@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 import './Recipes.css';
 import RecipeForm from './RecipeForm';
-import { getRecipes, createRecipe, removeRecipe } from '../../api/recipes';
+import { getRecipes, createRecipe, updateRecipe, removeRecipe } from '../../api/recipes';
 import { filterRecipes } from './filterRecipes.js';
 
 function Recipes() {
@@ -18,6 +18,7 @@ function Recipes() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const [editingRecipe, setEditingRecipe] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
     const [reload, setReload] = useState(0);
 
@@ -34,8 +35,13 @@ function Recipes() {
     }, [reload]);
 
     async function saveRecipe(fields) {
-        const saved = await createRecipe(fields);
-        setRecipes(current => [...current, saved]);
+        const saved = editingRecipe
+            ? await updateRecipe(editingRecipe.id, fields)
+            : await createRecipe(fields);
+        setRecipes(current => editingRecipe
+            ? current.map(recipe => recipe.id === saved.id ? saved : recipe)
+            : [...current, saved]);
+        setEditingRecipe(null);
         setSearch('');
         setActiveCategory('All');
         setError('');
@@ -109,12 +115,12 @@ function Recipes() {
                         <p>Discover and manage your favorite recipes.</p>
                     </div>
 
-                    <button className="add-recipe-button" disabled={loading} onClick={() => setShowForm(true)}>
+                    <button className="add-recipe-button" disabled={loading} onClick={() => { setEditingRecipe(null); setShowForm(true); }}>
                         + Add Recipe
                     </button>
                 </header>
 
-                {showForm && <RecipeForm onSave={saveRecipe} onCancel={() => setShowForm(false)} />}
+                {showForm && <RecipeForm key={editingRecipe?.id ?? "new"} recipe={editingRecipe} onSave={saveRecipe} onCancel={() => { setShowForm(false); setEditingRecipe(null); }} />}
                 {loading && <p role="status">Loading recipes…</p>}
                 {error && <div role="alert"><p>{error}</p><button onClick={() => { setLoading(true); setError(''); setReload(value => value + 1); }}>Retry loading recipes</button></div>}
 
@@ -171,6 +177,7 @@ function Recipes() {
                                 <RecipeCard
                                     key={recipe.id}
                                     recipe={recipe}
+                                    onEdit={recipe => { setEditingRecipe(recipe); setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                                     onDelete={deleteRecipe}
                                     deleting={deletingId !== null}
                                 />
@@ -192,7 +199,7 @@ function Recipes() {
                                     Clear filters
                                 </button>
                             ) : (
-                                <button className="add-recipe-button" disabled={loading} onClick={() => setShowForm(true)}>
+                                <button className="add-recipe-button" disabled={loading} onClick={() => { setEditingRecipe(null); setShowForm(true); }}>
                                     + Add Recipe
                                 </button>
                             )}
