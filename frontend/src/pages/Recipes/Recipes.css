@@ -1,5 +1,7 @@
 .recipes-page {
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
     display: flex;
     background-color: var(--color-background);
 }
@@ -8,7 +10,8 @@
 
 .recipes-sidebar {
     width: 240px;
-    min-height: 100vh;
+    flex-shrink: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     padding: 32px 20px;
@@ -67,6 +70,10 @@
 
 .recipes-content {
     flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
     padding: 48px 60px;
     max-width: 1400px;
     margin: 0 auto;
