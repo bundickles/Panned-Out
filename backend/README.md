@@ -205,3 +205,14 @@ unchanged. The API lifecycle test now signs in after each server start.
 
 Security references: [OWASP password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 and [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+
+### Recipe editing review fixes (PR #10)
+
+Create and edit requests share the `form()` parser from PR #11, including content
+type and 64 KiB size validation. The update flow still preserves the recipe ID
+and image. Authentication/account scoping remains in PR #11.
+
+Recipe storage persists a `lastId` counter atomically with the recipe collection.
+Deleting the highest ID or all recipes and restarting does not reuse those IDs.
+Legacy files initialize the counter from their highest surviving recipe ID;
+historical IDs deleted before this upgrade cannot be recovered automatically.
