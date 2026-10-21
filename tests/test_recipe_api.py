@@ -53,6 +53,7 @@ class RecipeApiTest(unittest.TestCase):
             build.mkdir(parents=True)
             for compiled in Path('backend/build').glob('*.class'):
                 shutil.copy2(compiled, build)
+            shutil.copytree(Path('backend/catalog'), root / 'backend' / 'catalog')
             first = root / 'first'
             second = root / 'second'
             first.mkdir()
@@ -140,7 +141,7 @@ class RecipeApiTest(unittest.TestCase):
                 self.assertGreater(fourth['id'], third['id'])
                 # Legacy files seed the counter from their highest surviving ID.
                 self.stop()
-                storage.write_text('\n'.join(line for line in storage.read_text().splitlines()
+                self.private_storage.write_text('\n'.join(line for line in self.private_storage.read_text().splitlines()
                                              if not line.startswith('lastId=')) + '\n')
                 self.start(storage)
                 fifth = self.request('POST', fields=fields)[1]
@@ -159,9 +160,9 @@ class RecipeApiTest(unittest.TestCase):
                     for body, content_type, expected in [(b'{}', 'application/json', 415),
                                                           (b'x=' + b'a' * 65535, 'application/x-www-form-urlencoded', 413)]:
                         request = Request(self.url + path, data=body, method=method,
-                                          headers={'Content-Type': content_type})
+                                          headers={'Content-Type': content_type, 'X-Panned-Out-Request': '1'})
                         with self.assertRaises(HTTPError) as caught:
-                            urlopen(request, timeout=5)
+                            self.client.open(request, timeout=5)
                         with caught.exception as response:
                             self.assertEqual(response.status, expected)
                             self.assertIn('error', json.load(response))

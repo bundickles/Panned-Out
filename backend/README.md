@@ -216,3 +216,93 @@ Recipe storage persists a `lastId` counter atomically with the recipe collection
 Deleting the highest ID or all recipes and restarting does not reuse those IDs.
 Legacy files initialize the counter from their highest surviving recipe ID;
 historical IDs deleted before this upgrade cannot be recovered automatically.
+
+## Suggested recipes and filters (SCRUM-137 / SCRUM-136)
+
+**Data handoff pending:** the committed catalog is empty until Vanny supplies the
+approved SCRUM-85 recipes. The loader and API can be tested now, but SCRUM-137's
+real-content acceptance criterion is not complete. Test fixtures are not demo or
+production recipes.
+
+`SuggestedRecipeCatalog` loads `backend/catalog/suggested-recipes.properties`
+once at startup, relative to the compiled backend location, independently of the
+terminal's working directory. Deploy the catalog folder alongside `backend/build`.
+Set `PANNED_OUT_SUGGESTED_RECIPES` to an absolute file path to use another catalog
+(for example, an isolated test fixture). A missing or invalid catalog stops startup
+with an error; it does not replace, migrate, or modify anyone's private recipes.
+Catalog changes take effect after restarting the API. Restarting reloads the same
+entries and never copies or appends them to account storage.
+
+The file uses UTF-8 Java properties. Set `version=1` and `count` to the number of
+entries. Entries have consecutive prefixes `recipe.0.`, `recipe.1.`, and so on,
+with these fields:
+
+| Field | Meaning |
+| --- | --- |
+| `id` | Stable, unique positive integer; keep it unchanged when editing content |
+| `name` | Recipe name |
+| `ingredients` | Ingredient lines, separated by literal `\n` escapes |
+| `instructions` | Steps, separated by literal `\n` escapes |
+| `difficulty` | `Easy`, `Medium`, or `Hard` |
+| `prepTime` | Whole minutes, 0–100000 |
+| `plan` | `High Protein`, `Low Calorie`, or `Keto` |
+
+Names, ingredients, and instructions must be nonblank, at most 10000 characters.
+Escape a literal backslash as `\\` in properties values. Required fields and
+duplicate IDs are validated before the server starts. No invented nutrition
+values, meal types, images, or extra plans are added to suggested recipes.
+
+### API handoff
+
+All variants require the existing session cookie; signed-out requests return 401.
+
+| Request | Result |
+| --- | --- |
+| `GET /api/recipes` | Current account's saved recipes, preserving the existing default |
+| `GET /api/recipes?filter=saved` | Same private collection |
+| `GET /api/recipes?filter=suggested` | Shared, read-only catalog |
+| `GET /api/recipes?filter=all` | Current account's saved recipes followed by suggestions |
+
+An empty collection returns `[]`. Unknown, empty, or repeated `filter` values
+return 400. Filtering is by recipe source, not plan name; search and sorting are
+outside these tickets.
+
+Saved recipes retain their existing fields and numeric IDs, with the additive
+`"source":"saved"` field on GET, POST, and PUT responses. Suggestions use
+`"source":"suggested"` and namespaced string IDs such as `"suggested:17"`.
+Consumers must preserve these IDs and check `source` before offering edit/delete.
+Suggested IDs cannot target the numeric private-recipe mutation routes (404).
+For UI compatibility, a suggestion's `category` equals its `plan`.
+
+Illustrative response shape only (not actual catalog content):
+
+```json
+[
+  {
+    "id": "suggested:17",
+    "source": "suggested",
+    "name": "Approved recipe name",
+    "ingredients": "Ingredient line 1\nIngredient line 2",
+    "instructions": "Step 1\nStep 2",
+    "difficulty": "Easy",
+    "prepTime": 20,
+    "plan": "High Protein",
+    "category": "High Protein"
+  }
+]
+```
+
+This work provides backend retrieval only. Frontend loading (SCRUM-138), saving a
+suggestion into a private collection, and scheduling suggestions are separate
+work. The default endpoint deliberately does not expose suggestions to existing
+UI code that assumes all results can be edited.
+
+After compiling the backend, run the focused API checks from the repository root:
+
+```powershell
+python -m unittest discover -s tests -p test_suggested_recipes_api.py -v
+```
+
+The tests use an isolated catalog and accounts to cover field round trips,
+Unicode/multiline text, filters, account isolation, immutable suggestions, empty
+catalogs, invalid catalog data, and restart behavior.
