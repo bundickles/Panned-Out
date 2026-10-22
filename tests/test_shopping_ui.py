@@ -92,6 +92,8 @@ class ShoppingUiTest(unittest.TestCase):
                         expect(page.get_by_role('heading', name='Some ingredients are unavailable')).to_be_visible()
                         page.screenshot(path=str(ROOT / 'backend/build/shopping-desktop.png'), full_page=True)
                         page.set_viewport_size({'width': 390, 'height': 844})
+                        expect(page.get_by_role('heading', name='Weekly Groceries', exact=True)).to_be_in_viewport()
+                        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= window.innerWidth'))
                         page.screenshot(path=str(ROOT / 'backend/build/shopping-mobile.png'), full_page=True)
                         page.set_viewport_size({'width': 1280, 'height': 900})
                         # Expiry routes through the normal login screen and drops private results.
