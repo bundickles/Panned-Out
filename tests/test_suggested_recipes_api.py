@@ -1,5 +1,6 @@
 """SCRUM-137/136: fixture catalog, filtered retrieval, and account isolation."""
 import os
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -179,6 +180,44 @@ class SuggestedRecipesApiTest(unittest.TestCase):
         self.assertEqual(saved['source'], 'saved')
         self.assertEqual(saved['ingredients'], suggested['ingredients'])
         self.assertEqual(self.request(alice, '/api/recipes?filter=suggested')[1][0], suggested)
+
+    def test_supplied_catalog_matches_source_and_survives_restart(self):
+        source = json.loads(Path('backend/catalog/panned-out-recipes.json').read_text(encoding='utf-8'))
+        self.stop()
+        with patch.dict(os.environ, PANNED_OUT_SUGGESTED_RECIPES=''):
+            self.start()
+        alice, bob = self.client(), self.client()
+        self.register(alice, 'alice@example.com')
+        self.register(bob, 'bob@example.com')
+        status, recipes, _ = self.request(alice, '/api/recipes?filter=suggested')
+        self.assertEqual(status, 200)
+        self.assertEqual(len(recipes), 24)
+        self.assertEqual(len(recipes), len(source['recipes']))
+        self.assertEqual(len({r['id'] for r in recipes}), len(recipes))
+        plans = {'keto': 'Keto', 'low-calorie': 'Low Calorie',
+                 'high-protein': 'High Protein', 'balanced': 'Balanced'}
+        for actual, original in zip(recipes, source['recipes']):
+            self.assertEqual(actual['id'], 'suggested:' + str(original['id']))
+            self.assertEqual(actual['source'], 'suggested')
+            for field in ('name', 'difficulty'):
+                self.assertEqual(actual[field], original[field])
+            self.assertEqual(actual['prepTime'], original['prepTimeMinutes'])
+            self.assertEqual(actual['plan'], plans[original['dietTags'][0]])
+            self.assertEqual(actual['category'], actual['plan'])
+            self.assertEqual(actual['instructions'].splitlines(), original['instructions'])
+            self.assertEqual(actual['ingredients'].splitlines(),
+                             [f"{i['quantity']} {i['unit']} {i['name']}" for i in original['ingredients']])
+        self.assertEqual(self.request(bob, '/api/recipes?filter=suggested')[1], recipes)
+        self.assertEqual(self.request(alice, '/api/recipes?filter=saved')[1], [])
+        self.assertEqual(self.request(alice, '/api/recipes?filter=all')[1], recipes)
+        self.assertEqual(self.warning_log.read_text(encoding='utf-8'), '')
+        self.stop()
+        with patch.dict(os.environ, PANNED_OUT_SUGGESTED_RECIPES=''):
+            self.start()
+        self.assertEqual(self.request(alice, '/api/auth/login', 'POST',
+                         dict(email='alice@example.com', password=auth.PASSWORD))[0], 200)
+        self.assertEqual(self.request(alice, '/api/recipes?filter=suggested')[1], recipes)
+        self.assertEqual(self.request(alice, '/api/recipes')[1], [])
 
     def test_empty_catalog(self):
         self.stop()

@@ -219,10 +219,25 @@ historical IDs deleted before this upgrade cannot be recovered automatically.
 
 ## Suggested recipes and filters (SCRUM-137 / SCRUM-136)
 
-**Data handoff pending:** the committed catalog is empty until Vanny supplies the
-approved SCRUM-85 recipes. The loader and API can be tested now, but SCRUM-137's
-real-content acceptance criterion is not complete. Test fixtures are not demo or
-production recipes.
+The catalog contains Vanny's 24 supplied recipes: 8 Keto, 4 Low Calorie,
+5 High Protein, and 7 Balanced. Her original JSON is preserved in
+[`catalog/panned-out-recipes.json`](catalog/panned-out-recipes.json). The server
+uses the corresponding properties catalog; SQLite is not required. The summary
+CSV alone cannot populate the catalog because it does not include ingredients
+and instructions.
+
+The import keeps the supplied IDs, names, difficulty, ingredient order/quantities,
+and step order. Each ingredient becomes one `quantity unit name` line; steps
+become newline-separated instructions. Diet tags map to the four display plan
+names. `prepTime` comes from `prepTimeMinutes`, not cooking or total time. No
+serving-size scaling or quantity conversion is performed: ingredient quantities
+are for the original recipe yield, not automatically one serving.
+
+The original JSON also retains meal types, servings, cooking/total times,
+approximate nutrition, and Vanny's source notes. Those extra fields are not
+exposed by this ticket's suggested-recipe API. Frontend integration is separate;
+loading this catalog does not itself make the meal-plan page display the recipes.
+When updating the data, keep both files in sync and run the source-to-API test.
 
 `SuggestedRecipeCatalog` loads `backend/catalog/suggested-recipes.properties`
 once at startup, relative to the compiled backend location, independently of the
