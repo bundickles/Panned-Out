@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 /** Saved snapshots only: ingredient generation belongs to a separate endpoint/owner. */
 final class ShoppingListApi {
+    // Plural saves snapshots; singular /api/shopping-list generates them (PR #15/#16).
     private static final String BASE = "/api/shopping-lists";
 
     static void handle(HttpExchange exchange, ShoppingListRepository lists, MealPlanRepository meals) throws IOException {

@@ -6,16 +6,51 @@ It builds on the account/session and calendar code in PRs #11 and #12.
 
 ## Integration dependency
 
-At implementation time SCRUM-57 describes frontend integration, with a proposed
-`GET /api/shopping-list?start=...&end=...` generation endpoint. No generator was
-present on the fetched branches. The **singular generation endpoint is not
-implemented here**. The **plural `/api/shopping-lists` endpoints below are saved
-snapshots** and do work independently with a supplied payload.
+PR #15's shopping page calls the **singular**
+`GET /api/shopping-list?start=...&end=...` endpoint supplied by PR #16 to generate
+current ingredients from calendar meals. PR #13 supplies the **plural**
+`/api/shopping-lists` endpoints for saved snapshots and purchased status.
+Generating a list does not save it, and fetching a saved snapshot does not
+regenerate it. These routes must remain distinct in frontend helpers.
 
-The schema below is the implemented saved-list contract, not an agreement already
-confirmed by the other developers. Review it with the generation/integration owner
-before wiring the UI. The tests use explicit snapshot fixtures, not fake generator
-responses presented as a finished integration.
+The fetched PR #15 page currently supports generation only; it does not call the
+saved-list endpoints. Saving and persistent checkboxes still need frontend wiring.
+The following is the handoff for that work, not a claim that the page already
+implements it. Merge the account/calendar and generation dependencies before
+checking the full page flow.
+
+### Wiring generation to saved lists
+
+1. Generate with the singular GET endpoint and keep its `start`, `end`, `items`,
+   and `warnings` response. Keep warnings visible, including warning-only results.
+2. On an explicit Save action, encode that response using the mapping below and
+   POST to plural `/api/shopping-lists`. A successful 201 returns the saved list
+   and item UUIDs. Switch the page to this returned snapshot for saved-state work.
+3. Restore saved lists using plural GET, and update checkboxes with the plural
+   PATCH endpoint and returned list/item UUIDs. Generated items have no saved
+   UUIDs, so they cannot be used directly for purchased-status updates.
+4. If saving returns 409 because calendar sources changed, regenerate and let the
+   user review the result before saving again. Do not silently discard warnings.
+   A new POST creates another snapshot; do not automatically repeat it after an
+   uncertain network failure. Keep the existing 401/session-expired handling.
+
+| Generated response field (PR #15/#16) | Saved-list form field (PR #13) |
+| --- | --- |
+| `start`, `end` | `start`, `end` |
+| `items.length` | `itemCount` |
+| `items[i].name` | `item.i.text` (name becomes text) |
+| `items[i].occurrences` | `item.i.occurrences` |
+| `items[i].sources.length` | `item.i.sourceCount` |
+| `items[i].sources[j].mealId`, `.recipeId` | `item.i.source.j.mealId`, `.recipeId` |
+| `warnings.length` | `warningCount` |
+| `warnings[i].message` | `warning.i.message` |
+| `warnings[i].source.mealId`, `.recipeId` | `warning.i.mealId`, `.recipeId` |
+
+Source `date` and `recipeName` are generation display metadata; this saved schema
+stores only meal/recipe references. Preserve every source entry and occurrence
+count; do not re-aggregate the generator's output. Saved snapshots keep their
+original contents when recipes or meals later change. Counts and the 64 KiB body
+limit below still apply; handle a rejected save without claiming it succeeded.
 
 ## Endpoints
 
