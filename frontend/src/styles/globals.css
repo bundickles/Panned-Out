@@ -1,5 +1,6 @@
 @import "./typography.css";
 @import "./colors.css";
+@import "./app-layout.css";
 
 * {
     margin: 0;
@@ -25,46 +26,4 @@ button {
 
 #root {
     min-height: 100vh;
-}
-
-/* Only the navigation list may scroll in a short sidebar; Settings stays visible. */
-.calendar-sidebar .sidebar-logo,
-.recipes-sidebar .sidebar-logo,
-.calendar-sidebar .sidebar-bottom,
-.recipes-sidebar .sidebar-bottom,
-.calendar-sidebar .nav-item,
-.recipes-sidebar .nav-item {
-    flex-shrink: 0;
-}
-
-.calendar-sidebar .sidebar-nav,
-.recipes-sidebar .sidebar-nav {
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-
-.calendar-content:focus-visible,
-.recipes-content:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: -2px;
-}
-
-@media (max-height: 500px), (max-width: 600px) {
-    .calendar-page .calendar-sidebar,
-    .recipes-page .recipes-sidebar {
-        width: 160px;
-        padding: 16px 8px;
-    }
-
-    .calendar-sidebar .sidebar-logo,
-    .recipes-sidebar .sidebar-logo {
-        margin-bottom: 16px;
-        font-size: 24px;
-    }
-
-    .calendar-page .calendar-content,
-    .recipes-page .recipes-content {
-        padding: 24px 16px;
-    }
 }
