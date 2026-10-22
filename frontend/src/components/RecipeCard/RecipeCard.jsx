@@ -1,17 +1,7 @@
 
-function RecipeCard({ recipe, onEdit, onDelete, deleting }) {
-    return (
-        <article className="recipe-card">
+import "./RecipeCard.css";
 
-            <div className="recipe-image">
-                {recipe.image ? (
-                    <img src={recipe.image} alt={recipe.name} />
-                ) : (
-                    <span>🍽</span>
-                )}
-            </div>
-
-function RecipeCard({ recipe, onClick, onDelete, deleting }) {
+function RecipeCard({ recipe, onClick, onEdit, onDelete, deleting }) {
     const difficulty = String(recipe.difficulty || "Medium")
         .trim()
         .toLowerCase();
@@ -38,8 +28,11 @@ function RecipeCard({ recipe, onClick, onDelete, deleting }) {
                     )}
                 </div>
 
-                <h3>{recipe.name}</h3>
-                <button type="button" disabled={deleting} onClick={() => onEdit(recipe)} aria-label={`Edit ${recipe.name}`}>Edit</button>
+                <div className="recipe-card-content">
+                    <div className="recipe-card-top">
+                        <span className="recipe-category">
+                            {recipe.category || "My Recipes"}
+                        </span>
 
                         <span className="recipe-difficulty">
                             {recipe.difficulty || "Medium"}
@@ -59,6 +52,8 @@ function RecipeCard({ recipe, onClick, onDelete, deleting }) {
                 </div>
             </button>
 
+            <button type="button" className="recipe-edit" disabled={deleting}
+                onClick={() => onEdit(recipe)} aria-label={`Edit ${recipe.name}`}>Edit</button>
             <button
                 type="button"
                 className="recipe-delete"

@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import "./Calendar.css"; 
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import MealCard from "../../components/MealCard/MealCard";
 
+import AddMealForm from "./AddMealForm";
+import { getMeals, addMeal, removeMeal } from "../../api/meals";
+
 function Calendar() {
-    const navigate = useNavigate();
     const today = new Date();
     const [view, setView] = useState("month");
 
@@ -17,6 +18,39 @@ function Calendar() {
     const [selectedDate, setSelectedDate] = useState(
         new Date(today.getFullYear(), today.getMonth(), today.getDate())
     );
+
+    const [meals, setMeals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+    const [actionError, setActionError] = useState('');
+    const [showForm, setShowForm] = useState(false);
+    const [removing, setRemoving] = useState(null);
+    const [revision, setRevision] = useState(0);
+
+    useEffect(() => {
+        let active = true;
+        getMeals().then(data => { if (active) setMeals(data); })
+            .catch(error => { if (active) setLoadError(error.message); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [revision]);
+
+    async function saveMeal(fields) {
+        const saved = await addMeal(fields);
+        setMeals(current => [...current, saved]);
+        setShowForm(false);
+        setActionError('');
+    }
+
+    async function deleteMeal(id) {
+        setRemoving(id);
+        setActionError('');
+        try {
+            await removeMeal(id);
+            setMeals(current => current.filter(meal => meal.id !== id));
+        } catch (error) { setActionError(error.message); }
+        finally { setRemoving(null); }
+    }
 
     // Calendar calculations
     const year = currentDate.getFullYear();
@@ -165,16 +199,8 @@ function Calendar() {
         );
     }
 
-    // Temporary meal data
-
-    const meals = {
-        // Example:
-        // "2026-09-27" : [...]
-    };
-
-    const selectedDateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-
-    const selectedMeals = meals[selectedDateKey] || [];
+    const selectedDateKey = getDateKey(selectedDate);
+    const selectedMeals = meals.filter(meal => meal.date === selectedDateKey);
 
     const selectedDateText = selectedDate.toLocaleDateString(
         "default", { weekday: "long", year: "numeric", month: "long", day: "numeric" }
@@ -303,13 +329,17 @@ function Calendar() {
                                             ${isSelected(day) ? "selected" : ""}
                                             ${isToday(day) ? "today" : ""}`}
                                     
-                                        onClick={() => selectDay(day)}
+                                        aria-label={getDateKey(day)}
+                                    aria-pressed={isSelected(day)}
+                                    onClick={() => selectDay(day)}
                                     >
                                         <span className="calendar-date">
                                             {day.getDate()}
                                         </span>
 
-                                        {/*Future meal indicators can be added here*/}
+                                        {meals.some(meal => meal.date === getDateKey(day)) && (
+                                            <span className="meal-count">{meals.filter(meal => meal.date === getDateKey(day)).length} planned</span>
+                                        )}
                                         {isToday(day) && (
                                             <span className="today-label">Today</span>
                                         )}
@@ -327,7 +357,7 @@ function Calendar() {
                     <div className="calendar-week-grid">
                         {weekDays.map((day) => {
                             const key = getDateKey(day);
-                            const dayMeals = meals[key] || [];
+                            const dayMeals = meals.filter(meal => meal.date === key);
 
                             return (
                                 <button
@@ -338,6 +368,8 @@ function Calendar() {
                                         isSelected(day) ? "selected" : "",
                                         isToday(day) ? "today" : ""
                                     ].filter(Boolean).join(" ")}
+                                    aria-label={getDateKey(day)}
+                                    aria-pressed={isSelected(day)}
                                     onClick={() => selectDay(day)}
                                 >
                                     <span className="week-day-name">
@@ -418,20 +450,28 @@ function Calendar() {
                             <h2>Meals</h2>
                         </div>
 
-                        <button className="add-meal-button">
+                        <button className="add-meal-button" disabled={loading || !!loadError} onClick={() => setShowForm(true)}>
                             + Add Meal
                         </button>
                     </div>
 
-                    {selectedMeals.length > 0 ? (
+                    {showForm && <AddMealForm key={selectedDateKey} date={selectedDateKey} onSave={saveMeal} onCancel={() => setShowForm(false)} />}
+                    {actionError && <p role="alert">{actionError}</p>}
+                    {loading ? <p role="status">Loading meals...</p> : loadError ? (
+                        <div role="alert">{loadError} <button onClick={() => {
+                            setLoading(true); setLoadError(''); setRevision(value => value + 1);
+                        }}>Retry meals</button></div>
+                    ) : selectedMeals.length > 0 ? (
 
                         <div className="meals-list">
 
                             {selectedMeals.map((meal) => (
-                                <MealCard
-                                    key={meal.id}
-                                    meal={meal}
-                                />
+                                <div key={meal.id}>
+                                    <MealCard meal={meal} />
+                                    <button type="button" className="remove-meal-button" disabled={removing !== null} onClick={() => deleteMeal(meal.id)} aria-label={`Remove ${meal.name} from calendar`}>
+                                        {removing === meal.id ? 'Removing...' : 'Remove meal'}
+                                    </button>
+                                </div>
 
                             ))}
                         </div>
@@ -442,7 +482,7 @@ function Calendar() {
 
                             <p>Add a meal to start planning your day.</p>
 
-                            <button className="add-meal-button">
+                            <button className="add-meal-button" disabled={loading || !!loadError} onClick={() => setShowForm(true)}>
                                 + Add Meal
                             </button>
                         </div>

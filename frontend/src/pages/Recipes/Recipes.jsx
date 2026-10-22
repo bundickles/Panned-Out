@@ -151,6 +151,7 @@ function Recipes() {
                                 <RecipeCard
                                     key={recipe.id}
                                     recipe={recipe}
+                                onClick={() => navigate(`/recipes/${recipe.id}`)}
                                     onEdit={recipe => { setEditingRecipe(recipe); setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                                     onDelete={deleteRecipe}
                                     deleting={deletingId !== null}

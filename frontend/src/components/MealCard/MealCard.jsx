@@ -31,12 +31,12 @@ function MealCard({meal, onClick }) {
 
             <div className="meal-info">
                 <span>
-                    ⏱ {meal.prepTime}
+                    ⏱ {meal.prepTime} min
                 </span>
 
-                <span>
+                {meal.servings != null && <span>
                     🍽 {meal.servings} servings
-                </span>
+                </span>}
             </div>
         </article>
     );
