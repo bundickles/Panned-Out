@@ -228,8 +228,10 @@ production recipes.
 once at startup, relative to the compiled backend location, independently of the
 terminal's working directory. Deploy the catalog folder alongside `backend/build`.
 Set `PANNED_OUT_SUGGESTED_RECIPES` to an absolute file path to use another catalog
-(for example, an isolated test fixture). A missing or invalid catalog stops startup
-with an error; it does not replace, migrate, or modify anyone's private recipes.
+(for example, an isolated test fixture). A missing or invalid catalog logs a warning to server stderr and falls back to
+an empty suggested list. Login and private recipes remain available; no catalog
+or private data is overwritten. The entire invalid catalog is rejected, rather
+than returning a partly loaded list. Fix the file and restart to load it again.
 Catalog changes take effect after restarting the API. Restarting reloads the same
 entries and never copies or appends them to account storage.
 
@@ -245,7 +247,7 @@ with these fields:
 | `instructions` | Steps, separated by literal `\n` escapes |
 | `difficulty` | `Easy`, `Medium`, or `Hard` |
 | `prepTime` | Whole minutes, 0–100000 |
-| `plan` | `High Protein`, `Low Calorie`, or `Keto` |
+| `plan` | `High Protein`, `Low Calorie`, `Keto`, or `Balanced` |
 
 Names, ingredients, and instructions must be nonblank, at most 10000 characters.
 Escape a literal backslash as `\\` in properties values. Required fields and
@@ -292,10 +294,34 @@ Illustrative response shape only (not actual catalog content):
 ]
 ```
 
-This work provides backend retrieval only. Frontend loading (SCRUM-138), saving a
-suggestion into a private collection, and scheduling suggestions are separate
-work. The default endpoint deliberately does not expose suggestions to existing
-UI code that assumes all results can be edited.
+### Suggested recipe to calendar handoff (PR #12)
+
+The current calendar API accepts only a numeric ID of a recipe saved by the
+signed-in account. Do not strip `suggested:` from an ID or send a shared catalog
+ID directly to `/api/meals`: numeric IDs may refer to an unrelated private recipe.
+The frontend integration should use this existing two-step flow:
+
+1. Let the user choose a meal type (`Breakfast`, `Lunch`, `Dinner`, or `Snack`).
+   Copy the suggestion's `name`, `ingredients`, `instructions`, `difficulty`, and
+   `prepTime` into a form-encoded `POST /api/recipes`, with `category=My Recipes`
+   and the chosen `mealType`. The shared original remains read-only, including
+   when its plan is Balanced. Use the numeric `id` returned by this save.
+2. After a successful save, send that ID as `recipeId`, the chosen `date`
+   (`YYYY-MM-DD`), and `mealType` to `POST /api/meals` from PR #12. Both mutations
+   require the session cookie and `X-Panned-Out-Request: 1`. Check each response
+   before proceeding; if scheduling fails, retry with the already-saved ID instead
+   of creating another recipe copy.
+
+Suggested recipes do not supply nutrition, image, or mealType. Do not display
+missing nutrition as known zero nutrition. The existing private save endpoint
+currently defaults omitted nutrition numbers to zero and image to an empty
+string; that is a storage default, not nutritional information from the catalog.
+Ask for mealType rather than inferring it from a plan name.
+
+This documents the backend handoff, not a completed frontend button. Frontend
+loading (SCRUM-138) and the save-then-schedule UI remain separate team work.
+PR #12 must be integrated before `/api/meals` is available on this branch.
+The default endpoint deliberately does not expose suggestions to existing UI code that assumes all results can be edited.
 
 After compiling the backend, run the focused API checks from the repository root:
 

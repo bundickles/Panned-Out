@@ -1,6 +1,7 @@
 """SCRUM-137/136: fixture catalog, filtered retrieval, and account isolation."""
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -33,13 +34,23 @@ class SuggestedRecipesApiTest(unittest.TestCase):
     client = auth.AuthApiTest.client
     request = auth.AuthApiTest.request
     register = auth.AuthApiTest.register
-    start = auth.AuthApiTest.start
+    def start(self):
+        with self.warning_log.open('w', encoding='utf-8') as warnings:
+            self.process = subprocess.Popen(
+                ['java', '-cp', str(self.classpath), 'RecipeServer', '0', str(self.storage)],
+                stdout=subprocess.PIPE, stderr=warnings, text=True)
+        line = self.process.stdout.readline().strip()
+        self.assertTrue(line.startswith('Recipe API: '), line)
+        self.url = line.split('Recipe API: ')[1]
+
     stop = auth.AuthApiTest.stop
 
     def setUp(self):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.storage = Path(directory.name) / 'recipes.properties'
+        self.classpath = Path('backend/build')
+        self.warning_log = Path(directory.name) / 'warnings.log'
         self.catalog = Path(directory.name) / 'catalog.properties'
         self.catalog.write_text(CATALOG, encoding='utf-8')
         environment = patch.dict(os.environ, PANNED_OUT_SUGGESTED_RECIPES=str(self.catalog))
@@ -103,18 +114,71 @@ class SuggestedRecipesApiTest(unittest.TestCase):
         self.assertEqual(self.request(alice, '/api/recipes')[1], [])
         self.assertFalse(any(Path(str(self.storage) + '.accounts').glob('users/*/recipes.properties')))
 
-    def test_invalid_catalog_prevents_startup(self):
-        self.stop()
+    def test_invalid_or_missing_catalog_preserves_private_recipes(self):
+        alice = self.client()
+        self.register(alice, 'alice@example.com')
+        saved = self.request(alice, '/api/recipes', 'POST', auth.RECIPE)[1]
         for content in (CATALOG.replace('recipe.1.id=2', 'recipe.1.id=1'),
                         CATALOG.replace('recipe.0.plan=High Protein', 'recipe.0.plan=Unknown'),
-                        CATALOG.replace('recipe.0.name=Fixture bowl 日本', 'recipe.0.name='),
+                        CATALOG.replace('recipe.0.difficulty=Easy', 'recipe.0.difficulty=Unknown'),
                         CATALOG.replace('recipe.0.prepTime=15', 'recipe.0.prepTime=-1'),
-                        CATALOG.replace('version=1', 'version=2')):
-            self.catalog.write_text(content, encoding='utf-8')
-            result = subprocess.run(['java', '-cp', 'backend/build', 'RecipeServer', '0', str(self.storage)],
-                                    capture_output=True, text=True, timeout=10)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertNotIn('Recipe API:', result.stdout)
+                        CATALOG.replace('version=1', 'version=2'), None):
+            self.stop()
+            if content is None:
+                self.catalog.unlink()
+            else:
+                self.catalog.write_text(content, encoding='utf-8')
+            self.start()
+            self.assertIn('Warning: suggested recipe catalog unavailable',
+                          self.warning_log.read_text(encoding='utf-8'))
+            self.assertEqual(self.request(alice, '/api/auth/login', 'POST',
+                             dict(email='alice@example.com', password=auth.PASSWORD))[0], 200)
+            self.assertEqual(self.request(alice, '/api/recipes?filter=suggested')[1], [])
+            self.assertEqual(self.request(alice, '/api/recipes?filter=all')[1], [saved])
+            self.assertEqual(self.request(alice, '/api/recipes')[1], [saved])
+            if content is not None:
+                self.assertEqual(self.catalog.read_text(encoding='utf-8'), content)
+        # Repairing the catalog and restarting restores suggestions without touching saved data.
+        self.stop()
+        self.catalog.write_text(CATALOG, encoding='utf-8')
+        self.start()
+        self.request(alice, '/api/auth/login', 'POST', dict(email='alice@example.com', password=auth.PASSWORD))
+        self.assertEqual(len(self.request(alice, '/api/recipes?filter=suggested')[1]), 2)
+        self.assertEqual(self.request(alice, '/api/recipes')[1], [saved])
+
+    def test_nonstandard_build_location_without_catalog(self):
+        self.stop()
+        self.classpath = self.storage.parent / 'alternate' / 'classes'
+        self.classpath.mkdir(parents=True)
+        for compiled in Path('backend/build').glob('*.class'):
+            shutil.copy2(compiled, self.classpath)
+        with patch.dict(os.environ, PANNED_OUT_SUGGESTED_RECIPES=''):
+            self.start()
+        self.assertIn('Warning: suggested recipe catalog unavailable',
+                      self.warning_log.read_text(encoding='utf-8'))
+        alice = self.client()
+        self.register(alice, 'alice@example.com')
+        self.assertEqual(self.request(alice, '/api/recipes?filter=suggested')[1], [])
+        self.assertEqual(self.request(alice, '/api/recipes', 'POST', auth.RECIPE)[0], 201)
+
+    def test_balanced_catalog_and_private_copy_handoff(self):
+        self.stop()
+        self.catalog.write_text(CATALOG.replace('High Protein', 'Balanced'), encoding='utf-8')
+        self.start()
+        alice = self.client()
+        self.register(alice, 'alice@example.com')
+        suggested = self.request(alice, '/api/recipes?filter=suggested')[1][0]
+        self.assertEqual(suggested['plan'], 'Balanced')
+        self.assertEqual(suggested['category'], 'Balanced')
+        fields = {key: suggested[key] for key in
+                  ('name', 'ingredients', 'instructions', 'difficulty', 'prepTime')}
+        fields.update(category='My Recipes', mealType='Dinner')
+        status, saved, _ = self.request(alice, '/api/recipes', 'POST', fields)
+        self.assertEqual(status, 201)
+        self.assertIsInstance(saved['id'], int)
+        self.assertEqual(saved['source'], 'saved')
+        self.assertEqual(saved['ingredients'], suggested['ingredients'])
+        self.assertEqual(self.request(alice, '/api/recipes?filter=suggested')[1][0], suggested)
 
     def test_empty_catalog(self):
         self.stop()
