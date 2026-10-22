@@ -53,6 +53,7 @@ class RecipeApiTest(unittest.TestCase):
             build.mkdir(parents=True)
             for compiled in Path('backend/build').glob('*.class'):
                 shutil.copy2(compiled, build)
+            shutil.copytree(Path('backend/catalog'), root / 'backend' / 'catalog')
             first = root / 'first'
             second = root / 'second'
             first.mkdir()

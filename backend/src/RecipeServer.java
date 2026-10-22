@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /** Loopback API with session authentication and account-scoped recipe storage. */
 public class RecipeServer {
@@ -27,6 +26,7 @@ public class RecipeServer {
                 : RecipeRepository.defaultStorageFile();
         Path accounts = legacy.resolveSibling(legacy.getFileName() + ".accounts");
         AuthService auth = new AuthService(accounts);
+        SuggestedRecipeCatalog catalog = SuggestedRecipeCatalog.loadDefault();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.createContext("/api/", exchange -> {
             try {
@@ -38,7 +38,7 @@ public class RecipeServer {
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
-                    handle(exchange, auth.recipes(exchange));
+                    handle(exchange, auth.recipes(exchange), catalog);
                 } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
                     GeneratedShoppingListApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/meals")) {
@@ -63,14 +63,19 @@ public class RecipeServer {
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
         System.out.println("Account storage: " + accounts);
     }
-    private static void handle(HttpExchange exchange, RecipeRepository repository) throws IOException {
+    private static void handle(HttpExchange exchange, RecipeRepository repository,
+                               SuggestedRecipeCatalog catalog) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
         boolean updating = path.matches("/api/recipes/[0-9]+") && method.equals("PUT");
         if (path.equals("/api/recipes") || updating) {
             if (method.equals("GET") && !updating) {
-                respond(exchange, 200, repository.getRecipes().stream()
-                        .map(RecipeServer::json).collect(Collectors.joining(",", "[", "]")));
+                String filter = recipeFilter(exchange.getRequestURI().getRawQuery());
+                java.util.List<String> results = new java.util.ArrayList<>();
+                if (!filter.equals("suggested"))
+                    repository.getRecipes().stream().map(RecipeServer::json).forEach(results::add);
+                if (!filter.equals("saved")) results.addAll(catalog.jsonRecipes());
+                respond(exchange, 200, "[" + String.join(",", results) + "]");
             } else if (method.equals("POST") || updating) {
                 Map<String, String> fields = form(exchange);
                 String name = required(fields, "name");
@@ -107,6 +112,22 @@ public class RecipeServer {
         } else {
             respond(exchange, 404, "{\"error\":\"Not found\"}");
         }
+    }
+
+    // An omitted filter preserves the existing private-recipe collection.
+    static String recipeFilter(String query) {
+        String filter = null;
+        if (query != null) {
+            for (String pair : query.split("&")) {
+                String[] parts = pair.split("=", 2);
+                if (!URLDecoder.decode(parts[0], StandardCharsets.UTF_8).equals("filter")) continue;
+                if (filter != null) throw new IllegalArgumentException("Supply filter only once");
+                filter = parts.length == 2 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : "";
+                if (!java.util.List.of("suggested", "saved", "all").contains(filter))
+                    throw new IllegalArgumentException("filter must be suggested, saved, or all");
+            }
+        }
+        return filter == null ? "saved" : filter;
     }
 
     static Map<String, String> form(HttpExchange exchange) throws IOException {
@@ -151,7 +172,7 @@ public class RecipeServer {
     }
 
     private static String json(Recipe r) {
-        return "{\"id\":" + r.getId() + ",\"name\":" + quote(r.getName())
+        return "{\"source\":\"saved\",\"id\":" + r.getId() + ",\"name\":" + quote(r.getName())
                 + ",\"category\":" + quote(r.getCategory()) + ",\"difficulty\":" + quote(r.getDifficulty())
                 + ",\"prepTime\":" + r.getPrepTime() + ",\"calories\":" + r.getCalories()
                 + ",\"protein\":" + r.getProtein() + ",\"fat\":" + r.getFat()

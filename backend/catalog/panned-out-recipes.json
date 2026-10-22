@@ -1,0 +1,1398 @@
+{
+  "schemaVersion": "1.0",
+  "notes": "Nutrition is an approximate estimate per serving, not lab-verified; recipes may contain common allergens. Diet tags are illustrative and not medical certifications. Prep excludes overnight chilling and assumes cooked ingredients where stated.",
+  "recipes": [
+    {
+      "id": 1,
+      "name": "Spinach Feta Egg Muffins",
+      "mealType": "breakfast",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 20,
+      "totalTimeMinutes": 30,
+      "servings": 3,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 215,
+        "proteinGrams": 15,
+        "carbsGrams": 4,
+        "fatGrams": 15,
+        "fiberGrams": 1
+      },
+      "ingredients": [
+        {
+          "quantity": 6,
+          "unit": "large",
+          "name": "eggs"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "chopped spinach"
+        },
+        {
+          "quantity": 0.33,
+          "unit": "cup",
+          "name": "crumbled feta"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "diced bell pepper"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "black pepper"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 375°F (190°C) and lightly oil six muffin cups.",
+        "Whisk eggs and pepper; fold in spinach, feta and bell pepper.",
+        "Divide among cups and bake 18–20 minutes until set.",
+        "Cool slightly; serve two muffins per portion."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Berry Greek Yogurt Bowl",
+      "mealType": "breakfast",
+      "dietTags": [
+        "low-calorie"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 5,
+      "servings": 1,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 245,
+        "proteinGrams": 22,
+        "carbsGrams": 32,
+        "fatGrams": 4,
+        "fiberGrams": 6
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "plain nonfat Greek yogurt"
+        },
+        {
+          "quantity": 0.75,
+          "unit": "cup",
+          "name": "mixed berries"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "rolled oats"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "honey"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "chia seeds"
+        }
+      ],
+      "instructions": [
+        "Spoon yogurt into a bowl.",
+        "Top with berries, oats and chia seeds.",
+        "Drizzle with honey and serve."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Protein Banana Oat Pancakes",
+      "mealType": "breakfast",
+      "dietTags": [
+        "high-protein"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 10,
+      "totalTimeMinutes": 20,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 340,
+        "proteinGrams": 25,
+        "carbsGrams": 43,
+        "fatGrams": 8,
+        "fiberGrams": 5
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "medium",
+          "name": "banana"
+        },
+        {
+          "quantity": 2,
+          "unit": "large",
+          "name": "eggs"
+        },
+        {
+          "quantity": 0.75,
+          "unit": "cup",
+          "name": "rolled oats"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "low-fat cottage cheese"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "tsp",
+          "name": "baking powder"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "tsp",
+          "name": "ground cinnamon"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "oil for pan"
+        }
+      ],
+      "instructions": [
+        "Blend banana, eggs, oats, cottage cheese, baking powder and cinnamon until mostly smooth.",
+        "Heat a lightly oiled nonstick skillet over medium-low.",
+        "Cook small pancakes 2–3 minutes per side until set.",
+        "Split pancakes evenly into two servings."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Avocado Egg Toast",
+      "mealType": "breakfast",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 7,
+      "totalTimeMinutes": 12,
+      "servings": 1,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 360,
+        "proteinGrams": 17,
+        "carbsGrams": 30,
+        "fatGrams": 20,
+        "fiberGrams": 8
+      },
+      "ingredients": [
+        {
+          "quantity": 2,
+          "unit": "slices",
+          "name": "whole-grain bread"
+        },
+        {
+          "quantity": 1,
+          "unit": "large",
+          "name": "egg"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "medium",
+          "name": "avocado"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "lemon juice"
+        },
+        {
+          "quantity": 1,
+          "unit": "pinch",
+          "name": "salt"
+        },
+        {
+          "quantity": 1,
+          "unit": "pinch",
+          "name": "chili flakes"
+        }
+      ],
+      "instructions": [
+        "Toast bread and mash avocado with lemon and salt.",
+        "Cook egg in a nonstick skillet to your preference.",
+        "Spread avocado over toast and top with the egg and chili flakes."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Almond Flour Breakfast Waffles",
+      "mealType": "breakfast",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 8,
+      "cookTimeMinutes": 10,
+      "totalTimeMinutes": 18,
+      "servings": 2,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 405,
+        "proteinGrams": 17,
+        "carbsGrams": 9,
+        "fatGrams": 35,
+        "fiberGrams": 4
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "almond flour"
+        },
+        {
+          "quantity": 2,
+          "unit": "large",
+          "name": "eggs"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "unsweetened almond milk"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "melted butter"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "baking powder"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "tsp",
+          "name": "vanilla extract"
+        }
+      ],
+      "instructions": [
+        "Preheat waffle iron.",
+        "Whisk eggs, almond milk, butter and vanilla; stir in almond flour and baking powder.",
+        "Cook batter in waffle iron until golden and crisp.",
+        "Divide equally into two servings."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Apple Cinnamon Overnight Oats",
+      "mealType": "breakfast",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 8,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 8,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 320,
+        "proteinGrams": 16,
+        "carbsGrams": 46,
+        "fatGrams": 9,
+        "fiberGrams": 7
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "rolled oats"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "low-fat milk"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "plain Greek yogurt"
+        },
+        {
+          "quantity": 1,
+          "unit": "small",
+          "name": "apple, diced"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "chia seeds"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "tsp",
+          "name": "cinnamon"
+        }
+      ],
+      "instructions": [
+        "Combine oats, milk, yogurt, chia and cinnamon in a container.",
+        "Fold in diced apple.",
+        "Refrigerate at least 4 hours or overnight; divide into two servings."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Chicken Lettuce Wraps",
+      "mealType": "lunch",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 12,
+      "cookTimeMinutes": 12,
+      "totalTimeMinutes": 24,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 330,
+        "proteinGrams": 34,
+        "carbsGrams": 9,
+        "fatGrams": 18,
+        "fiberGrams": 3
+      },
+      "ingredients": [
+        {
+          "quantity": 10,
+          "unit": "oz",
+          "name": "ground chicken"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "diced mushrooms"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "diced onion"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "low-sodium soy sauce"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "grated ginger"
+        },
+        {
+          "quantity": 6,
+          "unit": "leaves",
+          "name": "butter lettuce"
+        }
+      ],
+      "instructions": [
+        "Heat oil in skillet and sauté onion and mushrooms 3 minutes.",
+        "Add chicken and cook thoroughly to 165°F (74°C), breaking it apart.",
+        "Stir in ginger and soy sauce for 1 minute.",
+        "Spoon mixture into lettuce leaves; serve three wraps each."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Mediterranean Chickpea Salad",
+      "mealType": "lunch",
+      "dietTags": [
+        "low-calorie"
+      ],
+      "prepTimeMinutes": 12,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 12,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 295,
+        "proteinGrams": 12,
+        "carbsGrams": 39,
+        "fatGrams": 10,
+        "fiberGrams": 10
+      },
+      "ingredients": [
+        {
+          "quantity": 1.5,
+          "unit": "cups",
+          "name": "cooked chickpeas, drained"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "chopped cucumber"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "cherry tomatoes, halved"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "diced red onion"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "lemon juice"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "chopped parsley"
+        }
+      ],
+      "instructions": [
+        "Rinse chickpeas and chop vegetables.",
+        "Whisk olive oil and lemon juice.",
+        "Toss all ingredients together; divide into two servings."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Turkey Quinoa Power Bowl",
+      "mealType": "lunch",
+      "dietTags": [
+        "high-protein"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 15,
+      "totalTimeMinutes": 25,
+      "servings": 2,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 475,
+        "proteinGrams": 42,
+        "carbsGrams": 43,
+        "fatGrams": 15,
+        "fiberGrams": 7
+      },
+      "ingredients": [
+        {
+          "quantity": 12,
+          "unit": "oz",
+          "name": "lean ground turkey"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "cooked quinoa"
+        },
+        {
+          "quantity": 2,
+          "unit": "cups",
+          "name": "baby spinach"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "chopped bell pepper"
+        },
+        {
+          "quantity": 2,
+          "unit": "tsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "smoked paprika"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "plain Greek yogurt"
+        }
+      ],
+      "instructions": [
+        "Cook turkey with paprika in a skillet until it reaches 165°F (74°C).",
+        "Sauté pepper in olive oil until tender.",
+        "Divide quinoa and spinach between bowls.",
+        "Top with turkey, pepper and a spoonful of yogurt."
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Hummus Veggie Wrap",
+      "mealType": "lunch",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 10,
+      "servings": 1,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 390,
+        "proteinGrams": 14,
+        "carbsGrams": 50,
+        "fatGrams": 16,
+        "fiberGrams": 11
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "large",
+          "name": "whole-wheat tortilla"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "hummus"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "shredded carrot"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "cucumber strips"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "baby spinach"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "medium",
+          "name": "avocado"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "lemon juice"
+        }
+      ],
+      "instructions": [
+        "Spread hummus over the tortilla.",
+        "Layer vegetables and sliced avocado; drizzle with lemon.",
+        "Roll tightly and slice in half."
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Tuna Stuffed Avocados",
+      "mealType": "lunch",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 10,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 365,
+        "proteinGrams": 27,
+        "carbsGrams": 11,
+        "fatGrams": 25,
+        "fiberGrams": 7
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "can (5 oz)",
+          "name": "tuna in water, drained"
+        },
+        {
+          "quantity": 1,
+          "unit": "large",
+          "name": "avocado"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "mayonnaise"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "lemon juice"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "diced celery"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "black pepper"
+        }
+      ],
+      "instructions": [
+        "Mix tuna, mayonnaise, lemon, celery and pepper.",
+        "Halve avocado and remove pit.",
+        "Spoon tuna mixture into both halves; serve one half each."
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Chicken Brown Rice Burrito Bowl",
+      "mealType": "lunch",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 15,
+      "totalTimeMinutes": 25,
+      "servings": 2,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 510,
+        "proteinGrams": 38,
+        "carbsGrams": 55,
+        "fatGrams": 15,
+        "fiberGrams": 9
+      },
+      "ingredients": [
+        {
+          "quantity": 10,
+          "unit": "oz",
+          "name": "boneless skinless chicken breast"
+        },
+        {
+          "quantity": 1.5,
+          "unit": "cups",
+          "name": "cooked brown rice"
+        },
+        {
+          "quantity": 0.75,
+          "unit": "cup",
+          "name": "black beans, drained"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "salsa"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "shredded lettuce"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "ground cumin"
+        }
+      ],
+      "instructions": [
+        "Season chicken with cumin and cook in olive oil to 165°F (74°C).",
+        "Slice chicken and warm rice and beans.",
+        "Divide rice, beans and lettuce between bowls.",
+        "Top with chicken and salsa."
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Garlic Butter Salmon with Asparagus",
+      "mealType": "dinner",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 18,
+      "totalTimeMinutes": 28,
+      "servings": 2,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 485,
+        "proteinGrams": 39,
+        "carbsGrams": 8,
+        "fatGrams": 33,
+        "fiberGrams": 3
+      },
+      "ingredients": [
+        {
+          "quantity": 2,
+          "unit": "fillets (5 oz each)",
+          "name": "salmon"
+        },
+        {
+          "quantity": 1,
+          "unit": "lb",
+          "name": "asparagus, trimmed"
+        },
+        {
+          "quantity": 1.5,
+          "unit": "tbsp",
+          "name": "butter"
+        },
+        {
+          "quantity": 2,
+          "unit": "cloves",
+          "name": "garlic, minced"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "lemon juice"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "salt"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "black pepper"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 400°F (205°C).",
+        "Put salmon and asparagus on a sheet pan; season with salt and pepper.",
+        "Melt butter with garlic and lemon; drizzle over everything.",
+        "Roast about 12–18 minutes until salmon is cooked to your preferred safe doneness and asparagus is tender."
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Zucchini Turkey Meatballs",
+      "mealType": "dinner",
+      "dietTags": [
+        "low-calorie"
+      ],
+      "prepTimeMinutes": 15,
+      "cookTimeMinutes": 22,
+      "totalTimeMinutes": 37,
+      "servings": 3,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 315,
+        "proteinGrams": 32,
+        "carbsGrams": 20,
+        "fatGrams": 11,
+        "fiberGrams": 4
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "lb",
+          "name": "lean ground turkey"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "grated zucchini, squeezed dry"
+        },
+        {
+          "quantity": 1,
+          "unit": "large",
+          "name": "egg"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "whole-wheat breadcrumbs"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "Italian seasoning"
+        },
+        {
+          "quantity": 1.5,
+          "unit": "cups",
+          "name": "no-sugar-added marinara"
+        },
+        {
+          "quantity": 2,
+          "unit": "cups",
+          "name": "zucchini noodles"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 400°F (205°C).",
+        "Mix turkey, grated zucchini, egg, breadcrumbs and seasoning.",
+        "Form nine meatballs and bake 18–22 minutes to 165°F (74°C).",
+        "Warm marinara and zucchini noodles; divide with three meatballs per serving."
+      ]
+    },
+    {
+      "id": 15,
+      "name": "High-Protein Chicken Stir-Fry",
+      "mealType": "dinner",
+      "dietTags": [
+        "high-protein"
+      ],
+      "prepTimeMinutes": 15,
+      "cookTimeMinutes": 15,
+      "totalTimeMinutes": 30,
+      "servings": 2,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 495,
+        "proteinGrams": 49,
+        "carbsGrams": 40,
+        "fatGrams": 15,
+        "fiberGrams": 7
+      },
+      "ingredients": [
+        {
+          "quantity": 12,
+          "unit": "oz",
+          "name": "chicken breast, sliced"
+        },
+        {
+          "quantity": 3,
+          "unit": "cups",
+          "name": "mixed broccoli and bell pepper"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "cooked brown rice"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "sesame oil"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "low-sodium soy sauce"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "rice vinegar"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "cornstarch"
+        },
+        {
+          "quantity": 1,
+          "unit": "clove",
+          "name": "garlic, minced"
+        }
+      ],
+      "instructions": [
+        "Mix soy sauce, vinegar, cornstarch and garlic in a bowl.",
+        "Stir-fry chicken in sesame oil until cooked to 165°F (74°C).",
+        "Add vegetables and cook until crisp-tender.",
+        "Stir in sauce until thickened; serve over divided brown rice."
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Sheet Pan Chicken and Sweet Potatoes",
+      "mealType": "dinner",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 15,
+      "cookTimeMinutes": 30,
+      "totalTimeMinutes": 45,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 525,
+        "proteinGrams": 43,
+        "carbsGrams": 48,
+        "fatGrams": 18,
+        "fiberGrams": 8
+      },
+      "ingredients": [
+        {
+          "quantity": 12,
+          "unit": "oz",
+          "name": "boneless skinless chicken thighs"
+        },
+        {
+          "quantity": 2,
+          "unit": "medium",
+          "name": "sweet potatoes, cubed"
+        },
+        {
+          "quantity": 2,
+          "unit": "cups",
+          "name": "broccoli florets"
+        },
+        {
+          "quantity": 1.5,
+          "unit": "tbsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "paprika"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "tsp",
+          "name": "garlic powder"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "salt"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 425°F (220°C).",
+        "Toss sweet potatoes with half the oil and roast for 10 minutes.",
+        "Add seasoned chicken and broccoli with remaining oil.",
+        "Roast another 20 minutes or until chicken reaches 165°F (74°C) and vegetables are tender."
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Creamy Cauliflower Chicken Skillet",
+      "mealType": "dinner",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 12,
+      "cookTimeMinutes": 20,
+      "totalTimeMinutes": 32,
+      "servings": 2,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 470,
+        "proteinGrams": 44,
+        "carbsGrams": 12,
+        "fatGrams": 28,
+        "fiberGrams": 4
+      },
+      "ingredients": [
+        {
+          "quantity": 12,
+          "unit": "oz",
+          "name": "chicken breast, diced"
+        },
+        {
+          "quantity": 3,
+          "unit": "cups",
+          "name": "cauliflower florets"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "heavy cream"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "cup",
+          "name": "grated parmesan"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 2,
+          "unit": "cloves",
+          "name": "garlic, minced"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "chicken broth"
+        }
+      ],
+      "instructions": [
+        "Brown chicken in olive oil until cooked to 165°F (74°C); remove temporarily.",
+        "Add garlic, cauliflower and broth; cover and simmer until cauliflower softens.",
+        "Stir in cream and parmesan, return chicken to pan, and cook until sauce coats everything."
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Lentil Vegetable Curry",
+      "mealType": "dinner",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 15,
+      "cookTimeMinutes": 25,
+      "totalTimeMinutes": 40,
+      "servings": 3,
+      "difficulty": "Medium",
+      "nutritionPerServing": {
+        "calories": 430,
+        "proteinGrams": 20,
+        "carbsGrams": 61,
+        "fatGrams": 12,
+        "fiberGrams": 17
+      },
+      "ingredients": [
+        {
+          "quantity": 1.5,
+          "unit": "cups",
+          "name": "cooked lentils"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "light coconut milk"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "diced tomatoes"
+        },
+        {
+          "quantity": 2,
+          "unit": "cups",
+          "name": "spinach"
+        },
+        {
+          "quantity": 1,
+          "unit": "medium",
+          "name": "carrot, diced"
+        },
+        {
+          "quantity": 1,
+          "unit": "small",
+          "name": "onion, diced"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "curry powder"
+        },
+        {
+          "quantity": 1.5,
+          "unit": "cups",
+          "name": "cooked brown rice"
+        }
+      ],
+      "instructions": [
+        "Sauté onion and carrot in olive oil for 5 minutes.",
+        "Add curry powder, tomatoes, lentils and coconut milk; simmer 15 minutes.",
+        "Stir in spinach until wilted.",
+        "Serve in three bowls over brown rice."
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Cucumber Cream Cheese Bites",
+      "mealType": "snack",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 8,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 8,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 145,
+        "proteinGrams": 4,
+        "carbsGrams": 5,
+        "fatGrams": 12,
+        "fiberGrams": 1
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "large",
+          "name": "cucumber"
+        },
+        {
+          "quantity": 3,
+          "unit": "oz",
+          "name": "cream cheese"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "chopped dill"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "garlic powder"
+        },
+        {
+          "quantity": 1,
+          "unit": "pinch",
+          "name": "black pepper"
+        }
+      ],
+      "instructions": [
+        "Slice cucumber into thick rounds.",
+        "Mix softened cream cheese with dill, garlic powder and pepper.",
+        "Spread or pipe mixture onto cucumber rounds; share evenly."
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Strawberry Cottage Cheese Cup",
+      "mealType": "snack",
+      "dietTags": [
+        "low-calorie"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 5,
+      "servings": 1,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 155,
+        "proteinGrams": 15,
+        "carbsGrams": 17,
+        "fatGrams": 3,
+        "fiberGrams": 3
+      },
+      "ingredients": [
+        {
+          "quantity": 0.75,
+          "unit": "cup",
+          "name": "low-fat cottage cheese"
+        },
+        {
+          "quantity": 0.75,
+          "unit": "cup",
+          "name": "sliced strawberries"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "vanilla extract"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "chopped mint"
+        }
+      ],
+      "instructions": [
+        "Spoon cottage cheese into a bowl.",
+        "Add strawberries, vanilla and mint.",
+        "Serve chilled."
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Chocolate Peanut Butter Protein Smoothie",
+      "mealType": "snack",
+      "dietTags": [
+        "high-protein"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 5,
+      "servings": 1,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 300,
+        "proteinGrams": 32,
+        "carbsGrams": 21,
+        "fatGrams": 10,
+        "fiberGrams": 4
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "scoop",
+          "name": "whey protein powder (about 30 g)"
+        },
+        {
+          "quantity": 1,
+          "unit": "cup",
+          "name": "unsweetened almond milk"
+        },
+        {
+          "quantity": 1,
+          "unit": "tbsp",
+          "name": "peanut butter"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "medium",
+          "name": "banana"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "unsweetened cocoa powder"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "cup",
+          "name": "ice"
+        }
+      ],
+      "instructions": [
+        "Combine all ingredients in a blender.",
+        "Blend until smooth and serve immediately."
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Apple with Almond Butter",
+      "mealType": "snack",
+      "dietTags": [
+        "balanced"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 0,
+      "totalTimeMinutes": 5,
+      "servings": 1,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 235,
+        "proteinGrams": 5,
+        "carbsGrams": 29,
+        "fatGrams": 13,
+        "fiberGrams": 6
+      },
+      "ingredients": [
+        {
+          "quantity": 1,
+          "unit": "medium",
+          "name": "apple"
+        },
+        {
+          "quantity": 2,
+          "unit": "tbsp",
+          "name": "almond butter"
+        },
+        {
+          "quantity": 1,
+          "unit": "pinch",
+          "name": "cinnamon"
+        }
+      ],
+      "instructions": [
+        "Slice and core apple.",
+        "Sprinkle with cinnamon and serve with almond butter for dipping."
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Hard-Boiled Eggs and Olives",
+      "mealType": "snack",
+      "dietTags": [
+        "keto"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 12,
+      "totalTimeMinutes": 17,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 175,
+        "proteinGrams": 13,
+        "carbsGrams": 2,
+        "fatGrams": 13,
+        "fiberGrams": 0
+      },
+      "ingredients": [
+        {
+          "quantity": 4,
+          "unit": "large",
+          "name": "eggs"
+        },
+        {
+          "quantity": 12,
+          "unit": "whole",
+          "name": "pitted green olives"
+        },
+        {
+          "quantity": 1,
+          "unit": "pinch",
+          "name": "black pepper"
+        }
+      ],
+      "instructions": [
+        "Place eggs in saucepan and cover with cold water.",
+        "Bring to a boil, turn off heat, cover, and stand approximately 10–12 minutes.",
+        "Cool in ice water, peel, and serve two eggs with six olives per serving."
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Roasted Edamame Crunch",
+      "mealType": "snack",
+      "dietTags": [
+        "high-protein"
+      ],
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 25,
+      "totalTimeMinutes": 30,
+      "servings": 2,
+      "difficulty": "Easy",
+      "nutritionPerServing": {
+        "calories": 180,
+        "proteinGrams": 17,
+        "carbsGrams": 14,
+        "fatGrams": 6,
+        "fiberGrams": 7
+      },
+      "ingredients": [
+        {
+          "quantity": 2,
+          "unit": "cups",
+          "name": "shelled edamame, thawed"
+        },
+        {
+          "quantity": 1,
+          "unit": "tsp",
+          "name": "olive oil"
+        },
+        {
+          "quantity": 0.5,
+          "unit": "tsp",
+          "name": "smoked paprika"
+        },
+        {
+          "quantity": 0.25,
+          "unit": "tsp",
+          "name": "salt"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 400°F (205°C).",
+        "Pat edamame dry and toss with oil and seasonings.",
+        "Roast 20–25 minutes, stirring halfway, until lightly crisp; split in two."
+      ]
+    }
+  ]
+}
