@@ -17,6 +17,7 @@ final class AuthService {
     private final Map<String, AttemptWindow> attempts = new HashMap<>();
     private final Map<String, RecipeRepository> repositories = new HashMap<>();
     private final Map<String, MealPlanRepository> mealPlans = new HashMap<>();
+    private final Map<String, ShoppingListRepository> shoppingLists = new HashMap<>();
     private final AccountRepository accounts;
     private final Path recipeDirectory;
     private final Clock clock;
@@ -57,6 +58,12 @@ final class AuthService {
         AccountRepository.Account account = requireSession(exchange).account;
         return mealPlans.computeIfAbsent(account.id,
                 id -> new MealPlanRepository(recipeDirectory.resolve(id).resolve("meals.properties")));
+    }
+
+    synchronized ShoppingListRepository shoppingLists(HttpExchange exchange) {
+        AccountRepository.Account account = requireSession(exchange).account;
+        return shoppingLists.computeIfAbsent(account.id,
+                id -> new ShoppingListRepository(recipeDirectory.resolve(id).resolve("shopping-lists")));
     }
 
     synchronized void handle(HttpExchange exchange) throws IOException {
