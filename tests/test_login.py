@@ -27,11 +27,12 @@ def test_register_new_account_with_valid_credentials(page):
     expect(page).to_have_url(f"{BASE_URL}/calendar")
 
 
-def test_regsiter_password_too_short_blocked_by_validation(page):
+#TC-26-02: Registering with a password that is too short is blocked by validation
+def test_register_password_too_short_blocked_by_validation(page):
     # Steps:
     # 1. Go to login, swtich to Create Account
     page.goto(f"{BASE_URL}/login")
-    page.get_by_text("Create Account").click()
+    page.get_by_role("button", name="Create an account").click()
 
     # 2. Fill email with fresh address
     page.get_by_label("Email").fill(unique_email())
@@ -53,6 +54,9 @@ def test_register_duplicate_email_shows_error(page):
     # 1. Register once with a fresh email, succeeds
     email = unique_email()
     register(page, email, TEST_PASSWORD)
+    # Signed-in users are redirected away from /login, so log out first
+    page.get_by_role("button", name="Log out").click()
+    page.wait_for_url("**/login")
 
     # 2. Go back to login and try to register again with that same email
     page.goto(f"{BASE_URL}/login")
@@ -72,6 +76,9 @@ def test_login_with_valid_credentials(page):
     # Precondition: register a fresh account first so there's a real one to log into
     email = unique_email()
     register(page, email, TEST_PASSWORD)
+    # Signed-in users are redirected away from /login, so log out first
+    page.get_by_role("button", name="Log out").click()
+    page.wait_for_url("**/login")
 
     # Steps:
     # 1. Go back to the login page (simulating a brand new visit)
@@ -93,6 +100,9 @@ def test_login_wrong_password_shows_generic_error(page):
     # Precondition: register a fresh account with a known password
     email = unique_email()
     register(page, email, TEST_PASSWORD)
+    # Signed-in users are redirected away from /login, so log out first
+    page.get_by_role("button", name="Log out").click()
+    page.wait_for_url("**/login")
 
     # Steps:
     # 1. Go to login
@@ -162,7 +172,7 @@ def test_login_blank_password_blocked_by_validation(page):
     assert is_valid is False
 
 
-#TC-26-06: Username and password both left blank blocked by validation
+#TC-26-08b: Email and password both left blank blocked by validation
 def test_login_both_fields_blank_blocked_by_validation(page):
     # Steps:
     # 1. Go to login
@@ -177,29 +187,6 @@ def test_login_both_fields_blank_blocked_by_validation(page):
     # so no server request is even attempted
     assert email_input.evaluate("el => el.validity.valid") is False
     assert password_input.evaluate("el => el.validity.valid") is False
-
-
-#TC-26-09: Too many failed logins triggers the rate limit
-def test_too_many_failed_logins_triggers_rate_limit(page):
-    # Precondition: register a fresh account so there's a real email to target
-    email = unique_email()
-    register(page, email, TEST_PASSWORD)
-    page.goto(f"{BASE_URL}/login")
-    error = page.get_by_role("alert")
-
-    # Steps:
-    # 1. Attempt to log in with the wrong password, over and over
-    # (the backend allows 20 attempts per 15 min per IP before rejecting with 429)
-    # 2. Loop 21 times, one more than the limit
-    for attempt in range(21):
-        page.get_by_label("Email address").fill(email)
-        page.get_by_label("Password").fill("totally-wrong-password")
-        page.get_by_role("button", name="Sign In").click()
-        error.wait_for()
-
-    # Expected Result: on that 21st attempt, the message switches to the
-    # rate-limit error instead of the normal "invalid credentials" one
-    assert "Too many sign-in attempts" in error.text_content()
 
 
 #TC-26-10: Session persists after closing and reopening the browser
@@ -237,8 +224,8 @@ def test_logout_returns_to_login_and_blocks_protected_routes(page):
     register(page, email, TEST_PASSWORD)
 
     # Steps:
-    # 1. Click the Sign Out control
-    page.get_by_role("button", name="Sign Out").click()
+    # 1. Click the Log out control
+    page.get_by_role("button", name="Log out").click()
     page.wait_for_url("**/login")
 
     # 2. Try to navigate directly to the calendar page again
@@ -262,8 +249,8 @@ def test_logout_syncs_across_open_tabs(context):
     tab_b.goto(f"{BASE_URL}/calendar")
     assert "/calendar" in tab_b.url
 
-    # 3. In tab A, click Sign Out
-    tab_a.get_by_role("button", name="Sign Out").click()
+    # 3. In tab A, click Log out
+    tab_a.get_by_role("button", name="Log out").click()
     tab_a.wait_for_url("**/login")
 
     # Expected Result: tab B also gets redirected to login on its own
@@ -273,75 +260,68 @@ def test_logout_syncs_across_open_tabs(context):
     assert "/login" in tab_b.url
 
 
-def test_username_does_not_exist():
-    # Precondition: a user account already exists, user is on the Login page
+# Sprint 2 test cases for this component.
+ 
+# Sprint 2: Login Flow (SCRUM-27)
+
+
+#TC-27-05: A signed-out user cannot open the Recipes page (the Calendar is already covered by TC-26-11)
+def test_signed_out_user_cannot_open_recipes(page):
+    # Precondition: user has never signed in (fresh browser, no session)
 
     # Steps:
-    # 1. Enter invalid username
-    # 2. Enter any password 
-    # 3. Click "Log In"
+    # 1. Go directly to /recipes
+    page.goto(f"{BASE_URL}/recipes")
 
-    # Expected Result: user is given a "username does not exist" message 
-    assert False  # placeholder, replace with real check once login page exists
+    # Expected Result: redirected to the login page
+    expect(page).to_have_url(f"{BASE_URL}/login")
 
-@pytest.mark.skip(reason="Login page not yet implemented")
-def test_username_blank_password_filled():
-    # Precondition: a user account already exists, user is on the Login page
 
-    # Steps:
-    # 1. Leave username field blank 
-    # 2. Enter any password
-    # 3. Click "Log In"
-
-    # Expected Result: user is given a "please enter a user name" message 
-    assert False  # placeholder, replace with real check once login page exists
-
-@pytest.mark.skip(reason="Login page not yet implemented")
-def test_username_filled_password_blank():
-    # Precondition: a user account already exists, user is on the Login page
-
-    # Steps:
-    # 1. Enter any username 
-    # 2. Leave password field blank 
-    # 3. Click "Log In"
-
-    # Expected Result: user is given a "please enter a password" message 
-    assert False  # placeholder, replace with real check once login page exists
-
-@pytest.mark.skip(reason="Login page not yet implemented")
-def test_username_and_password_left_blank():
-    # Precondition: a user account already exists, user is on the Login page
-
-    # Steps:
-    # 1. Leave username field blank
-    # 2. Leave password field blank
-    # 3. Click "Log In"
-
-    # Expected Result: user is given a "please fill out required fields" message 
-    assert False  # placeholder, replace with real check once login page exists
-
-@pytest.mark.skip(reason="Login page not yet implemented")
-def test_session_persists_after_closing_and_reopening_browser():
+#TC-27-06: Browser Back after signing out does not show private data
+def test_back_after_sign_out_hides_private_data(page):
     # Precondition: a user account already exists, user has successfully logged in
-    # and has an active session
+    # and has an active session and is on the Calendar home page
+    register(page, unique_email(), TEST_PASSWORD)
+    # (the user has also opened the Recipes page and come back, so Back has private pages to return to)
+    page.goto(f"{BASE_URL}/recipes")
+    page.goto(f"{BASE_URL}/calendar")
+    expect(page.locator(".calendar-grid")).to_be_visible()
 
-    # Steps:
-    # 1. Close the browser completely (not just the tab)
-    # 2. Reopen the browser
-    # 3. Navigate back to the app's URL
-
-    # Expected Result: user is still logged in and lands on their dashboard,
-    # rather than being redirected to the Login page
-    assert False  # placeholder, replace with real check once login page exists
-
-@pytest.mark.skip(reason="Login page not yet implemented")
-def test_logout_returns_to_login_page():
-    # Precondition: a user account already exists, user has successfully logged in
-    # and has an active session
-    
     # Steps:
     # 1. Click "Log out"
-    # 2. Navigate back to protected page's URL
-    
-    # Expected Result: user is redirected back to Log in rather than let in
-    assert False  # placeholder, replace with real check once login page exists
+    page.get_by_role("button", name="Log out").click()
+    page.wait_for_url("**/login")
+    # 2. Press the browser Back button
+    page.go_back()
+
+    # Expected Result: User stays on (or is sent back to) the login page and no calendar or recipe data shows
+    expect(page).to_have_url(f"{BASE_URL}/login")
+    expect(page.locator(".calendar-grid")).to_have_count(0)
+    expect(page.locator(".meal-card")).to_have_count(0)
+    expect(page.get_by_role("button", name="Log out")).to_have_count(0)
+
+
+#TC-26-09: Too many failed logins triggers the rate limit
+def test_too_many_failed_logins_triggers_rate_limit(page):
+    # Precondition: register a fresh account so there's a real email to target
+    email = unique_email()
+    register(page, email, TEST_PASSWORD)
+    # Signed-in users are redirected away from /login, so log out first
+    page.get_by_role("button", name="Log out").click()
+    page.wait_for_url("**/login")
+    page.goto(f"{BASE_URL}/login")
+    error = page.get_by_role("alert")
+
+    # Steps:
+    # 1. Attempt to log in with the wrong password, over and over
+    # (the backend allows 20 attempts per 15 min per IP before rejecting with 429)
+    # 2. Loop 21 times, one more than the limit
+    for attempt in range(21):
+        page.get_by_label("Email address").fill(email)
+        page.get_by_label("Password").fill("totally-wrong-password")
+        page.get_by_role("button", name="Sign In").click()
+        error.wait_for()
+
+    # Expected Result: on that 21st attempt, the message switches to the
+    # rate-limit error instead of the normal "invalid credentials" one
+    assert "Too many sign-in attempts" in error.text_content()
