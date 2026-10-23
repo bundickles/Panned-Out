@@ -6,17 +6,26 @@
     background-color: var(--color-background);
 }
 
+/* Logo container */
 .brand-icon {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 24px 20px 12px;
+
+    width: 100%;
+    margin: 0 auto 16px;
+    padding: 0;
 }
 
+/* Logo image */
 .brand-icon img {
-    width: 110px;
-    height: auto;
     display: block;
+
+    width: clamp(160px, 18vw, 240px);
+    max-width: 100%;
+    height: auto;
+
+    object-fit: contain;
 }
 
 .login-columns {

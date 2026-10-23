@@ -1,8 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function RecipeForm({ recipe, onSave, onCancel }) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    //For adding image to recipecards
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+
+    useEffect(() => {
+    if (!imageFile) {
+        setImagePreview('');
+        return;
+    }
+
+    const previewUrl = URL.createObjectURL(imageFile);
+        setImagePreview(previewUrl);
+
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [imageFile]);
     async function submit(event) {
         event.preventDefault();
         const fields = Object.fromEntries(new FormData(event.currentTarget));
@@ -38,6 +53,50 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                         <label key={name}>{label}<input name={name} type="number" min="0" max="100000" step="1" defaultValue={recipe?.[name] ?? 0} required /></label>
                     ))}
                 </div>
+                <label>
+                    Recipe image (optional)
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                            const file = event.target.files?.[0];
+
+                            if (!file) {
+                                setImageFile(null);
+                                return;
+                            }
+
+                            if (!file.type.startsWith('image/')) {
+                                setError('Please select an image file.');
+                                event.target.value = '';
+                                setImageFile(null);
+                                return;
+                            }
+
+                            if (file.size > 5 * 1024 * 1024) {
+                                setError('Image must be 5 MB or smaller.');
+                                event.target.value = '';
+                                setImageFile(null);
+                                return;
+                            }
+
+                            setError('');
+                            setImageFile(file);
+                        }}
+                    />
+                </label>
+
+                {imagePreview && (
+                    <div className="recipe-form-image-preview">
+                        <img src={imagePreview} alt="Recipe preview" />
+                        <button
+                            type="button"
+                            onClick={() => setImageFile(null)}
+                            >
+                            Remove image
+                        </button>
+                    </div>
+                )}
                 <button className="add-recipe-button" type="submit">{saving ? 'Saving…' : 'Save recipe'}</button>
                 <button type="button" onClick={onCancel}>Cancel</button>
             </fieldset>

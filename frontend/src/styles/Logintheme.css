@@ -1,0 +1,103 @@
+/* Additive login theme: import AFTER Login.css. No JSX rewrites required. */
+.login-page {
+  --po-chocolate: #34231d;
+  --po-walnut: #51382b;
+  --po-oat: #e8d8bd;
+  --po-terracotta: #a6533f;
+  --po-gold: #d0b16a;
+  min-height: 100vh;
+  background: #f0e7d9;
+  color: var(--po-chocolate);
+  position: relative;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+}
+.login-page .login-brand {
+  position: relative;
+  background: linear-gradient(145deg,#3e2920,#281912);
+  color: #f4e6d0;
+  isolation: isolate;
+}
+.login-page .login-brand::after {
+  content: '';
+  position: absolute;
+  width: 250px;
+  height: 315px;
+  left: -35px;
+  bottom: -18px;
+  background: url('../assets/decor/botanical-sprig.svg') center / contain no-repeat;
+  opacity: .58;
+  pointer-events: none;
+  z-index: -1;
+}
+.login-page .login-brand h1 {
+  color: #f4e6d0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(62px, 6vw, 100px);
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+.login-page .login-brand p, .login-page .login-brand span { color: #e8d8bd; }
+.login-page .decorative-line { background: var(--po-gold); border-color: var(--po-gold); }
+.login-page .login-section {
+  background: radial-gradient(circle at 80% 16%, #fff8ea 0%, #f0e7d9 52%, #e8dbc9 100%);
+}
+.login-page .login-card {
+  background: #fcf8f1;
+  color: var(--po-chocolate);
+  border: 1px solid #e1cfbb;
+  border-radius: 16px;
+  box-shadow: 0 18px 55px rgba(52,35,29,.11), 0 2px 8px rgba(52,35,29,.05);
+  padding: clamp(26px, 3vw, 46px);
+}
+.login-page .login-heading .eyebrow { color: #a6533f; letter-spacing: .22em; font-size: 11px; font-weight: 800; }
+.login-page .login-heading h2 { color: var(--po-chocolate); font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(34px,4vw,50px); line-height: 1.05; }
+.login-page .login-heading p { color: #7e6a5b; }
+.login-page .login-card label { color: var(--po-walnut); }
+.login-page .login-card input {
+  background: #fffdfa;
+  color: var(--po-chocolate);
+  border: 1px solid #d5bea8;
+  border-radius: 8px;
+}
+.login-page .login-card input:focus { outline: 2px solid #d0b16a; outline-offset: 2px; border-color: #a6533f; }
+.login-page .login-card button[type='submit'] {
+  background: #a6533f;
+  color: #fffaf5;
+  border-color: #a6533f;
+  border-radius: 9px;
+  font-weight: 700;
+}
+.login-page .login-card button[type='submit']:hover { background: #874230; }
+.login-page .forgot-password-button, .login-page .signup-button { color: #a6533f; }
+
+@media (max-width: 740px) {
+  .login-page .brand-icon { top: 12px; width: 64px; }
+  .login-page .login-brand::after { width: 125px; height: 160px; opacity: .3; }
+  .login-page .login-card { margin-inline: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .calendar-page .nav-item, .recipes-page .nav-item { transition: none; }
+}
+
+/* Matched to actual Login.jsx: no .login-columns wrapper exists. */
+@media (min-width: 801px) {
+  .login-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .login-page > .brand-icon { grid-column: 1 / -1; grid-row: 1; }
+  .login-page > .login-brand { grid-column: 1; grid-row: 2; min-height: 650px; }
+  .login-page > .login-section { grid-column: 2; grid-row: 2; }
+}
+@media (max-width: 800px) {
+  .login-page { display: flex; flex-direction: column; }
+  .login-page > .brand-icon { position: relative; top: auto; left: auto; transform: none; width: 76px; padding: 16px 0 12px; margin: 0 auto; }
+  .login-page > .login-brand { min-height: 280px; }
+  .login-page > .login-section { padding: 32px 16px 48px; }
+}
+/* Login.css sets a wide 60px section padding; reduce it gracefully on smaller laptops. */
+@media (min-width: 801px) and (max-width: 1100px) {
+  .login-page > .login-brand, .login-page > .login-section { padding: 35px 25px; }
+}

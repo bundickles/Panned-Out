@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-import "./Calendar.css";    
+import "./Calendar.css"; 
+import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import MealCard from "../../components/MealCard/MealCard";
 
+import AddMealForm from "./AddMealForm";
+import { getMeals, addMeal, removeMeal } from "../../api/meals";
+
 function Calendar() {
-    const navigate = useNavigate();
     const today = new Date();
+    const [view, setView] = useState("month");
 
     const [currentDate, setCurrentDate] = useState(
         new Date(today.getFullYear(), today.getMonth(), 1)
@@ -15,6 +18,39 @@ function Calendar() {
     const [selectedDate, setSelectedDate] = useState(
         new Date(today.getFullYear(), today.getMonth(), today.getDate())
     );
+
+    const [meals, setMeals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+    const [actionError, setActionError] = useState('');
+    const [showForm, setShowForm] = useState(false);
+    const [removing, setRemoving] = useState(null);
+    const [revision, setRevision] = useState(0);
+
+    useEffect(() => {
+        let active = true;
+        getMeals().then(data => { if (active) setMeals(data); })
+            .catch(error => { if (active) setLoadError(error.message); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [revision]);
+
+    async function saveMeal(fields) {
+        const saved = await addMeal(fields);
+        setMeals(current => [...current, saved]);
+        setShowForm(false);
+        setActionError('');
+    }
+
+    async function deleteMeal(id) {
+        setRemoving(id);
+        setActionError('');
+        try {
+            await removeMeal(id);
+            setMeals(current => current.filter(meal => meal.id !== id));
+        } catch (error) { setActionError(error.message); }
+        finally { setRemoving(null); }
+    }
 
     // Calendar calculations
     const year = currentDate.getFullYear();
@@ -43,19 +79,99 @@ function Calendar() {
         calendarDays.push(new Date(year, month, day));
     }
 
-    // Navigation
-    function goToPreviousMonth () {
-        setCurrentDate(new Date(year, month - 1, 1));
-    };
+    
+    const weekStart = new Date(selectedDate);
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(
+        weekStart.getDate() - weekStart.getDay()
+    );
 
-    function goToNextMonth () {
-        setCurrentDate(new Date(year, month + 1, 1));
-    };
+    const weekDays = Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + index);
+        return day;
+    });
+
+    function getDateKey(date) {
+        return `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            date.getDate()
+        ).padStart(2, "0")}`;
+    }
+
+    // Navigation
+
+    function goToPreviousMonth() {
+        if (view === "month") {
+            setCurrentDate(
+                new Date(year, month - 1, 1)
+            );
+        } else {
+            const nextSelectedDate = new Date(selectedDate);
+
+            if (view === "week") {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() - 7
+                );
+            } else {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() - 1
+                );
+            }
+
+            setSelectedDate(nextSelectedDate);
+            setCurrentDate(
+                new Date(
+                    nextSelectedDate.getFullYear(),
+                    nextSelectedDate.getMonth(),
+                    1
+                )
+            );
+        }
+    }
+
+    function goToNextMonth() {
+        if (view === "month") {
+            setCurrentDate(
+                new Date(year, month + 1, 1)
+            );
+        } else {
+            const nextSelectedDate = new Date(selectedDate);
+
+            if (view === "week") {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() + 7
+                );
+            } else {
+                nextSelectedDate.setDate(
+                    nextSelectedDate.getDate() + 1
+                );
+            }
+
+            setSelectedDate(nextSelectedDate);
+            setCurrentDate(
+                new Date(
+                    nextSelectedDate.getFullYear(),
+                    nextSelectedDate.getMonth(),
+                    1
+                )
+            );
+        }
+    }
 
     function goToToday() {
-        setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
-        setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
-    };
+        const now = new Date();
+
+        setCurrentDate(
+            new Date(now.getFullYear(), now.getMonth(), 1)
+        );
+
+        setSelectedDate(
+            new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        );
+    }
+
 
     // Date selection
 
@@ -83,16 +199,8 @@ function Calendar() {
         );
     }
 
-    // Temporary meal data
-
-    const meals = {
-        // Example:
-        // "2026-09-27" : [...]
-    };
-
-    const selectedDateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-
-    const selectedMeals = meals[selectedDateKey] || [];
+    const selectedDateKey = getDateKey(selectedDate);
+    const selectedMeals = meals.filter(meal => meal.date === selectedDateKey);
 
     const selectedDateText = selectedDate.toLocaleDateString(
         "default", { weekday: "long", year: "numeric", month: "long", day: "numeric" }
@@ -102,35 +210,8 @@ function Calendar() {
         <main className="calendar-page">
             {/*Sidebar*/}
 
-            <aside className="calendar-sidebar">
-
-                <div className="sidebar-logo">
-                    Panned Out
-                </div>
-
-                <nav className="sidebar-nav">
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/calendar")}>
-                        <span>▦</span>
-                        Calendar
-                    </button>
-
-                    <button 
-                        className="nav-item"
-                        onClick={() => navigate("/recipes")}>
-                        <span>🍽</span>
-                        Recipes
-                    </button>
-                </nav>
-
-                <div className="sidebar-bottom">
-                    <button className="nav-item">
-                        <span>⚙️</span>
-                        Settings
-                    </button>
-                </div>
-            </aside>
+           <Sidebar />
+            {/* <div>Sidebar test</div> */}
 
             {/*Main Calendar*/}
             <section className="calendar-content" tabIndex={0} aria-label="Calendar content">
@@ -142,7 +223,18 @@ function Calendar() {
                         </span>
 
                         <h1>
-                            {monthName} {year}
+                            {view === "month"
+                                ? `${monthName} ${year}`
+                                : view === "week"
+                                    ? `Week of ${weekStart.toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric"
+                                    })}`
+                                    : selectedDate.toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric"
+                                    })}
                         </h1>
                     </div>
 
@@ -173,70 +265,180 @@ function Calendar() {
                 </header>
 
                 {/*Future view controls*/}
+                
                 <div className="calendar-view-controls">
-
-                    <button className="view-button active">
+                    <button
+                        className={`view-button ${view === "month" ? "active" : ""}`}
+                        onClick={() => setView("month")}
+                        aria-pressed={view === "month"}
+                    >
                         Month
                     </button>
-                    <button className="view-button">
+
+                    <button
+                        className={`view-button ${view === "week" ? "active" : ""}`}
+                        onClick={() => setView("week")}
+                        aria-pressed={view === "week"}
+                    >
                         Week
                     </button>
-                    <button className="view-button">
+
+                    <button
+                        className={`view-button ${view === "day" ? "active" : ""}`}
+                        onClick={() => setView("day")}
+                        aria-pressed={view === "day"}
+                    >
                         Day
                     </button>
                 </div>
 
+
                 {/*Actual Calendar*/}
+                {view === "month" && (
+                    <div className="calendar">
+                        {/*Weekdays Header*/}
+                        <div className="calendar-weekdays">
+                            <span>Sun</span>
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                        </div>
 
-                <div className="calendar">
-                    {/*Weekdays Header*/}
-                    <div className="calendar-weekdays">
-                        <span>Sun</span>
-                        <span>Mon</span>
-                        <span>Tue</span>
-                        <span>Wed</span>
-                        <span>Thu</span>
-                        <span>Fri</span>
-                        <span>Sat</span>
-                    </div>
+                        {/*Calendar Days*/}
+                        <div className="calendar-grid">
 
-                    {/*Calendar Days*/}
-                    <div className="calendar-grid">
+                            {calendarDays.map((day, index) => {
 
-                        {calendarDays.map((day, index) => {
+                                if(!day){
+                                    return(
+                                        <div
+                                            key={`empty-${index}`}
+                                            className="calendar-cell empty"
+                                        ></div>
+                                    );
+                                }
 
-                            if(!day){
                                 return(
-                                    <div
-                                        key={`empty-${index}`}
-                                        className="calendar-cell empty"
-                                    ></div>
-                                );
-                            }
-
-                            return(
-                                <button
-                                    key={day.toISOString()}
-                                    className={`
-                                        calendar-cell
-                                        ${isSelected(day) ? "selected" : ""}
-                                        ${isToday(day) ? "today" : ""}`}
+                                    <button
+                                        key={day.toISOString()}
+                                        className={`
+                                            calendar-cell
+                                            ${isSelected(day) ? "selected" : ""}
+                                            ${isToday(day) ? "today" : ""}`}
                                     
+                                        aria-label={getDateKey(day)}
+                                    aria-pressed={isSelected(day)}
+                                    onClick={() => selectDay(day)}
+                                    >
+                                        <span className="calendar-date">
+                                            {day.getDate()}
+                                        </span>
+
+                                        {meals.some(meal => meal.date === getDateKey(day)) && (
+                                            <span className="meal-count">{meals.filter(meal => meal.date === getDateKey(day)).length} planned</span>
+                                        )}
+                                        {isToday(day) && (
+                                            <span className="today-label">Today</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/*Add week and day layouts*/}
+                
+                {/* Week View */}
+                {view === "week" && (
+                    <div className="calendar-week-grid">
+                        {weekDays.map((day) => {
+                            const key = getDateKey(day);
+                            const dayMeals = meals.filter(meal => meal.date === key);
+
+                            return (
+                                <button
+                                    type="button"
+                                    key={key}
+                                    className={[
+                                        "calendar-week-day",
+                                        isSelected(day) ? "selected" : "",
+                                        isToday(day) ? "today" : ""
+                                    ].filter(Boolean).join(" ")}
+                                    aria-label={getDateKey(day)}
+                                    aria-pressed={isSelected(day)}
                                     onClick={() => selectDay(day)}
                                 >
-                                    <span className="calendar-date">
+                                    <span className="week-day-name">
+                                        {day.toLocaleDateString("en-US", {
+                                            weekday: "short"
+                                        })}
+                                    </span>
+
+                                    <span className="week-day-number">
                                         {day.getDate()}
                                     </span>
 
-                                    {/*Future meal indicators can be added here*/}
-                                    {isToday(day) && (
-                                        <span className="today-label">Today</span>
-                                    )}
+                                    <div className="week-day-meals">
+                                        {dayMeals.length === 0 ? (
+                                            <span className="no-meals">
+                                                No meals
+                                            </span>
+                                        ) : (
+                                            dayMeals.map((meal, index) => (
+                                                <div
+                                                    className="week-meal"
+                                                    key={meal.id ?? `${key}-${index}`}
+                                                >
+                                                    {meal.name}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </button>
                             );
                         })}
                     </div>
-                </div>
+                )}
+
+                {/* Day View */}
+                {view === "day" && (
+                    <div className="calendar-single-day">
+                        <span className="calendar-eyebrow">
+                            DAILY MEAL PLAN
+                        </span>
+
+                        <h2>{selectedDateText}</h2>
+
+                        <p>
+                            {selectedMeals.length === 0
+                                ? "No meals planned for this day yet."
+                                : `${selectedMeals.length} meal${selectedMeals.length === 1 ? "" : "s"} planned`}
+                        </p>
+
+                        <div className="day-navigation">
+                            <button
+                                type="button"
+                                onClick={goToPreviousMonth}
+                                aria-label="Previous day"
+                            >
+                                ← Previous day
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={goToNextMonth}
+                                aria-label="Next day"
+                            >
+                                Next day →
+                            </button>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Selected Day's Meals */}
                 <section className="meals-selection">
@@ -248,20 +450,28 @@ function Calendar() {
                             <h2>Meals</h2>
                         </div>
 
-                        <button className="add-meal-button">
+                        <button className="add-meal-button" disabled={loading || !!loadError} onClick={() => setShowForm(true)}>
                             + Add Meal
                         </button>
                     </div>
 
-                    {selectedMeals.length > 0 ? (
+                    {showForm && <AddMealForm key={selectedDateKey} date={selectedDateKey} onSave={saveMeal} onCancel={() => setShowForm(false)} />}
+                    {actionError && <p role="alert">{actionError}</p>}
+                    {loading ? <p role="status">Loading meals...</p> : loadError ? (
+                        <div role="alert">{loadError} <button onClick={() => {
+                            setLoading(true); setLoadError(''); setRevision(value => value + 1);
+                        }}>Retry meals</button></div>
+                    ) : selectedMeals.length > 0 ? (
 
                         <div className="meals-list">
 
                             {selectedMeals.map((meal) => (
-                                <MealCard
-                                    key={meal.id}
-                                    meal={meal}
-                                />
+                                <div key={meal.id}>
+                                    <MealCard meal={meal} />
+                                    <button type="button" className="remove-meal-button" disabled={removing !== null} onClick={() => deleteMeal(meal.id)} aria-label={`Remove ${meal.name} from calendar`}>
+                                        {removing === meal.id ? 'Removing...' : 'Remove meal'}
+                                    </button>
+                                </div>
 
                             ))}
                         </div>
@@ -272,7 +482,7 @@ function Calendar() {
 
                             <p>Add a meal to start planning your day.</p>
 
-                            <button className="add-meal-button">
+                            <button className="add-meal-button" disabled={loading || !!loadError} onClick={() => setShowForm(true)}>
                                 + Add Meal
                             </button>
                         </div>

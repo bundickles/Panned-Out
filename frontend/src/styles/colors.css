@@ -12,4 +12,8 @@
     --color-terracotta: #B65C4B;
     --color-ochre: #D0B16A;
     --color-deep-accent: #813D35;
+
+    --difficulty-easy: #71866A;
+    --difficulty-medium: #D0B16A;
+    --difficulty-hard: #B65C4B;
 }

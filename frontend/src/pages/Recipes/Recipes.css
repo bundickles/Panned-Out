@@ -283,3 +283,32 @@
 .recipe-form input, .recipe-form select, .recipe-form textarea { font: inherit; padding: 10px; border: 1px solid #bbb; border-radius: 6px; width: 100%; box-sizing: border-box; }
 .recipe-form-numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .recipe-form button:disabled, .recipe-delete:disabled { opacity: .6; cursor: wait; }
+
+
+/* For adding an image in recipe cards */
+
+.recipe-form-image-preview {
+    margin: 12px 0 20px;
+    padding: 12px;
+    background: var(--color-background);
+    border: 1px solid #E2D7C8;
+    border-radius: 12px;
+}
+
+.recipe-form-image-preview img {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.recipe-form-image-preview button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    color: var(--color-text);
+    background: var(--color-highlight);
+    border: 1px solid var(--color-secondary);
+    border-radius: 8px;
+}

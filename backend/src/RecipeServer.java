@@ -8,9 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-/** Local demo API. Bind to loopback; authentication is a separate team task. */
+/** Loopback API with session authentication and account-scoped recipe storage. */
 public class RecipeServer {
     static final class ApiError extends RuntimeException {
         final int status;
@@ -22,36 +21,61 @@ public class RecipeServer {
 
     public static void main(String[] args) throws IOException {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
-        Path storage = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
+        // Keep legacy shared data untouched and use the team's stable default path.
+        Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
                 : RecipeRepository.defaultStorageFile();
-        RecipeRepository repository = new RecipeRepository(storage);
+        Path accounts = legacy.resolveSibling(legacy.getFileName() + ".accounts");
+        AuthService auth = new AuthService(accounts);
+        SuggestedRecipeCatalog catalog = SuggestedRecipeCatalog.loadDefault();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
-        server.createContext("/api/recipes", exchange -> {
+        server.createContext("/api/", exchange -> {
             try {
-                handle(exchange, repository);
+                // Cross-origin forms cannot set this header; no CORS permission is granted.
+                if (!exchange.getRequestMethod().equals("GET")
+                        && (!"1".equals(exchange.getRequestHeaders().getFirst("X-Panned-Out-Request"))
+                            || "cross-site".equals(exchange.getRequestHeaders().getFirst("Sec-Fetch-Site"))))
+                    throw new ApiError(403, "Request verification failed.");
+                if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
+                    auth.handle(exchange);
+                } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
+                    handle(exchange, auth.recipes(exchange), catalog);
+                } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
+                    GeneratedShoppingListApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
+                } else if (exchange.getRequestURI().getPath().startsWith("/api/meals")) {
+                    MealPlanApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
+                } else if (exchange.getRequestURI().getPath().equals("/api/shopping-lists")
+                        || exchange.getRequestURI().getPath().startsWith("/api/shopping-lists/")) {
+                    ShoppingListApi.handle(exchange, auth.shoppingLists(exchange), auth.meals(exchange));
+                } else {
+                    respond(exchange, 404, "{\"error\":\"Not found\"}");
+                }
             } catch (ApiError e) {
                 respond(exchange, e.status, "{\"error\":" + quote(e.getMessage()) + "}");
             } catch (IllegalArgumentException e) {
                 respond(exchange, 400, "{\"error\":" + quote(e.getMessage()) + "}");
-            } catch (UncheckedIOException e) {
-                respond(exchange, 500, "{\"error\":\"Recipe storage unavailable. Please try again.\"}");
+            } catch (UncheckedIOException | IOException e) {
+                respond(exchange, 500, "{\"error\":\"Storage unavailable. Please try again.\"}");
             } finally {
                 exchange.close();
             }
         });
         server.start();
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
-        System.out.println("Recipe storage: " + storage);
+        System.out.println("Account storage: " + accounts);
     }
-
-    private static void handle(HttpExchange exchange, RecipeRepository repository) throws IOException {
+    private static void handle(HttpExchange exchange, RecipeRepository repository,
+                               SuggestedRecipeCatalog catalog) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
         boolean updating = path.matches("/api/recipes/[0-9]+") && method.equals("PUT");
         if (path.equals("/api/recipes") || updating) {
             if (method.equals("GET") && !updating) {
-                respond(exchange, 200, repository.getRecipes().stream()
-                        .map(RecipeServer::json).collect(Collectors.joining(",", "[", "]")));
+                String filter = recipeFilter(exchange.getRequestURI().getRawQuery());
+                java.util.List<String> results = new java.util.ArrayList<>();
+                if (!filter.equals("suggested"))
+                    repository.getRecipes().stream().map(RecipeServer::json).forEach(results::add);
+                if (!filter.equals("saved")) results.addAll(catalog.jsonRecipes());
+                respond(exchange, 200, "[" + String.join(",", results) + "]");
             } else if (method.equals("POST") || updating) {
                 Map<String, String> fields = form(exchange);
                 String name = required(fields, "name");
@@ -88,6 +112,22 @@ public class RecipeServer {
         } else {
             respond(exchange, 404, "{\"error\":\"Not found\"}");
         }
+    }
+
+    // An omitted filter preserves the existing private-recipe collection.
+    static String recipeFilter(String query) {
+        String filter = null;
+        if (query != null) {
+            for (String pair : query.split("&")) {
+                String[] parts = pair.split("=", 2);
+                if (!URLDecoder.decode(parts[0], StandardCharsets.UTF_8).equals("filter")) continue;
+                if (filter != null) throw new IllegalArgumentException("Supply filter only once");
+                filter = parts.length == 2 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : "";
+                if (!java.util.List.of("suggested", "saved", "all").contains(filter))
+                    throw new IllegalArgumentException("filter must be suggested, saved, or all");
+            }
+        }
+        return filter == null ? "saved" : filter;
     }
 
     static Map<String, String> form(HttpExchange exchange) throws IOException {
@@ -132,7 +172,7 @@ public class RecipeServer {
     }
 
     private static String json(Recipe r) {
-        return "{\"id\":" + r.getId() + ",\"name\":" + quote(r.getName())
+        return "{\"source\":\"saved\",\"id\":" + r.getId() + ",\"name\":" + quote(r.getName())
                 + ",\"category\":" + quote(r.getCategory()) + ",\"difficulty\":" + quote(r.getDifficulty())
                 + ",\"prepTime\":" + r.getPrepTime() + ",\"calories\":" + r.getCalories()
                 + ",\"protein\":" + r.getProtein() + ",\"fat\":" + r.getFat()
@@ -141,7 +181,7 @@ public class RecipeServer {
                 + ",\"instructions\":" + quote(r.getInstructions()) + ",\"mealType\":" + quote(r.getMealType()) + "}";
     }
 
-    private static void respond(HttpExchange exchange, int status, String body) throws IOException {
+    static void respond(HttpExchange exchange, int status, String body) throws IOException {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
