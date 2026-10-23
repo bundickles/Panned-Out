@@ -100,7 +100,7 @@ function Recipes() {
 
             {/* Main Content */}
 
-            <section className="recipes-content">
+            <section className="recipes-content" tabIndex={0} aria-label="Recipes content">
 
                 <header className="recipes-header">
 

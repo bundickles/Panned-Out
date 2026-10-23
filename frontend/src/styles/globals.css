@@ -1,5 +1,6 @@
 @import "./typography.css";
 @import "./colors.css";
+@import "./app-layout.css";
 
 * {
     margin: 0;

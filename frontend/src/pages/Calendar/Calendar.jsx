@@ -133,7 +133,7 @@ function Calendar() {
             </aside>
 
             {/*Main Calendar*/}
-            <section className="calendar-content">
+            <section className="calendar-content" tabIndex={0} aria-label="Calendar content">
 
                 <header className="calendar-header">
                     <div>

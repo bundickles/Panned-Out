@@ -1,0 +1,90 @@
+/* Support current pages and the shared Sidebar introduced in PRs #14/#15. */
+#root :is(.calendar-page, .recipes-page, .shopping-page, .meal-plans-page) {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* The account bar takes its natural height, including wrapped text/errors.
+   The page uses the remaining space rather than adding another viewport. */
+#root > :has(> .account-bar) {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+#root > :has(> .account-bar) > .account-bar {
+    flex-shrink: 0;
+}
+
+#root > :has(> .account-bar) > :is(.calendar-page, .recipes-page, .shopping-page, .meal-plans-page) {
+    flex: 1;
+    height: auto;
+}
+
+#root :is(.calendar-sidebar, .recipes-sidebar, .app-sidebar) {
+    min-height: 0;
+    flex-shrink: 0;
+}
+
+#root :is(.sidebar-logo, .app-sidebar-logo, .sidebar-bottom, .app-sidebar-bottom, .nav-item, .app-nav-item) {
+    flex-shrink: 0;
+}
+
+#root :is(.sidebar-nav, .app-sidebar-nav) {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#root :is(.sidebar-bottom, .app-sidebar-bottom) {
+    margin-top: auto;
+}
+
+#root :is(.calendar-content, .recipes-content, .shopping-content, .meal-plans-content) {
+    flex: 1;
+    align-self: stretch;
+    margin-block: 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+#root :is(.calendar-content, .recipes-content, .shopping-content, .meal-plans-content):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+}
+
+@media (max-height: 500px), (max-width: 600px) {
+    #root :is(.calendar-sidebar, .recipes-sidebar) {
+        width: 160px;
+        padding: 16px 8px;
+    }
+
+    #root :is(.calendar-sidebar, .recipes-sidebar) .sidebar-logo {
+        margin-bottom: 16px;
+        font-size: 24px;
+    }
+
+    #root :is(.calendar-content, .recipes-content) {
+        padding: 24px 16px;
+    }
+}
+
+@media (max-height: 500px) {
+    #root .app-sidebar {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    #root .app-sidebar-logo {
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+}
