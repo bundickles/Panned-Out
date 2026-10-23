@@ -41,6 +41,9 @@ public class RecipeServer {
                     handle(exchange, auth.recipes(exchange));
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/meals")) {
                     MealPlanApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
+                } else if (exchange.getRequestURI().getPath().equals("/api/shopping-lists")
+                        || exchange.getRequestURI().getPath().startsWith("/api/shopping-lists/")) {
+                    ShoppingListApi.handle(exchange, auth.shoppingLists(exchange), auth.meals(exchange));
                 } else {
                     respond(exchange, 404, "{\"error\":\"Not found\"}");
                 }
