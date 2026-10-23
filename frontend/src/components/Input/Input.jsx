@@ -1,11 +1,11 @@
 import "./Input.css";
 
-function Input({ label, type = "text", placeholder }) {
+function Input({ label, type = "text", placeholder, id, ...props }) {
     return (
         <div className="input-group">
-            <label>{label}</label>
+            <label htmlFor={id}>{label}</label>
             
-            <input type={type} placeholder={placeholder} />
+            <input id={id} type={type} placeholder={placeholder} {...props} />
         </div>
     );
 }

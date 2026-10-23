@@ -157,6 +157,7 @@
 }
 .shopping-week-picker { 
     display: flex; 
+    flex-wrap: wrap;
     align-items: center; 
     gap: 14px; 
     background: #f9f2e9; 
@@ -195,6 +196,45 @@
     padding: 12px 16px; 
     border-radius: 9px; 
     font-size: 13px; 
+    margin-bottom: 16px;
+}
+.shopping-date-range {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+.shopping-date-range label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    font-size: 12px;
+    font-weight: 700;
+}
+.shopping-date-range input {
+    padding: 10px;
+    border: 1px solid #d3bba5;
+    border-radius: 7px;
+    background: #fff;
+    color: #34231d;
+    min-width: 0;
+}
+.shopping-generated-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.shopping-generated-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.shopping-generated-item p { margin: 6px 0; }
+.shopping-sources {
+    color: #806c5e;
+    padding-left: 20px;
+    line-height: 1.6;
 }
 .shopping-progress { 
     border: 1px solid #e0d1c2; 
@@ -446,4 +486,15 @@
     .shopping-heading { align-items: flex-start; flex-direction: column; } 
     .shopping-add-form { grid-template-columns: 1fr; } 
     .shopping-sidepanel { grid-template-columns: 1fr; } 
+}
+
+/* The shared sidebar becomes a compact header on the Shopping mobile layout. */
+@media (max-width: 740px) {
+    .shopping-page .app-sidebar { width: 100%; min-width: 0; min-height: 0; padding: 12px; }
+    .shopping-page .app-sidebar-logo { font-size: 30px; margin: 0 0 12px; }
+    .shopping-page .app-sidebar-logo::before { content: none; }
+    .shopping-page .app-sidebar-nav { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    .shopping-page .app-nav-item { width: auto; font-size: 12px; padding: 10px; }
+    .shopping-page .app-sidebar-bottom { display: none; }
+    .shopping-page .shopping-content { width: 100%; }
 }

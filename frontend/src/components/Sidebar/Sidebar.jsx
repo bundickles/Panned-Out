@@ -1,9 +1,8 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import "./Sidebar.css";
 
 function Sidebar() {
-    const navigate = useNavigate();
 
     return (
         <aside className="app-sidebar">
@@ -22,7 +21,7 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span>▦</span>
+                    <span aria-hidden="true">▦</span>
                     Calendar
                 </NavLink>
 
@@ -32,7 +31,7 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span>🍽</span>
+                    <span aria-hidden="true">🍽</span>
                     Recipes
                 </NavLink>
 
@@ -42,7 +41,7 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span>🛒</span>
+                    <span aria-hidden="true">🛒</span>
                     Shopping List
                 </NavLink>
 
@@ -52,7 +51,7 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                     >
-                    <span>▤</span>
+                    <span aria-hidden="true">▤</span>
                     Meal Plans
                     </NavLink>
 
@@ -63,18 +62,11 @@ function Sidebar() {
 
                 <button className="app-nav-item" type="button">
 
-                    <span>⚙</span>
+                    <span aria-hidden="true">⚙</span>
                     Settings
                 </button>
 
-                <button
-                    className="app-nav-item app-logout-button"
-                    type="button"
-                    onClick={() => navigate("/")}
-                >
-                    <span>↪</span>
-                    Log Out
-                </button>
+                {/* Session logout is provided by the authenticated account bar. */}
 
             </div>
 
