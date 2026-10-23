@@ -53,6 +53,7 @@ class RecipeApiTest(unittest.TestCase):
             build.mkdir(parents=True)
             for compiled in Path('backend/build').glob('*.class'):
                 shutil.copy2(compiled, build)
+            shutil.copytree(Path('backend/catalog'), root / 'backend' / 'catalog')
             first = root / 'first'
             second = root / 'second'
             first.mkdir()
@@ -114,6 +115,58 @@ class RecipeApiTest(unittest.TestCase):
                 self.assertEqual(self.request()[0], 500)
                 self.assertEqual(self.request('POST', fields=fields)[0], 500)
                 self.assertEqual(self.private_storage.read_text(), 'broken storage')
+            finally:
+                self.stop()
+
+    def test_ids_never_reused_after_delete_or_restart(self):
+        with tempfile.TemporaryDirectory() as directory:
+            storage = Path(directory) / 'recipes.properties'
+            self.start(storage)
+            try:
+                fields = dict(name='Stable identity', ingredients='Rice', instructions='Cook',
+                              category='My Recipes', difficulty='Easy', mealType='Dinner')
+                first = self.request('POST', fields=fields)[1]
+                second = self.request('POST', fields=fields)[1]
+                self.assertGreater(second['id'], first['id'])
+                self.request('DELETE', '/api/recipes/' + str(second['id']))
+                self.stop()
+                self.start(storage)
+                third = self.request('POST', fields=fields)[1]
+                self.assertGreater(third['id'], second['id'])
+                for recipe in [first, third]:
+                    self.request('DELETE', '/api/recipes/' + str(recipe['id']))
+                self.stop()
+                self.start(storage)
+                fourth = self.request('POST', fields=fields)[1]
+                self.assertGreater(fourth['id'], third['id'])
+                # Legacy files seed the counter from their highest surviving ID.
+                self.stop()
+                self.private_storage.write_text('\n'.join(line for line in self.private_storage.read_text().splitlines()
+                                             if not line.startswith('lastId=')) + '\n')
+                self.start(storage)
+                fifth = self.request('POST', fields=fields)[1]
+                self.assertGreater(fifth['id'], fourth['id'])
+            finally:
+                self.stop()
+
+    def test_shared_form_helper_validates_create_and_edit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.start(Path(directory) / 'recipes.properties')
+            try:
+                fields = dict(name='Rice', ingredients='Rice', instructions='Cook',
+                              category='My Recipes', difficulty='Easy', mealType='Dinner')
+                recipe = self.request('POST', fields=fields)[1]
+                for method, path in [('POST', '/api/recipes'), ('PUT', '/api/recipes/' + str(recipe['id']))]:
+                    for body, content_type, expected in [(b'{}', 'application/json', 415),
+                                                          (b'x=' + b'a' * 65535, 'application/x-www-form-urlencoded', 413)]:
+                        request = Request(self.url + path, data=body, method=method,
+                                          headers={'Content-Type': content_type, 'X-Panned-Out-Request': '1'})
+                        with self.assertRaises(HTTPError) as caught:
+                            self.client.open(request, timeout=5)
+                        with caught.exception as response:
+                            self.assertEqual(response.status, expected)
+                            self.assertIn('error', json.load(response))
+                self.assertEqual(self.request(), (200, [recipe]))
             finally:
                 self.stop()
 
