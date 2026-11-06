@@ -1,7 +1,8 @@
 # Recipe backend
 
-AI photo recipe previews (SCRUM-139), provider setup, and the frontend handoff
-are documented in [AI_PHOTO_API.md](AI_PHOTO_API.md).
+AI photo recipe previews (SCRUM-139) now default to a free local demo with fixed,
+clearly labeled responses. No API key or paid request is needed. Demo setup and
+the frontend handoff are documented in [AI_PHOTO_API.md](AI_PHOTO_API.md).
 
 Saved shopping-list storage and purchased-status endpoints (SCRUM-59/60) are
 documented in [SHOPPING_LIST_API.md](SHOPPING_LIST_API.md), including the pending

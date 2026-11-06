@@ -27,9 +27,13 @@ public class RecipeServer {
         // Keep legacy shared data untouched and use the team's stable default path.
         Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
                 : RecipeRepository.defaultStorageFile();
-        HttpServer server = startServer(port, legacy, new PhotoRecipeApi(new OpenAiPhotoRecipeClient()));
+        PhotoRecipeApi photoRecipes = PhotoRecipeApi.fromEnvironment();
+        HttpServer server = startServer(port, legacy, photoRecipes);
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
         System.out.println("Account storage: " + legacy.resolveSibling(legacy.getFileName() + ".accounts"));
+        System.out.println(photoRecipes.isDemo()
+                ? "Photo previews: FREE DEMO. Fixed responses only. No photos are sent to an AI service."
+                : "Photo previews: OpenAI mode. Requests can incur API charges.");
     }
 
     // Package-private injection lets API tests use a local provider without real images or API charges.

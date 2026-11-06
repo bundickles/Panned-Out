@@ -23,6 +23,8 @@ final class PhotoRecipeApi {
     @FunctionalInterface
     interface Generator {
         String generate(byte[] image, String mimeType);
+
+        default boolean isDemo() { return false; }
     }
 
     private static final class Window {
@@ -35,7 +37,21 @@ final class PhotoRecipeApi {
         this.generator = generator;
     }
 
+    /** Local demo is the default. Paid provider use requires an explicit server setting. */
+    static PhotoRecipeApi fromEnvironment() {
+        String mode = System.getenv("PANNED_OUT_AI_MODE");
+        mode = mode == null || mode.trim().isEmpty() ? "demo" : mode.trim().toLowerCase(Locale.ROOT);
+        if (mode.equals("demo"))
+            return new PhotoRecipeApi(new DemoPhotoRecipeGenerator(System.getenv("PANNED_OUT_AI_DEMO_RESULT")));
+        if (mode.equals("openai"))
+            return new PhotoRecipeApi(new OpenAiPhotoRecipeClient());
+        throw new IllegalArgumentException("PANNED_OUT_AI_MODE must be demo or openai.");
+    }
+
+    boolean isDemo() { return generator.isDemo(); }
+
     void handle(HttpExchange exchange, String accountId) throws IOException {
+        if (isDemo()) exchange.getResponseHeaders().set("X-Panned-Out-AI-Mode", "demo");
         if (!exchange.getRequestMethod().equals("POST")) {
             exchange.getResponseHeaders().set("Allow", "POST");
             throw new RecipeServer.ApiError(405, "Method not allowed.");

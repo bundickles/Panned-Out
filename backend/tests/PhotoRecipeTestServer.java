@@ -15,11 +15,16 @@ public final class PhotoRecipeTestServer {
             return;
         }
         if (args.length < 2)
-            throw new IllegalArgumentException("Expected storage path and local provider endpoint");
-        String key = args.length > 2 ? args[2] : "photo-test-key";
-        long timeoutMs = args.length > 3 ? Long.parseLong(args[3]) : 5000;
-        PhotoRecipeApi api = new PhotoRecipeApi(new OpenAiPhotoRecipeClient(
-                key, "test-vision-model", URI.create(args[1]), Duration.ofMillis(timeoutMs)));
+            throw new IllegalArgumentException("Expected storage path and local provider endpoint or --configured");
+        PhotoRecipeApi api;
+        if (args[1].equals("--configured")) {
+            api = PhotoRecipeApi.fromEnvironment();
+        } else {
+            String key = args.length > 2 ? args[2] : "photo-test-key";
+            long timeoutMs = args.length > 3 ? Long.parseLong(args[3]) : 5000;
+            api = new PhotoRecipeApi(new OpenAiPhotoRecipeClient(
+                    key, "test-vision-model", URI.create(args[1]), Duration.ofMillis(timeoutMs)));
+        }
         HttpServer server = RecipeServer.startServer(0, Path.of(args[0]), api);
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
         System.out.flush();

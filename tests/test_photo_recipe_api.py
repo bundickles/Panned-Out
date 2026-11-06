@@ -1,4 +1,4 @@
-"""Photo endpoint integration tests using real Java HTTP and a LOCAL FAKE model.
+"""Photo integration tests using real Java HTTP and local demo/fake responses.
 
 Run: python -m unittest discover -s tests -p test_photo_recipe_api.py -v
 Java sources and the test harness compile into a temporary directory. No API key,
@@ -147,18 +147,28 @@ class PhotoRecipeApiTest(unittest.TestCase):
         self.start()
         self.alice, self.alice_email = self.register_user()
 
-    def start(self, key='photo-test-key', timeout_ms=5000):
+    @staticmethod
+    def environment(configured=None):
         environment = dict(os.environ)
         # Keep execution independent of the developer's provider and catalog settings.
+        for setting in ('OPENAI_API_KEY', 'PANNED_OUT_AI_MODEL', 'PANNED_OUT_AI_MODE',
+                        'PANNED_OUT_AI_DEMO_RESULT'):
+            environment.pop(setting, None)
         environment['PANNED_OUT_SUGGESTED_RECIPES'] = str(
             ROOT / 'backend/catalog/suggested-recipes.properties')
         environment['PANNED_OUT_SECURE_COOKIES'] = 'false'
+        environment.update(configured or {})
+        return environment
+
+    def start(self, key='photo-test-key', timeout_ms=5000, configured=None):
+        arguments = (['--configured'] if configured is not None
+                     else [self.provider.url, key, str(timeout_ms)])
         self.log = (Path(self.directory.name) / 'server.log').open('a', encoding='utf-8')
         self.process = subprocess.Popen(
             ['java', '-cp', str(self.classpath), 'PhotoRecipeTestServer',
-             str(self.storage), self.provider.url, key, str(timeout_ms)],
+             str(self.storage), *arguments],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log,
-            text=True, cwd=ROOT, env=environment)
+            text=True, cwd=ROOT, env=self.environment(configured))
         line = self.process.stdout.readline().strip()
         self.assertTrue(line.startswith('Recipe API: '), line)
         self.url = line.split('Recipe API: ', 1)[1]
@@ -468,6 +478,131 @@ class PhotoRecipeApiTest(unittest.TestCase):
             self.assertEqual(first.result(timeout=5)[0], 200)
             self.assertEqual(second.result(timeout=5)[0], 200)
         self.assertEqual(self.photo(charlie)[0], 200)
+
+    def restart_configured(self, settings=None):
+        self.stop()
+        self.start(configured={} if settings is None else settings)
+        self.login(self.alice, self.alice_email)
+
+    def assert_demo_recipe(self, result):
+        status, payload, headers = result
+        self.assertEqual(status, 200, payload)
+        self.assertEqual(payload['status'], 'recipe')
+        self.assertIs(payload['demo'], True)
+        self.assertIn('not analyzed', payload['message'].lower())
+        self.assertEqual(headers['X-Panned-Out-AI-Mode'], 'demo')
+        self.assertEqual(set(payload['recipe']), {'name', 'ingredients', 'instructions'})
+        for value in payload['recipe'].values():
+            self.assertIsInstance(value, str)
+            self.assertTrue(value.strip())
+        return payload['recipe']
+
+    def test_default_demo_needs_no_key_and_returns_same_sample_for_different_images(self):
+        for settings in ({}, {'PANNED_OUT_AI_MODE': '  '}):
+            with self.subTest(settings=settings):
+                self.restart_configured(settings)
+                first = self.assert_demo_recipe(self.photo())
+                different = self.assert_demo_recipe(self.photo(image=png(color=(0, 20, 240))))
+                jpeg = self.assert_demo_recipe(self.photo(image=self.jpeg, content_type='image/jpeg'))
+                self.assertEqual(first, different)
+                self.assertEqual(first, jpeg)
+                self.assertEqual(self.request(self.alice)[1], [])
+        self.assertEqual(self.provider.requests, [])
+
+    def test_explicit_demo_ignores_key_and_saves_only_after_separate_save_action(self):
+        self.restart_configured({'PANNED_OUT_AI_MODE': 'demo',
+                                 'OPENAI_API_KEY': 'not-a-real-key-demo-must-ignore',
+                                 'PANNED_OUT_AI_MODEL': 'unused-demo-model'})
+        bob, _ = self.register_user()
+        bob_saved = self.save_recipe(bob, 'Bob private recipe')
+        before = self.persisted_files()
+        recipe = self.assert_demo_recipe(self.photo())
+        self.assertEqual(self.request(self.alice)[1], [])
+        self.assertEqual(self.request(bob)[1], [bob_saved])
+        self.assertEqual(self.persisted_files(), before)
+        self.assertFalse(self.storage.exists())
+        status, saved, _ = self.request(self.alice, method='POST', fields={
+            **recipe, 'category': 'My Recipes', 'difficulty': 'Easy', 'mealType': 'Dinner'})
+        self.assertEqual(status, 201, saved)
+        for field, value in recipe.items():
+            self.assertEqual(saved[field], value)
+        self.assertEqual(self.request(self.alice)[1], [saved])
+        self.assertEqual(self.request(bob)[1], [bob_saved])
+        self.assertEqual(self.provider.requests, [])
+
+    def test_demo_no_result_and_failure_are_labeled_and_do_not_save(self):
+        for scenario in ('no_result', 'error'):
+            with self.subTest(scenario=scenario):
+                self.restart_configured({'PANNED_OUT_AI_MODE': 'demo',
+                                         'PANNED_OUT_AI_DEMO_RESULT': scenario})
+                before = self.persisted_files()
+                result = self.photo()
+                self.assertEqual(result[2]['X-Panned-Out-AI-Mode'], 'demo')
+                if scenario == 'no_result':
+                    self.assertEqual(result[0], 200, result[1])
+                    self.assertEqual(result[1]['status'], 'no_result')
+                    self.assertIsNone(result[1]['recipe'])
+                    self.assertIs(result[1]['demo'], True)
+                    self.assertIn('simulat', result[1]['message'].lower())
+                    self.assertIn('not analyzed', result[1]['message'].lower())
+                else:
+                    self.assert_error(result, 502)
+                    self.assertIn('demo', result[1]['error'].lower())
+                    self.assertIn('simulat', result[1]['error'].lower())
+                self.assertEqual(self.request(self.alice)[1], [])
+                self.assertEqual(self.request(self.alice, '/api/auth/me')[0], 200)
+                self.assertEqual(self.persisted_files(), before)
+        self.assertEqual(self.provider.requests, [])
+
+    def test_demo_still_enforces_authentication_and_image_validation(self):
+        self.restart_configured()
+        self.assert_error(self.photo(self.client()), 401)
+        self.assert_error(self.photo(verified=False), 403)
+        self.assert_error(self.photo(headers={'Sec-Fetch-Site': 'cross-site'}), 403)
+        for image, mime, status in ((b'', 'image/png', 400),
+                                    (b'corrupt', 'image/png', 400),
+                                    (PNG, 'image/gif', 415),
+                                    (PNG, 'image/jpeg', 415),
+                                    (PNG + b'\x00' * (5 * 1024 * 1024), 'image/png', 413)):
+            with self.subTest(status=status, mime=mime, length=len(image)):
+                self.assert_error(self.photo(image=image, content_type=mime), status)
+        self.assert_demo_recipe(self.photo())
+        self.assertEqual(self.provider.requests, [])
+
+    def test_demo_retains_account_request_limits(self):
+        self.restart_configured()
+        for _ in range(6):
+            self.assert_demo_recipe(self.photo())
+        limited = self.photo()
+        self.assert_error(limited, 429)
+        self.assertGreater(int(limited[2]['Retry-After']), 0)
+        bob, _ = self.register_user()
+        self.assert_demo_recipe(self.photo(bob))
+        self.assertEqual(self.provider.requests, [])
+
+    def test_invalid_demo_settings_fail_startup_without_falling_back_to_a_provider(self):
+        self.stop()
+        for settings, invalid_field in (
+                ({'PANNED_OUT_AI_MODE': 'typo'}, 'PANNED_OUT_AI_MODE'),
+                ({'PANNED_OUT_AI_MODE': 'demo', 'PANNED_OUT_AI_DEMO_RESULT': 'typo'},
+                 'PANNED_OUT_AI_DEMO_RESULT')):
+            with self.subTest(settings=settings):
+                result = subprocess.run(
+                    ['java', '-cp', str(self.classpath), 'PhotoRecipeTestServer',
+                     str(self.storage), '--configured'],
+                    input='\n', capture_output=True, text=True, timeout=5, cwd=ROOT,
+                    env=self.environment(settings))
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn('Recipe API:', result.stdout)
+                self.assertIn(invalid_field, result.stderr)
+        self.assertEqual(self.provider.requests, [])
+
+    def test_explicit_openai_mode_without_key_remains_unavailable(self):
+        # No key is supplied, so the real client must stop before any network request.
+        self.restart_configured({'PANNED_OUT_AI_MODE': 'openai'})
+        self.assert_error(self.photo(), 503)
+        self.assertEqual(self.request(self.alice)[0], 200)
+        self.assertEqual(self.provider.requests, [])
 
 
 if __name__ == '__main__':
