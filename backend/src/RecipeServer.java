@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /** Loopback API with session authentication and account-scoped recipe storage. */
 public class RecipeServer {
@@ -24,10 +27,24 @@ public class RecipeServer {
         // Keep legacy shared data untouched and use the team's stable default path.
         Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
                 : RecipeRepository.defaultStorageFile();
+        HttpServer server = startServer(port, legacy, new PhotoRecipeApi(new OpenAiPhotoRecipeClient()));
+        System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
+        System.out.println("Account storage: " + legacy.resolveSibling(legacy.getFileName() + ".accounts"));
+    }
+
+    // Package-private injection lets API tests use a local provider without real images or API charges.
+    static HttpServer startServer(int port, Path legacy, PhotoRecipeApi photoRecipes) throws IOException {
         Path accounts = legacy.resolveSibling(legacy.getFileName() + ".accounts");
         AuthService auth = new AuthService(accounts);
         SuggestedRecipeCatalog catalog = SuggestedRecipeCatalog.loadDefault();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
+        // A slow model request must not stop login, recipes, or the calendar.
+        server.setExecutor(new ThreadPoolExecutor(4, 4, 0L, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(64), task -> {
+                    Thread worker = new Thread(task, "recipe-api-worker");
+                    worker.setDaemon(true);
+                    return worker;
+                }, new ThreadPoolExecutor.CallerRunsPolicy()));
         server.createContext("/api/", exchange -> {
             try {
                 // Cross-origin forms cannot set this header; no CORS permission is granted.
@@ -37,6 +54,8 @@ public class RecipeServer {
                     throw new ApiError(403, "Request verification failed.");
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
+                } else if (exchange.getRequestURI().getPath().equals("/api/ai/recipe-from-photo")) {
+                    photoRecipes.handle(exchange, auth.accountId(exchange));
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
                     handle(exchange, auth.recipes(exchange), catalog);
                 } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
@@ -60,8 +79,7 @@ public class RecipeServer {
             }
         });
         server.start();
-        System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
-        System.out.println("Account storage: " + accounts);
+        return server;
     }
     private static void handle(HttpExchange exchange, RecipeRepository repository,
                                SuggestedRecipeCatalog catalog) throws IOException {

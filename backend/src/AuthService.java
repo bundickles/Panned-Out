@@ -54,6 +54,10 @@ final class AuthService {
                 id -> new RecipeRepository(recipeDirectory.resolve(id).resolve("recipes.properties")));
     }
 
+    synchronized String accountId(HttpExchange exchange) {
+        return requireSession(exchange).account.id;
+    }
+
     synchronized MealPlanRepository meals(HttpExchange exchange) {
         AccountRepository.Account account = requireSession(exchange).account;
         return mealPlans.computeIfAbsent(account.id,
