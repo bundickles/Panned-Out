@@ -1,0 +1,19 @@
+.recipe-cooking { margin-bottom: 24px; }
+.recipe-cooking > p { margin-top: 12px; }
+.cooking-dialog { box-sizing: border-box; width: min(760px, calc(100% - 24px)); max-height: 90dvh; margin: auto; padding: clamp(20px, 4vw, 40px); overflow-y: auto; border: 1px solid #D8CDC0; border-radius: 16px; background: var(--color-surface, #fffaf2); color: var(--color-text, #392d26); }
+.cooking-dialog::backdrop { background: rgb(30 24 20 / 65%); }
+.cooking-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.cooking-header h2 { font-family: var(--font-display); font-size: 28px; overflow-wrap: anywhere; }
+.cooking-header p { font-size: 11px; letter-spacing: 1.5px; }
+.cooking-step { padding: 30px 0; }
+.cooking-instruction { margin: 16px 0 24px; font-size: clamp(22px, 4vw, 32px); line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cooking-controls { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.cooking-dialog button { min-height: 44px; }
+.cooking-dialog button:disabled { opacity: .45; cursor: default; }
+.cooking-dialog :focus-visible { outline: 3px solid var(--color-deep-accent, #85452e); outline-offset: 4px; }
+.cooking-timer { border-top: 1px solid #D8CDC0; padding-top: 24px; }
+.cooking-clock { font-size: 48px; font-variant-numeric: tabular-nums; margin: 8px 0; }
+.cooking-timer label { display: block; margin-top: 16px; }
+.cooking-timer input { display: block; box-sizing: border-box; width: 150px; max-width: 100%; padding: 10px; margin-top: 8px; font: inherit; }
+.cooking-note { font-size: 13px; line-height: 1.6; }
+@media (max-width: 500px) { .cooking-header { flex-direction: column; } }
