@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { authRequest } from '../api/auth';
 import './Auth.css';
+import AppWalkthrough from '../components/AppWalkthrough/AppWalkthrough';
 
 import { AuthContext, useAuth } from "./AuthContext";
 const CHANGE_KEY = 'panned-out-account-change';
@@ -82,6 +83,7 @@ export function PrivatePages() {
     return <div key={user.id}>
         <div className="account-bar">
             <span>Signed in as {user.email}</span>
+            <AppWalkthrough key={user.id} userId={user.id} />
             <button disabled={busy} onClick={async () => {
                 setBusy(true);
                 setLogoutError('');

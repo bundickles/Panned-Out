@@ -1,0 +1,32 @@
+.app-walkthrough {
+    box-sizing: border-box;
+    width: min(560px, calc(100% - 28px));
+    max-height: 90dvh;
+    margin: auto;
+    padding: clamp(22px, 5vw, 40px);
+    overflow-y: auto;
+    border: 1px solid #d8cdc0;
+    border-radius: 18px;
+    background: #fffaf2;
+    color: #392d26;
+    box-shadow: 0 24px 80px rgb(30 24 20 / 20%);
+    text-align: left;
+}
+.app-walkthrough::backdrop { background: rgb(30 24 20 / 60%); }
+.walkthrough-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.walkthrough-topline > span { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; color: #8c4936; }
+.app-walkthrough button { min-height: 44px; padding: 10px 16px; border: 1px solid #ac614c; border-radius: 8px; background: transparent; color: #713e2d; font: inherit; cursor: pointer; }
+.walkthrough-topline button { font-size: 13px; flex-shrink: 0; }
+.walkthrough-icon { display: grid; place-items: center; width: 76px; height: 76px; margin: 28px 0 22px; background: #f1e5d1; border-radius: 20px; color: #91513b; font-size: 34px; }
+.walkthrough-progress { font-size: 12px; color: #746457; }
+.app-walkthrough h2 { margin: 10px 0 16px; font-family: var(--font-display, Georgia, serif); font-size: clamp(28px, 6vw, 38px); font-weight: 600; line-height: 1.15; }
+.walkthrough-description { font-size: 16px; line-height: 1.7; }
+.walkthrough-tip { margin: 22px 0; padding: 16px; border-left: 3px solid #ac614c; background: #f5eee4; font-size: 14px; line-height: 1.7; }
+.walkthrough-dots { display: flex; gap: 7px; margin: 24px 0; }
+.walkthrough-dots span { width: 8px; height: 8px; background: #d8cdc0; border-radius: 50%; }
+.walkthrough-dots .active { width: 24px; border-radius: 8px; background: #98543f; }
+.walkthrough-actions { display: flex; justify-content: space-between; gap: 12px; }
+.app-walkthrough .walkthrough-primary { background: #98543f; color: #fffaf2; }
+.app-walkthrough button:hover:not(:disabled) { background: #eadcc7; color: #392d26; }
+.app-walkthrough button:disabled { opacity: .45; cursor: default; }
+.app-walkthrough :focus-visible { outline: 3px solid #713e2d; outline-offset: 4px; }
