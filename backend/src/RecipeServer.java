@@ -67,6 +67,29 @@ public class RecipeServer {
                                SuggestedRecipeCatalog catalog) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
+        if (path.matches("/api/recipes/suggested:[0-9]+/save")) {
+            if (!method.equals("POST")) {
+                exchange.getResponseHeaders().set("Allow", "POST");
+                throw new ApiError(405, "Method not allowed.");
+            }
+            String suggestedId = path.substring("/api/recipes/".length(), path.length() - "/save".length());
+            Recipe original = catalog.original(suggestedId);
+            Map<String, String> fields = form(exchange);
+            String mealType = required(fields, "mealType");
+            if (!java.util.List.of("Breakfast", "Lunch", "Dinner", "Snack").contains(mealType))
+                throw new IllegalArgumentException("Choose a valid meal type.");
+            synchronized (repository) {
+                Recipe existing = repository.getRecipes().stream()
+                        .filter(recipe -> suggestedId.equals(recipe.getSuggestedId())).findFirst().orElse(null);
+                if (existing != null) { respond(exchange, 200, json(existing)); return; }
+                Recipe saved = new Recipe(repository.nextId(), original.getName(), "My Recipes",
+                        original.getDifficulty(), original.getPrepTime(), 0, 0, 0, 0, 0, "",
+                        original.getIngredients(), original.getInstructions(), mealType).withSuggestedId(suggestedId);
+                repository.addRecipe(saved);
+                respond(exchange, 201, json(saved));
+            }
+            return;
+        }
         boolean updating = path.matches("/api/recipes/[0-9]+") && method.equals("PUT");
         if (path.equals("/api/recipes") || updating) {
             if (method.equals("GET") && !updating) {
@@ -98,6 +121,7 @@ public class RecipeServer {
                             number(fields, "prepTime"), number(fields, "calories"), number(fields, "protein"),
                             number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), updating ? existing.getImage() : "",
                             ingredients, instructions, required(fields, "mealType"));
+                    if (updating) recipe.withSuggestedId(existing.getSuggestedId());
                     if (updating) repository.updateRecipe(recipe);
                     else repository.addRecipe(recipe);
                     respond(exchange, updating ? 200 : 201, json(recipe));
@@ -177,6 +201,7 @@ public class RecipeServer {
                 + ",\"prepTime\":" + r.getPrepTime() + ",\"calories\":" + r.getCalories()
                 + ",\"protein\":" + r.getProtein() + ",\"fat\":" + r.getFat()
                 + ",\"carbohydrates\":" + r.getCarbohydrates() + ",\"fiber\":" + r.getFiber()
+                + (r.getSuggestedId() == null ? "" : ",\"suggestedId\":" + quote(r.getSuggestedId()))
                 + ",\"image\":" + quote(r.getImage()) + ",\"ingredients\":" + quote(r.getIngredients())
                 + ",\"instructions\":" + quote(r.getInstructions()) + ",\"mealType\":" + quote(r.getMealType()) + "}";
     }
