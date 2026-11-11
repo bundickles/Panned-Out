@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from "react";
 
 import "./Calendar.css"; 
@@ -8,15 +9,19 @@ import AddMealForm from "./AddMealForm";
 import { getMeals, addMeal, removeMeal } from "../../api/meals";
 
 function Calendar() {
+    const [params] = useSearchParams();
     const today = new Date();
+    const requested = params.get('date');
+    const parsed = /^\d{4}-\d{2}-\d{2}$/.test(requested || '') ? new Date(`${requested}T12:00:00`) : null;
+    const initialDate = parsed && !Number.isNaN(parsed.getTime()) && getDateKey(parsed) === requested ? parsed : today;
     const [view, setView] = useState("month");
 
     const [currentDate, setCurrentDate] = useState(
-        new Date(today.getFullYear(), today.getMonth(), 1)
+        new Date(initialDate.getFullYear(), initialDate.getMonth(), 1)
     );
 
     const [selectedDate, setSelectedDate] = useState(
-        new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        new Date(initialDate.getFullYear(), initialDate.getMonth(), initialDate.getDate())
     );
 
     const [meals, setMeals] = useState([]);
