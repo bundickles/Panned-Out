@@ -28,8 +28,12 @@ final class ShoppingListApi {
         String[] parts = path.substring(BASE.length()).split("/", -1);
         if (parts.length == 2 && !parts[1].isEmpty()) {
             String listId = SavedShoppingList.uuid(parts[1]);
-            if (!method.equals("GET")) { methodNotAllowed(exchange, "GET"); return; }
-            RecipeServer.respond(exchange, 200, lists.get(listId).json());
+            if (method.equals("GET")) {
+                RecipeServer.respond(exchange, 200, lists.get(listId).json());
+            } else if (method.equals("DELETE")) {
+                lists.delete(listId);
+                RecipeServer.respond(exchange, 200, "{\"deleted\":true}");
+            } else { methodNotAllowed(exchange, "GET, DELETE"); }
         } else if (parts.length == 5 && parts[2].equals("items") && parts[4].equals("purchased")) {
             String listId = SavedShoppingList.uuid(parts[1]);
             String itemId = SavedShoppingList.uuid(parts[3]);

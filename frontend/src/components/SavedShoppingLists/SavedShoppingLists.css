@@ -10,3 +10,8 @@
 .purchased-item { text-decoration: line-through; }
 .saved-shopping-lists [role=alert] { padding: 12px 0; color: #874230; }
 .saved-shopping-lists button:focus-visible { outline: 3px solid #b65c4b; outline-offset: 3px; }
+
+.saved-list-delete, .saved-list-delete-confirm button { padding: 10px 14px; border: 1px solid #874230; border-radius: 6px; color: #723423; background: #fff; font: inherit; cursor: pointer; }
+.saved-list-delete-confirm { border: 1px solid #874230; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.saved-list-delete-confirm button + button { margin-left: 10px; }
+.saved-shopping-lists button:disabled { opacity: .6; cursor: wait; }
