@@ -1,3 +1,4 @@
+import SavedShoppingLists from '../../components/SavedShoppingLists/SavedShoppingLists';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar.jsx';
@@ -125,6 +126,7 @@ export default function Shopping() {
                             </div>
                         </section>}
                 </div>}
+                <SavedShoppingLists generated={data} />
             </div>
             <aside className="shopping-sidepanel">
                 <section className="shopping-panel-card">
