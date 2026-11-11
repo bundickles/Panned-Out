@@ -37,6 +37,9 @@ public class RecipeServer {
                     throw new ApiError(403, "Request verification failed.");
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
+                } else if (exchange.getRequestURI().getPath().equals("/api/profile")
+                        || exchange.getRequestURI().getPath().equals("/api/settings")) {
+                    ProfileSettingsApi.handle(exchange, auth.preferences(exchange));
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
                     handle(exchange, auth.recipes(exchange), catalog);
                 } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
