@@ -1,0 +1,9 @@
+.plan-recipes { margin: 24px 0; }
+.plan-recipes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; list-style: none; padding: 0; margin-top: 16px; }
+.plan-recipes-grid a { display: block; height: 100%; padding: 20px; border: 1px solid #d8cdc0; border-radius: 12px; background: #fcf8f1; color: inherit; text-decoration: none; }
+.plan-recipes-grid a:hover { border-color: #b65c4b; }
+.plan-recipes-grid a:focus-visible { outline: 3px solid #b65c4b; outline-offset: 3px; }
+.plan-recipes-grid p { margin: 10px 0; }
+.plan-recipes-grid span { color: #874230; font-weight: 600; }
+.plan-recipe-filter { margin: 24px 0 8px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.plan-recipe-filter select { font: inherit; padding: 10px; border: 1px solid #d8cdc0; border-radius: 8px; background: #fcf8f1; }

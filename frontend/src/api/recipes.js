@@ -12,11 +12,15 @@ async function request(path = '', options = {}) {
         throw new Error('The recipe server is unavailable. Please try again.');
     }
     if (response.status === 401) window.dispatchEvent(new Event("panned-session-expired"));
-    if (!response.ok) throw new Error(data.error || 'Unable to update recipes. Please try again.');
+    if (!response.ok) {
+        const error = new Error(data.error || 'Unable to load recipes. Please try again.');
+        error.status = response.status;
+        throw error;
+    }
     return data;
 }
 
-export const getRecipes = () => request();
+export const getRecipes = ({ filter, signal } = {}) => request(filter ? `?${new URLSearchParams({ filter })}` : '', { signal });
 export const createRecipe = (fields) => request('', { method: 'POST', body: new URLSearchParams(fields) });
 export const removeRecipe = (id) => request(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
 
