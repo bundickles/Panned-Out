@@ -1,3 +1,4 @@
+import ScheduleRecipe from '../../components/ScheduleRecipe/ScheduleRecipe';
 import SaveSuggestedRecipe from '../../components/SaveSuggestedRecipe/SaveSuggestedRecipe';
 import { useSavedSuggestions } from '../../hooks/useSavedSuggestions';
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ function RecipeDetails() {
     const back = () => navigate(backToPlans ? state.from : '/recipes');
     const backLabel = backToPlans ? '← Back to Meal Plans' : '← Back to Recipes';
     const [reload, setReload] = useState(0);
+    const [scheduling, setScheduling] = useState(false);
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -120,11 +122,7 @@ function RecipeDetails() {
         navigate("/shopping");
     }
 
-    function addToCalendar() {
-        // Opens the calendar for now. Saving a scheduled meal
-        // requires connecting this action to calendar data.
-        navigate("/calendar");
-    }
+    function addToCalendar() { setScheduling(true); }
 
     //existing form doesn't collect servings or a description, so the page uses a placeholder for servings and a short 
     //decorative sentence for the description.
@@ -207,6 +205,7 @@ function RecipeDetails() {
 
                         <SaveSuggestedRecipe key={recipe.id} recipe={recipe} savedId={savedSuggestions.ids[recipe.id]} checking={savedSuggestions.loading} />
                         {savedSuggestions.error && recipe.source === 'suggested' && <p role="alert">{savedSuggestions.error}<button onClick={savedSuggestions.retry}>Retry saved state</button></p>}
+                        {scheduling && <ScheduleRecipe key={recipe.id} recipe={recipe} onCancel={() => setScheduling(false)} />}
                         <div className="journal-actions">
                             <button
                                 className="journal-primary-button"
