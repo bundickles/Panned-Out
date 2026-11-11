@@ -1,0 +1,12 @@
+.saved-shopping-lists { margin-top: 32px; padding: 24px; border: 1px solid #d8cdc0; border-radius: 12px; background: #fcf8f1; }
+.saved-shopping-lists p { margin: 10px 0; }
+.saved-list-picker { display: flex; flex-wrap: wrap; list-style: none; gap: 8px; padding: 16px 0; }
+.saved-list-picker button { font: inherit; padding: 10px; border: 1px solid #d8cdc0; border-radius: 8px; background: transparent; color: inherit; }
+.saved-list-picker button[aria-pressed=true] { border-color: #874230; background: #f3e7d0; }
+.saved-list-details ul { list-style: none; padding: 0; }
+.saved-list-details li { margin: 12px 0; overflow-wrap: anywhere; }
+.saved-list-details label { display: inline-flex; gap: 10px; align-items: center; }
+.saved-list-details input { width: 20px; height: 20px; accent-color: #874230; }
+.purchased-item { text-decoration: line-through; }
+.saved-shopping-lists [role=alert] { padding: 12px 0; color: #874230; }
+.saved-shopping-lists button:focus-visible { outline: 3px solid #b65c4b; outline-offset: 3px; }
