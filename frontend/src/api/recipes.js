@@ -25,3 +25,5 @@ export const createRecipe = (fields) => request('', { method: 'POST', body: new 
 export const removeRecipe = (id) => request(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
 
 export const updateRecipe = (id, fields) => request(`/${encodeURIComponent(id)}`, { method: 'PUT', body: new URLSearchParams(fields) });
+
+export const saveSuggestedRecipe = (id, mealType) => request(`/${encodeURIComponent(id)}/save`, { method: 'POST', body: new URLSearchParams({ mealType }) });

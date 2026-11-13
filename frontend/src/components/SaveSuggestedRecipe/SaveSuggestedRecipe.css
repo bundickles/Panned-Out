@@ -1,0 +1,10 @@
+.save-suggestion { padding: 12px 0; }
+.save-suggestion button, .save-suggestion select { font: inherit; padding: 9px 12px; border: 1px solid #b65c4b; border-radius: 8px; background: #fcf8f1; color: #51382b; }
+.save-suggestion form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.save-suggestion label { display: grid; gap: 5px; }
+.save-suggestion button:disabled { opacity: .65; cursor: default; }
+.save-suggestion button:focus-visible { outline: 3px solid #b65c4b; outline-offset: 2px; }
+.plan-recipes-grid li { min-width: 0; }
+.plan-recipes-grid .save-suggestion { padding: 12px; }
+.plan-recipes-grid li { display: flex; flex-direction: column; }
+.plan-recipes-grid a { height: auto; flex: 1; }

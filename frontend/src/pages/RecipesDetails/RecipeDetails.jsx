@@ -1,3 +1,5 @@
+import SaveSuggestedRecipe from '../../components/SaveSuggestedRecipe/SaveSuggestedRecipe';
+import { useSavedSuggestions } from '../../hooks/useSavedSuggestions';
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getRecipes } from "../../api/recipes";
@@ -6,6 +8,7 @@ import "./RecipeDetails.css";
 
 function RecipeDetails() {
     const { id } = useParams();
+    const savedSuggestions = useSavedSuggestions();
     const navigate = useNavigate();
     const { state } = useLocation();
     const backToPlans = typeof state?.from === 'string' && (state.from === '/meal-plans' || state.from.startsWith('/meal-plans?'));
@@ -206,6 +209,8 @@ function RecipeDetails() {
                             </div>
                         </div>
 
+                        <SaveSuggestedRecipe key={recipe.id} recipe={recipe} savedId={savedSuggestions.ids[recipe.id]} checking={savedSuggestions.loading} />
+                        {savedSuggestions.error && recipe.source === 'suggested' && <p role="alert">{savedSuggestions.error}<button onClick={savedSuggestions.retry}>Retry saved state</button></p>}
                         <div className="journal-actions">
                             <button
                                 className="journal-primary-button"
