@@ -59,6 +59,11 @@ final class ShoppingListRepository {
         return updated;
     }
 
+    synchronized void delete(String id) throws IOException {
+        if (!Files.deleteIfExists(path(id)))
+            throw new RecipeServer.ApiError(404, "Shopping list not found.");
+    }
+
     private Path path(String id) { return directory.resolve(SavedShoppingList.uuid(id) + ".properties"); }
 
     private void write(SavedShoppingList snapshot) throws IOException {
