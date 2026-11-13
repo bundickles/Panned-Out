@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getRecipes } from "../../api/recipes";
 import "./RecipeDetails.css";
 
@@ -7,8 +7,14 @@ import "./RecipeDetails.css";
 function RecipeDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { state } = useLocation();
+    const backToPlans = typeof state?.from === 'string' && (state.from === '/meal-plans' || state.from.startsWith('/meal-plans?'));
+    const back = () => navigate(backToPlans ? state.from : '/recipes');
+    const backLabel = backToPlans ? '← Back to Meal Plans' : '← Back to Recipes';
+    const [reload, setReload] = useState(0);
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [error, setError] = useState("");
     const [checkedIngredients, setCheckedIngredients] = useState([]);
 
@@ -18,9 +24,11 @@ function RecipeDetails() {
         async function loadRecipe() {
             setLoading(true);
             setError("");
+            setNotFound(false);
+            setRecipe(null);
 
             try {
-                const recipes = await getRecipes();
+                const recipes = await getRecipes({ filter: id.startsWith('suggested:') ? 'suggested' : undefined });
                 const found = recipes.find(
                     (item) => String(item.id) === id
                 );
@@ -30,12 +38,14 @@ function RecipeDetails() {
                 if (found) {
                     setRecipe(found);
                 } else {
-                    setError("Recipe not found");
+                    setNotFound(true);
                 }
 
             } catch (err) {
                 if (active) {
-                    setError(err.message || "An error occurred");
+                    if (err.status === 401) navigate('/login', { replace: true });
+                    else if (err.status === 404) setNotFound(true);
+                    else setError(err.message || "An error occurred");
                 }
             } finally {
                 if (active) {
@@ -49,7 +59,7 @@ function RecipeDetails() {
         return () => {
             active = false;
         };
-    }, [id]);
+    }, [id, reload, navigate]);
 
     if (loading) {
         return (
@@ -64,16 +74,17 @@ function RecipeDetails() {
             <main className="recipe-detal-page">
                 <button
                     className="journal-back"
-                    onClick={() => navigate("/recipes")}
+                    onClick={back}
                 >
-                    ← Back to Recipes
+                    {backLabel}
                 </button>
                 
                 <div className="journal-message">
-                    <h1>Recipe not found</h1>
+                    <h1>{notFound ? "Recipe not found" : "Unable to open recipe"}</h1>
                     <p>
                         {error || "The recipe you are looking for does not exist."}
                     </p>
+                    {!notFound && <button type="button" onClick={() => setReload(value => value + 1)}>Retry opening recipe</button>}
                 </div>
             </main>
         );
@@ -124,9 +135,9 @@ function RecipeDetails() {
             <header className="journal-topbar">
                 <button
                     className="journal-back"
-                    onClick={() => navigate("/recipes")}
+                    onClick={back}
                 >
-                    ← Back to Recipes
+                    {backLabel}
                 </button>
 
                 <span className="journal-brand">Panned Out</span>
@@ -150,7 +161,7 @@ function RecipeDetails() {
                         )}
 
                         <p className="journal-photo-caption">
-                            From my recipe collection
+                            {recipe.source === 'suggested' ? 'From the suggested recipe collection' : 'From my recipe collection'}
                         </p>
                     </div>
 
