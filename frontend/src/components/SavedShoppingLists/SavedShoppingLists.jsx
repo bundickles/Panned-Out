@@ -65,8 +65,8 @@ export default function SavedShoppingLists({ generated }) {
         {error && <div role="alert"><p>{error.message}</p>{error.retry && <button disabled={busy} onClick={()=>purchased(error.retry.itemId,error.retry.value)}>Retry purchased update</button>}</div>}
         {!lists ? <p role="status">Loading saved lists…</p> : lists.error ? <div role="alert">{lists.error}<button onClick={()=>setRevision(value=>value+1)}>Retry saved lists</button></div>
             : lists.data.length===0 ? <p>No saved shopping lists yet.</p>
-            : <ul className="saved-list-picker">{lists.data.map(list=><li key={list.id}><button type="button" disabled={busy} aria-pressed={list.id===selected} onClick={()=>open(list.id)}>
-                {list.start} to {list.end} · {list.items.length} items · {list.id.slice(0,8)}
+            : <ul className="saved-list-picker">{lists.data.map((list,index)=><li key={list.id}><button type="button" disabled={busy} aria-pressed={list.id===selected} onClick={()=>open(list.id)}>
+                List {index+1} · {list.start} to {list.end} · {list.items.length} items
             </button></li>)}</ul>}
         {selected && (!current ? <p role="status">Opening saved list…</p> : current.error ? <div role="alert">{current.error}<button onClick={()=>setRevision(value=>value+1)}>Retry opening saved list</button></div>
             : <div className="saved-list-details">
