@@ -14,5 +14,12 @@ const assert = require('node:assert/strict');
  const next=await region.locator('h3').nth(1).innerText();await page.route('**/api/recipes/*/save',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"Test save failed"}'}));
  await region.getByRole('button',{name:`Save ${next} to My Recipes`,exact:true}).click();const second=region.getByRole('form',{name:`Save ${next}`,exact:true});await second.getByRole('button',{name:'Save recipe',exact:true}).click();await region.getByRole('alert').getByText(/Test save failed/).waitFor();
  await page.unroute('**/api/recipes/*/save');await second.getByRole('button',{name:'Save recipe',exact:true}).click();await region.getByRole('button',{name:`${next} saved to My Recipes`,exact:true}).waitFor();
+ const catalog=await (await page.request.get(base+'/api/recipes?filter=suggested')).json();
+ for(const category of ['High Protein','Low Calorie','Keto']) {
+  const suggestion=catalog.find(recipe=>recipe.plan===category);assert.ok(suggestion);
+  const response=await page.request.post(base+'/api/recipes/'+encodeURIComponent(suggestion.id)+'/save',{headers:{'X-Panned-Out-Request':'1'},form:{mealType:'Dinner'}});assert.ok([200,201].includes(response.status()));
+  await page.goto(base+'/recipes');await page.getByRole('button',{name:category,exact:true}).click();await page.getByRole('heading',{name:suggestion.name,exact:true}).waitFor();
+ }
+ console.log('PASS saved High Protein, Low Calorie and Keto recipes appear under their dietary filters');
  console.log('PASS card/detail save state, reload, single copy, failure and retry');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

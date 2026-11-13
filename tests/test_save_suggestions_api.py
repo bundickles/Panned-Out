@@ -22,7 +22,7 @@ class SaveSuggestionsApiTest(unittest.TestCase):
         for field in ('name','ingredients','instructions','difficulty','prepTime'):
             self.assertEqual(saved[field], original[field])
         self.assertEqual(saved['suggestedId'], original['id'])
-        self.assertEqual(saved['category'], 'My Recipes')
+        self.assertEqual(saved['category'], original['plan'])
         self.assertEqual(self.request(a,path,'POST',{'mealType':'Lunch'})[:2], (200,saved))
         self.assertEqual(self.request(b,'/api/recipes')[1], [])
         self.assertEqual(self.request(a,'/api/recipes?filter=suggested')[1][0],original)
@@ -35,6 +35,24 @@ class SaveSuggestionsApiTest(unittest.TestCase):
         self.assertEqual(again['name'],'My edited copy')
         self.assertEqual(len(self.request(a,'/api/recipes')[1]),1)
         self.assertEqual(again['suggestedId'],original['id'])
+
+    def test_all_dietary_categories_and_balanced_fallback(self):
+        a = self.client()
+        self.register(a, 'a@example.test')
+        for plan in ('High Protein', 'Low Calorie', 'Keto', 'Balanced'):
+            self.stop()
+            content = self.catalog.read_text(encoding='utf-8')
+            import re
+            self.catalog.write_text(re.sub(r'recipe.0.plan=.*', 'recipe.0.plan=' + plan, content), encoding='utf-8')
+            self.start()
+            self.request(a, '/api/auth/login', 'POST', {'email':'a@example.test','password':auth.PASSWORD})
+            path = '/api/recipes/suggested:1/save'
+            status, saved, _ = self.request(a, path, 'POST', {'mealType':'Dinner'})
+            self.assertEqual(status, 201)
+            self.assertEqual(saved['category'], 'My Recipes' if plan == 'Balanced' else plan)
+            self.assertEqual(self.request(a, '/api/recipes?filter=saved')[1][0]['category'], saved['category'])
+            self.assertEqual(self.request(a, path, 'POST', {'mealType':'Dinner'})[:2], (200, saved))
+            self.request(a, '/api/recipes/' + str(saved['id']), 'DELETE')
 
     def test_validation_and_no_session(self):
         a=self.client();path='/api/recipes/suggested:1/save'

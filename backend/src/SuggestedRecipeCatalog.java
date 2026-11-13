@@ -60,7 +60,7 @@ final class SuggestedRecipeCatalog {
             if (!List.of("Easy", "Medium", "Hard").contains(difficulty))
                 throw new IllegalArgumentException("Unknown suggested recipe difficulty: " + difficulty);
             originals.put("suggested:" + id, new Recipe(id, required(data, prefix + "name"),
-                    "My Recipes", difficulty, number(data, prefix + "prepTime", 0, 100000),
+                    plan, difficulty, number(data, prefix + "prepTime", 0, 100000),
                     0, 0, 0, 0, 0, "", required(data, prefix + "ingredients"),
                     required(data, prefix + "instructions"), null));
             // Namespaced IDs cannot target the numeric private-recipe mutation routes.
