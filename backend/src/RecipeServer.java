@@ -82,7 +82,9 @@ public class RecipeServer {
                 Recipe existing = repository.getRecipes().stream()
                         .filter(recipe -> suggestedId.equals(recipe.getSuggestedId())).findFirst().orElse(null);
                 if (existing != null) { respond(exchange, 200, json(existing)); return; }
-                Recipe saved = new Recipe(repository.nextId(), original.getName(), "My Recipes",
+                String category = java.util.List.of("High Protein", "Low Calorie", "Keto")
+                        .contains(original.getCategory()) ? original.getCategory() : "My Recipes";
+                Recipe saved = new Recipe(repository.nextId(), original.getName(), category,
                         original.getDifficulty(), original.getPrepTime(), 0, 0, 0, 0, 0, "",
                         original.getIngredients(), original.getInstructions(), mealType).withSuggestedId(suggestedId);
                 repository.addRecipe(saved);
