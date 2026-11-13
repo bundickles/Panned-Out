@@ -92,7 +92,7 @@ export default function SavedShoppingLists({ generated }) {
             : <div className="saved-list-details">
                 <h3>Saved list: {saved.start} to {saved.end}</h3>
                 {confirmDelete===key ? <div className="saved-list-delete-confirm" role="group" aria-label="Confirm saved list deletion">
-                    <p>Delete this saved list permanently? Your recipes, scheduled meals, and other saved lists will stay.</p>
+                    <p>Delete the saved list for {saved.start} to {saved.end} permanently? Your recipes, scheduled meals, and other saved lists will stay.</p>
                     <button type="button" disabled={busy} onClick={remove}>{busy ? 'Deleting…' : 'Confirm delete'}</button>
                     <button type="button" disabled={busy} onClick={()=>{setConfirmDelete(null);setAction(null);}}>Cancel</button>
                 </div> : <button className="saved-list-delete" type="button" disabled={busy} onClick={()=>{setConfirmDelete(key);setAction(null);setNotice('');}}>Delete list</button>}
