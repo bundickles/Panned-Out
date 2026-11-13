@@ -14,6 +14,7 @@ function RecipeDetails() {
     const [reload, setReload] = useState(0);
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [error, setError] = useState("");
     const [checkedIngredients, setCheckedIngredients] = useState([]);
 
@@ -23,6 +24,8 @@ function RecipeDetails() {
         async function loadRecipe() {
             setLoading(true);
             setError("");
+            setNotFound(false);
+            setRecipe(null);
 
             try {
                 const recipes = await getRecipes({ filter: id.startsWith('suggested:') ? 'suggested' : undefined });
@@ -35,12 +38,13 @@ function RecipeDetails() {
                 if (found) {
                     setRecipe(found);
                 } else {
-                    setError("Recipe not found");
+                    setNotFound(true);
                 }
 
             } catch (err) {
                 if (active) {
                     if (err.status === 401) navigate('/login', { replace: true });
+                    else if (err.status === 404) setNotFound(true);
                     else setError(err.message || "An error occurred");
                 }
             } finally {
@@ -76,11 +80,11 @@ function RecipeDetails() {
                 </button>
                 
                 <div className="journal-message">
-                    <h1>Unable to open recipe</h1>
+                    <h1>{notFound ? "Recipe not found" : "Unable to open recipe"}</h1>
                     <p>
                         {error || "The recipe you are looking for does not exist."}
                     </p>
-                    <button type="button" onClick={() => setReload(value => value + 1)}>Retry opening recipe</button>
+                    {!notFound && <button type="button" onClick={() => setReload(value => value + 1)}>Retry opening recipe</button>}
                 </div>
             </main>
         );
