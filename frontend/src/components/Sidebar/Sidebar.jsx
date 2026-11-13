@@ -1,8 +1,10 @@
 import { NavLink } from "react-router-dom";
+import { useSettings } from "../../features/preferences/SettingsContext";
 
 import "./Sidebar.css";
 
 function Sidebar() {
+    const { openSettings } = useSettings();
 
     return (
         <aside className="app-sidebar">
@@ -60,8 +62,13 @@ function Sidebar() {
             {/* Bottom navigation */}
             <div className="app-sidebar-bottom">
 
-                <button className="app-nav-item" type="button">
-
+                <button
+                    className="app-nav-item"
+                    type="button"
+                    onClick={openSettings}
+                    aria-haspopup="dialog"
+                    aria-controls="po-settings-dialog"
+                >
                     <span aria-hidden="true">⚙</span>
                     Settings
                 </button>

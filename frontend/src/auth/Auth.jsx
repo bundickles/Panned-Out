@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { authRequest } from '../api/auth';
 import './Auth.css';
+import { useSettings } from "../features/preferences/SettingsContext";
 
 import { AuthContext, useAuth } from "./AuthContext";
 const CHANGE_KEY = 'panned-out-account-change';
@@ -75,6 +76,7 @@ export function SessionStatus() {
 
 export function PrivatePages() {
     const { user, loading, error, signOut } = useAuth();
+    const { openSettings } = useSettings();
     const [logoutError, setLogoutError] = useState('');
     const [busy, setBusy] = useState(false);
     if (loading || error) return <SessionStatus />;
@@ -82,6 +84,15 @@ export function PrivatePages() {
     return <div key={user.id}>
         <div className="account-bar">
             <span>Signed in as {user.email}</span>
+            <button
+                type="button"
+                onClick={openSettings}
+                aria-haspopup="dialog"
+                aria-controls="po-settings-dialog"
+            >
+                <span aria-hidden="true">⚙</span>
+                Settings
+            </button>
             <button disabled={busy} onClick={async () => {
                 setBusy(true);
                 setLogoutError('');
