@@ -1,113 +1,256 @@
 
 /* ==========================================
-   PANNED OUT - RECIPE MEAL CARDS
+   PANNED OUT — CALENDAR MEAL CARDS
    ========================================== */
 
 .meal-card {
-    --difficulty-color: var(--difficulty-medium, #D0B16A);
+  --difficulty-color: var(--difficulty-medium, #d0b16a);
 
-    display: flex;
-    flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(90px, 30%) minmax(0, 1fr);
 
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 
-    padding: 0;
-    overflow: hidden;
+  overflow: hidden;
+  box-sizing: border-box;
 
-    background-color: var(--color-surface);
-    border: 2px solid var(--difficulty-color);
-    border-radius: 16px;
+  border: 1px solid var(--color-secondary, #d8c7b2);
+  border-left: 4px solid var(--difficulty-color);
+  border-radius: 16px;
 
-    cursor: pointer;
+  background: var(--color-surface);
+  color: var(--color-text);
 
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
+  box-shadow: 0 5px 18px rgba(59, 45, 38, 0.07);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .meal-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(59, 45, 38, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(59, 45, 38, 0.12);
 }
 
 /* Difficulty colors */
 
 .meal-card.difficulty-easy {
-    --difficulty-color: var(--difficulty-easy, #718B74);
+  --difficulty-color: var(--difficulty-easy, #718b74);
 }
 
 .meal-card.difficulty-medium {
-    --difficulty-color: var(--difficulty-medium, #D0B16A);
+  --difficulty-color: var(--difficulty-medium, #d0b16a);
 }
 
 .meal-card.difficulty-hard {
-    --difficulty-color: var(--difficulty-hard, #B65C4B);
+  --difficulty-color: var(--difficulty-hard, #b65c4b);
 }
 
-/* Card header */
+/* Photo and placeholder */
+
+.meal-card-image {
+  position: relative;
+  min-width: 0;
+  min-height: 125px;
+  overflow: hidden;
+
+  background: var(--color-highlight);
+}
+
+.meal-card-image img {
+  position: absolute;
+  inset: 0;
+
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.meal-card-image-placeholder {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle,
+      color-mix(
+        in srgb,
+        var(--color-terracotta) 10%,
+        transparent
+      ),
+      transparent 75%
+    ),
+    var(--color-highlight);
+}
+
+.meal-card-image-placeholder span {
+  font-family: var(--font-display, serif);
+  font-size: 45px;
+  color: var(--color-primary);
+  opacity: 0.65;
+}
+
+/* Main content */
+
+.meal-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+
+  min-width: 0;
+  padding: 15px;
+}
 
 .meal-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+
+  min-width: 0;
 }
 
 .meal-type {
-    color: var(--color-terracotta);
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  color: var(--color-terracotta);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
 }
 
 .meal-difficulty {
-    padding: 4px 8px;
-    border: 1px solid var(--difficulty-color);
-    border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 
-    background-color: color-mix(
-        in srgb,
-        var(--difficulty-color) 18%,
-        white
-    );
+  padding: 5px 8px;
 
-    color: var(--color-text);
-    font-size: 11px;
-    font-weight: 600;
+  border: 1px solid var(--difficulty-color);
+  border-radius: 999px;
+
+  background: color-mix(
+    in srgb,
+    var(--difficulty-color) 12%,
+    var(--color-surface)
+  );
+
+  color: var(--color-text);
+  font-size: 10px;
+  font-weight: 600;
 }
 
-/* Recipe title */
+.meal-difficulty-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--difficulty-color);
+}
+
+/* Meal title */
 
 .meal-card h3 {
-    margin: 0 0 14px;
+  margin: 0;
 
-    color: var(--color-text);
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 600;
-    line-height: 1.15;
+  font-family: var(--font-display, serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
-/* Recipe information */
+/* Time and nutrition */
 
 .meal-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 
-    color: var(--color-muted);
-    font-size: 12px;
+  color: var(--color-muted);
+  font-size: 11px;
 }
 
-/* Keyboard accessibility */
+.meal-info span {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--color-background);
+}
 
-.meal-card:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
+/* ==========================================
+   FULL CARD — DAY VIEW
+   ========================================== */
+
+.meal-card--full {
+  grid-template-columns: minmax(0, 1fr);
+  border-left: 1px solid var(--color-secondary, #d8c7b2);
+  border-top: 4px solid var(--difficulty-color);
+}
+
+.meal-card--full .meal-card-image {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+}
+
+.meal-card--full .meal-card-image-placeholder span {
+  font-size: 72px;
+}
+
+.meal-card--full .meal-card-body {
+  padding: 20px;
+  gap: 12px;
+}
+
+.meal-card--full h3 {
+  font-size: clamp(21px, 2.5vw, 27px);
+}
+
+.meal-card--full .meal-info {
+  gap: 9px;
+  font-size: 12px;
+}
+
+/* ==========================================
+   NARROW WIDGET CONTAINERS
+   ========================================== */
+
+/*
+ * These rules respond to the width of the
+ * Meals widget, not the browser viewport.
+ */
+
+@container (max-width: 390px) {
+  .meal-card--compact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .meal-card--compact .meal-card-image {
+    min-height: 0;
+    aspect-ratio: 16 / 7;
+  }
+
+  .meal-card--compact .meal-card-body {
+    padding: 13px;
+  }
+
+  .meal-card--compact h3 {
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meal-card {
+    transition: none;
+  }
 }
