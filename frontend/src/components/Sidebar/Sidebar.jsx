@@ -1,8 +1,11 @@
 import { NavLink } from "react-router-dom";
+import { useSettings } from "../../features/preferences/SettingsContext";
 
 import "./Sidebar.css";
+import ThemeIcon from "../ThemeArt/ThemeIcon";
 
 function Sidebar() {
+    const { openSettings } = useSettings();
 
     return (
         <aside className="app-sidebar">
@@ -21,7 +24,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span aria-hidden="true">▦</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="calendar" />
+                    </span>
                     Calendar
                 </NavLink>
 
@@ -31,7 +36,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span aria-hidden="true">🍽</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="recipes" />
+                    </span>
                     Recipes
                 </NavLink>
 
@@ -41,7 +48,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span aria-hidden="true">🛒</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="shopping" />
+                    </span>
                     Shopping List
                 </NavLink>
 
@@ -51,7 +60,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                     >
-                    <span aria-hidden="true">▤</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="meal-plans" />
+                    </span>
                     Meal Plans
                     </NavLink>
 
@@ -60,9 +71,16 @@ function Sidebar() {
             {/* Bottom navigation */}
             <div className="app-sidebar-bottom">
 
-                <button className="app-nav-item" type="button">
-
-                    <span aria-hidden="true">⚙</span>
+                <button
+                    className="app-nav-item"
+                    type="button"
+                    onClick={openSettings}
+                    aria-haspopup="dialog"
+                    aria-controls="po-settings-dialog"
+                >
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="settings" />
+                    </span>
                     Settings
                 </button>
 

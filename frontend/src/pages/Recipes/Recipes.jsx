@@ -6,6 +6,9 @@ import Sidebar from '../../components/Sidebar/Sidebar.jsx';
 import RecipeForm from './RecipeForm';
 import { getRecipes, createRecipe, updateRecipe, removeRecipe } from '../../api/recipes';
 import { filterRecipes } from './filterRecipes.js';
+import ketoArt from "../../assets/meal-plans/keto.png";
+import lowCalorieArt from "../../assets/meal-plans/low-calorie.png";
+import highProteinArt from "../../assets/meal-plans/high-protein.png";
 
 function Recipes() {
     const navigate = useNavigate();
@@ -201,8 +204,8 @@ function Recipes() {
                     <div className="plan-grid">
 
                         <div className="plan-card">
-                            <span className="plan-icon">
-                                🥑
+                            <span className="plan-icon" aria-hidden="true">
+                                <img src={ketoArt} alt="" />
                             </span>
 
                             <h3>
@@ -219,8 +222,8 @@ function Recipes() {
                         </div>
 
                         <div className="plan-card">
-                            <span className="plan-icon">
-                                🥗
+                            <span className="plan-icon" aria-hidden="true">
+                                <img src={lowCalorieArt} alt="" />
                             </span>
 
                             <h3>
@@ -237,8 +240,8 @@ function Recipes() {
                         </div>
 
                         <div className="plan-card">
-                            <span className="plan-icon">
-                                💪
+                            <span className="plan-icon" aria-hidden="true">
+                                <img src={highProteinArt} alt="" />
                             </span>
 
                             <h3>

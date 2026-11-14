@@ -1,0 +1,525 @@
+
+/*
+ * PANNED OUT - PAGE THEME OVERRIDES
+ *
+ * Fixes hardcoded colors in Calendar, Shopping,
+ * and Meal Plans without editing their CSS files.
+ *
+ * Original Rustic keeps its existing appearance.
+ */
+
+html[data-panned-theme]:not([data-panned-theme="rustic"]) {
+  --po-page-border: var(--po-border, var(--color-secondary));
+  --po-soft-panel: color-mix(
+    in srgb,
+    var(--color-surface) 80%,
+    var(--color-highlight)
+  );
+  --po-soft-hover: color-mix(
+    in srgb,
+    var(--color-surface) 55%,
+    var(--color-highlight)
+  );
+  --po-button-text: #ffffff;
+}
+
+/* Dark theme needs dark text on its light accent buttons. */
+html[data-panned-theme="dark"] {
+  --po-button-text: #241b18;
+}
+
+/* ==========================================
+   CALENDAR PAGE
+   ========================================== */
+
+/* Borders used throughout the calendar. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-page :is(
+    .today-button,
+    .calendar-arrow,
+    .calendar,
+    .calendar-weekdays,
+    .calendar-cell,
+    .calendar-week-day,
+    .calendar-single-day,
+    .day-navigation button,
+    .add-meal-form,
+    .add-meal-form select,
+    .add-meal-form > button,
+    .remove-meal-button,
+    .empty-meals
+  ) {
+  border-color: var(--po-page-border);
+}
+
+/* Month / Week / Day selector and weekday backgrounds. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-view-controls,
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-weekdays,
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-cell.empty {
+  background-color: var(--color-highlight);
+}
+
+/* Calendar day hover states. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-cell:hover:not(.empty),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-week-day:hover {
+  background-color: var(--po-soft-hover);
+}
+
+/* Selected calendar day. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-cell.selected,
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .calendar-week-day.selected {
+  border-color: var(--color-primary);
+}
+
+/* Active Month / Week / Day button. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .view-button.active {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Scheduled meal previews in Week view. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .week-meal {
+  background-color: var(--color-highlight);
+  color: var(--color-text);
+}
+
+/* Ensure Add Meal button text has sufficient contrast. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .add-meal-button {
+  color: var(--po-button-text);
+}
+
+/* ==========================================
+   SHOPPING LIST PAGE
+   ========================================== */
+
+/* Make the Shopping page inherit the selected theme. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page {
+  --chocolate: var(--color-text);
+  --walnut: var(--color-primary);
+  --oat: var(--color-highlight);
+  --cream: var(--color-surface);
+  --terracotta: var(--color-terracotta);
+  --gold: var(--color-ochre);
+
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+/* Shopping cards, panels and ingredient sections. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .shopping-week-picker,
+    .shopping-panel-card,
+    .shopping-empty,
+    .shopping-add-form,
+    .shopping-progress,
+    .shopping-aisle,
+    .saved-shopping-lists
+  ) {
+  background: var(--color-surface);
+  border-color: var(--po-page-border);
+  color: var(--color-text);
+}
+
+/* Secondary shopping text. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .shopping-heading p:not(.shopping-eyebrow),
+    .shopping-week-picker span,
+    .shopping-sources,
+    .shopping-quantity,
+    .shopping-panel-card p,
+    .shopping-progress-top span,
+    .shopping-aisle-empty,
+    .shopping-aisle-count,
+    .shopping-item.checked .shopping-item-check span
+  ) {
+  color: var(--color-muted);
+}
+
+/* Shopping links, quotes, labels and accents. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .shopping-eyebrow,
+    .shopping-text-link,
+    .shopping-quote,
+    .shopping-inline-add,
+    .shopping-delete,
+    .shopping-outline
+  ) {
+  color: var(--color-terracotta);
+}
+
+/* Inputs, date navigation and saved-list buttons. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .shopping-week-picker > button,
+    .shopping-date-range input,
+    .shopping-add-form input,
+    .shopping-add-form select,
+    .shopping-budget-goal input,
+    .saved-list-picker button,
+    .saved-list-delete,
+    .saved-list-delete-confirm button
+  ) {
+  background: var(--color-background);
+  border-color: var(--po-page-border);
+  color: var(--color-text);
+}
+
+/* Main shopping action buttons and progress bars. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .shopping-primary,
+    .shopping-progress-track div
+  ) {
+  background: var(--color-terracotta);
+  color: var(--po-button-text);
+}
+
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .shopping-primary:hover {
+  background: var(--color-deep-accent);
+}
+
+/* Hover and selected saved shopping lists. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .shopping-outline:hover:not(:disabled),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .saved-list-picker button[aria-pressed="true"] {
+  background: var(--color-highlight);
+  border-color: var(--color-terracotta);
+}
+
+/* Collapsible Ingredients header. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .shopping-aisle-header {
+  background: linear-gradient(
+    100deg,
+    var(--po-sidebar-top),
+    var(--po-sidebar-bottom)
+  );
+  color: var(--po-sidebar-text);
+}
+
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .shopping-aisle-header .shopping-aisle-count,
+    .shopping-aisle-header .shopping-aisle-icon
+  ) {
+  color: var(--po-sidebar-text);
+}
+
+/* Ingredient row dividers. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .shopping-item {
+  border-bottom-color: var(--po-page-border);
+}
+
+/* Shopping progress track. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .shopping-progress-track {
+  background: var(--color-highlight);
+}
+
+/* Error messages and notices. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .shopping-notice {
+  background: var(--color-highlight);
+  border-color: var(--po-page-border);
+  color: var(--color-text);
+}
+
+/* Support saved shopping lists from PR #37 / #39. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page :is(
+    .saved-list-delete-confirm,
+    .saved-shopping-lists [role="alert"]
+  ) {
+  border-color: var(--po-page-border);
+  color: var(--color-text);
+}
+
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .shopping-page .saved-list-details input[type="checkbox"] {
+  accent-color: var(--color-terracotta);
+}
+
+/* ==========================================
+   MEAL PLANS PAGE
+   ========================================== */
+
+/* Page background. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+/* Hero banner. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-hero {
+  background: linear-gradient(
+    115deg,
+    var(--po-sidebar-top),
+    var(--po-sidebar-bottom)
+  );
+  color: var(--po-sidebar-text);
+}
+
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-hero :is(
+    p,
+    .meal-plans-eyebrow,
+    .meal-plans-hero-footer
+  ) {
+  color: var(--po-sidebar-text);
+}
+
+/* Headings and card titles. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .meal-plans-section-heading h2,
+    .meal-plan-card-body h3,
+    .meal-plans-empty h3
+  ),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plan-modal h2 {
+  color: var(--color-text);
+}
+
+/* Paragraphs and secondary descriptions. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .meal-plans-count,
+    .meal-plan-card-body p,
+    .meal-plans-empty p
+  ),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plan-modal p {
+  color: var(--color-muted);
+}
+
+/* Card category labels and decorative accents. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .meal-plans-section-heading .meal-plans-section-label,
+    .meal-plan-category,
+    .meal-plan-leaf
+  ) {
+  color: var(--color-terracotta);
+}
+
+/* Plan cards, empty states, and modal backgrounds. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .meal-plan-card,
+    .meal-plans-empty
+  ),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plan-modal {
+  background: var(--color-surface);
+  border-color: var(--po-page-border);
+  color: var(--color-text);
+}
+
+/* Artwork placeholder and plan detail notes. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page .meal-plan-art,
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .plan-detail-note {
+  background: var(--color-highlight);
+  color: var(--color-text);
+}
+
+/* Plan card hover effects. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page .meal-plan-card:hover {
+  border-color: var(--color-terracotta);
+}
+
+/* Primary buttons. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .meal-plan-explore,
+    .create-plan-button,
+    .meal-plans-empty button
+  ),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .modal-submit {
+  background: var(--color-terracotta);
+  color: var(--po-button-text);
+}
+
+/* Button hover states. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .create-plan-button:hover,
+    .meal-plans-empty button:hover
+  ),
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .modal-submit:hover {
+  background: var(--color-deep-accent);
+}
+
+/* Create-plan modal inputs. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plan-modal :is(
+    input,
+    textarea
+  ) {
+  background: var(--color-background);
+  color: var(--color-text);
+  border-color: var(--po-page-border);
+}
+
+/* Modal labels and close/cancel controls. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plan-modal :is(
+    label,
+    .modal-close,
+    .modal-cancel
+  ) {
+  color: var(--color-text);
+}
+
+/* Modal secondary and delete buttons. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plan-modal .modal-cancel,
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .delete-plan-button {
+  border-color: var(--po-page-border);
+  color: var(--color-terracotta);
+}
+
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .delete-plan-button:hover {
+  background: var(--color-highlight);
+}
+
+/* Keyboard focus styling. */
+html[data-panned-theme]:not([data-panned-theme="rustic"])
+  .meal-plans-page :is(
+    .meal-plan-card,
+    .create-plan-button,
+    .meal-plans-empty button
+  ):focus-visible {
+  outline-color: var(--color-ochre);
+}
+
+/* ==========================================
+   SHOPPING PAGE - RESPONSIVE SIDEBAR FIX
+   ========================================== */
+
+/*
+ * The Shopping page has legacy mobile CSS
+ * that turns its sidebar into a full-width header.
+ *
+ * Keep the shared sidebar vertical, consistent
+ * with Calendar, Recipes, and Meal Plans.
+ *
+ * Applies to ALL themes, including Rustic.
+ */
+
+@media (max-width: 740px) {
+
+  /* Keep Sidebar and Shopping content side by side. */
+  #root .shopping-page {
+    flex-direction: row;
+  }
+
+  /* Restore the shared sidebar's regular layout. */
+  #root .shopping-page .app-sidebar {
+    flex: 0 0 240px;
+    width: 240px;
+    min-width: 240px;
+    min-height: 0;
+    padding: 32px 20px;
+  }
+
+  /* Restore the regular brand heading. */
+  #root .shopping-page .app-sidebar-logo {
+    font-size: 44px;
+    margin: 15px 0 66px;
+  }
+
+  #root .shopping-page .app-sidebar-logo::before {
+    content: none;
+  }
+
+  /* Keep navigation stacked vertically. */
+  #root .shopping-page .app-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  #root .shopping-page .app-nav-item {
+    display: flex;
+    width: 100%;
+    font-size: 14px;
+    padding: 13px 15px;
+  }
+
+  /* Keep the Settings button visible. */
+  #root .shopping-page .app-sidebar-bottom {
+    display: flex;
+    margin-top: auto;
+  }
+
+  /* Allow Shopping content to use remaining space. */
+  #root .shopping-page .shopping-content {
+    width: auto;
+    min-width: 0;
+  }
+}
+
+/* ==========================================
+   COMPACT SIDEBAR FOR SMALL SCREENS
+   ========================================== */
+
+@media (max-width: 700px) {
+
+  /* Match the 76px sidebar used on other pages. */
+  #root .shopping-page .app-sidebar {
+    flex: 0 0 76px;
+    width: 76px;
+    min-width: 76px;
+    padding: 24px 10px;
+  }
+
+  /* Show the compact P logo. */
+  #root .shopping-page .app-sidebar-logo {
+    font-size: 0;
+    margin-bottom: 35px;
+  }
+
+  #root .shopping-page .app-sidebar-logo::before {
+    content: "P";
+    font-size: 30px;
+  }
+
+  /* Switch navigation to icon-only buttons. */
+  #root .shopping-page .app-nav-item {
+    justify-content: center;
+    font-size: 0;
+    padding: 12px 8px;
+    gap: 0;
+  }
+
+  #root .shopping-page .app-nav-item span {
+    font-size: 18px;
+  }
+}

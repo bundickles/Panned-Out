@@ -1,0 +1,132 @@
+
+/*
+ * Panned Out global theme overrides.
+ *
+ * Original Rustic uses the colors already
+ * defined in styles/colors.css.
+ */
+
+:root[data-panned-theme] {
+  --po-sidebar-top: #34231d;
+  --po-sidebar-bottom: #291b17;
+  --po-sidebar-text: #f4e6d0;
+  --po-sidebar-active: #b65c4b;
+  --po-border: #d8cdc0;
+}
+
+/* ----------------------------------
+   PASTEL GARDEN
+---------------------------------- */
+
+:root[data-panned-theme="pastel"] {
+  --color-primary: #85628f;
+  --color-secondary: #ad86ba;
+  --color-background: #f8e9f2;
+  --color-surface: #fff8fc;
+  --color-text: #55415b;
+  --color-muted: #75667d;
+  --color-highlight: #eee0fa;
+  --color-terracotta: #a94f82;
+  --color-ochre: #bd9cce;
+  --color-deep-accent: #75406d;
+
+  --difficulty-easy: #5d8064;
+  --difficulty-medium: #9171ad;
+  --difficulty-hard: #bb5571;
+
+  --po-sidebar-top: #8c6c9d;
+  --po-sidebar-bottom: #665077;
+  --po-sidebar-active: #ae608e;
+  --po-border: #dfcbdc;
+}
+
+/* ----------------------------------
+   DARK BROWN
+---------------------------------- */
+
+:root[data-panned-theme="dark"] {
+  --color-primary: #bd9679;
+  --color-secondary: #aa8a68;
+  --color-background: #241b18;
+  --color-surface: #382b26;
+  --color-text: #f5e7d7;
+  --color-muted: #c5b1a4;
+  --color-highlight: #584535;
+  --color-terracotta: #dc9472;
+  --color-ochre: #d1aa6e;
+  --color-deep-accent: #e4ad89;
+
+  --difficulty-easy: #a3bd99;
+  --difficulty-medium: #e0bc7c;
+  --difficulty-hard: #e69a8a;
+
+  --po-sidebar-top: #201813;
+  --po-sidebar-bottom: #120f0e;
+  --po-sidebar-active: #805243;
+  --po-border: #6b5146;
+}
+
+/* ----------------------------------
+   PLAYFUL / COLORFUL
+---------------------------------- */
+
+:root[data-panned-theme="playful"] {
+  --color-primary: #317e71;
+  --color-secondary: #438f83;
+  --color-background: #fff1cf;
+  --color-surface: #fffdf4;
+  --color-text: #34504b;
+  --color-muted: #59736a;
+  --color-highlight: #d3efcf;
+  --color-terracotta: #c64f3b;
+  --color-ochre: #edb54d;
+  --color-deep-accent: #8f493e;
+
+  --difficulty-easy: #448c5e;
+  --difficulty-medium: #9c671b;
+  --difficulty-hard: #be473e;
+
+  --po-sidebar-top: #438e7f;
+  --po-sidebar-bottom: #275e58;
+  --po-sidebar-active: #c44f41;
+  --po-border: #e5d8b5;
+}
+
+/* ----------------------------------
+   SHARED SIDEBAR
+---------------------------------- */
+
+html[data-panned-theme] .app-sidebar {
+  background: linear-gradient(
+    180deg,
+    var(--po-sidebar-top),
+    var(--po-sidebar-bottom)
+  );
+  color: var(--po-sidebar-text);
+}
+
+html[data-panned-theme] .app-sidebar-logo,
+html[data-panned-theme] .app-nav-item {
+  color: var(--po-sidebar-text);
+}
+
+html[data-panned-theme] .app-nav-item.active {
+  background: var(--po-sidebar-active);
+  color: #fff;
+}
+
+/* ----------------------------------
+   ACCOUNT BAR
+---------------------------------- */
+
+html[data-panned-theme] .account-bar {
+  background: var(--color-surface);
+  border-bottom-color: var(--po-border);
+  color: var(--color-text);
+}
+
+html[data-panned-theme] .account-bar button {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--po-border);
+}
