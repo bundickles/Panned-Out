@@ -2,6 +2,19 @@
 import { useState } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import "./MealPlans.css";
+import highProteinArt from "../../assets/meal-plans/high-protein.png";
+import lowCalorieArt from "../../assets/meal-plans/low-calorie.png";
+import ketoArt from "../../assets/meal-plans/keto.png";
+import balancedArt from "../../assets/meal-plans/balanced.png";
+import customArt from "../../assets/meal-plans/custom.png";
+
+
+const PLAN_ART = {
+  "high-protein": highProteinArt,
+  "low-calorie": lowCalorieArt,
+  keto: ketoArt,
+  balanced: balancedArt,
+};
 
 // Built-in dietary collections
 const presetPlans = [
@@ -118,7 +131,12 @@ function MealPlans() {
         </div>
 
         <div className="meal-plan-art">
-          <span>{plan.icon}</span>
+          <img
+            className="po-plan-art-image"
+            src={PLAN_ART[plan.id] || customArt}
+            alt=""
+            draggable="false"
+          />
         </div>
 
         <div className="meal-plan-card-body">
@@ -330,9 +348,13 @@ function MealPlans() {
               ×
             </button>
 
-            <div className="detail-plan-icon">
-              {selectedPlan.icon}
-            </div>
+          <div className="detail-plan-icon">
+            <img
+              src={PLAN_ART[selectedPlan.id] || customArt}
+              alt=""
+              draggable="false"
+            />
+          </div>
 
             <span className="meal-plans-section-label">
               {selectedPlan.category}

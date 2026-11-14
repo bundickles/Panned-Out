@@ -14,6 +14,7 @@ import SettingsDrawer from "../../components/SettingsDrawer/SettingsDrawer";
 import { DEFAULT_THEME, isThemeId } from "./themes";
 import "./theme.css";
 import "./page-theme-overrides.css";
+import "./theme-art.css";
 
 const SettingsContext = createContext(null);
 

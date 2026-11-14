@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useSettings } from "../../features/preferences/SettingsContext";
 
 import "./Sidebar.css";
+import ThemeIcon from "../ThemeArt/ThemeIcon";
 
 function Sidebar() {
     const { openSettings } = useSettings();
@@ -23,7 +24,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span aria-hidden="true">▦</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="calendar" />
+                    </span>
                     Calendar
                 </NavLink>
 
@@ -33,7 +36,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span aria-hidden="true">🍽</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="recipes" />
+                    </span>
                     Recipes
                 </NavLink>
 
@@ -43,7 +48,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                 >
-                    <span aria-hidden="true">🛒</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="shopping" />
+                    </span>
                     Shopping List
                 </NavLink>
 
@@ -53,7 +60,9 @@ function Sidebar() {
                         `app-nav-item ${isActive ? "active" : ""}`
                     }
                     >
-                    <span aria-hidden="true">▤</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="meal-plans" />
+                    </span>
                     Meal Plans
                     </NavLink>
 
@@ -69,7 +78,9 @@ function Sidebar() {
                     aria-haspopup="dialog"
                     aria-controls="po-settings-dialog"
                 >
-                    <span aria-hidden="true">⚙</span>
+                    <span className="po-nav-art" aria-hidden="true">
+                        <ThemeIcon name="settings" />
+                    </span>
                     Settings
                 </button>
 
