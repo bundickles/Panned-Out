@@ -4,7 +4,7 @@
 .recipe-detail-page {
     --difficulty-color: var(--difficulty-medium);
 
-    min-height: 100vh;
+    min-height: 0;
     padding: 28px 5%;
     background-color: var(--color-background);
     color: var(--color-text);

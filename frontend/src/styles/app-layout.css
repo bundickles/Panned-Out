@@ -88,3 +88,23 @@
         margin-bottom: 12px;
     }
 }
+/* ==========================================
+   RECIPE DETAILS — SCROLLING FIX
+   ========================================== */
+
+/*
+ * Authenticated pages are inside a fixed-height
+ * account layout. Recipe Details needs its own
+ * scrolling area like Calendar and Recipes.
+ */
+
+#root > :has(> .account-bar) > .recipe-detail-page {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}

@@ -619,3 +619,514 @@
     cursor: wait;
 }
 
+
+/* ==========================================
+   CALENDAR DAILY DASHBOARD
+   ========================================== */
+
+/* Desktop: two widgets side by side */
+
+.calendar-day-dashboard {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 3fr)
+    minmax(250px, 2fr);
+
+  align-items: start;
+  gap: 22px;
+
+  width: 100%;
+  margin-top: 28px;
+}
+
+/* Allow widgets to shrink within grid columns */
+
+.calendar-day-dashboard > * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Left widget — Meals */
+
+.calendar-day-dashboard .meals-selection {
+  margin: 0;
+  padding: 24px;
+
+  border: 1px solid var(--color-secondary, #d8c7b2);
+  border-radius: 18px;
+
+  background: var(--color-surface, #fffaf4);
+}
+
+/* Right widget — Macro counter */
+
+.calendar-day-dashboard .macro-summary {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Compact meal heading */
+
+.calendar-day-dashboard .meals-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.calendar-day-dashboard .meals-heading h2 {
+  font-size: 28px;
+}
+
+/* Keep one compact Add Meal button */
+
+.calendar-day-dashboard .add-meal-button {
+  flex-shrink: 0;
+  padding: 9px 12px;
+}
+
+/* Stack meal cards vertically inside the left widget */
+
+.calendar-day-dashboard .meals-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+/* Compact empty state */
+
+.calendar-day-dashboard .empty-meals {
+  padding: 26px 16px;
+}
+
+/* ==========================================
+   MOBILE: STACK WIDGETS VERTICALLY
+   ========================================== */
+
+@media (max-width: 800px) {
+  .calendar-day-dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 500px) {
+  .calendar-day-dashboard .meals-selection {
+    padding: 16px;
+  }
+
+  .calendar-day-dashboard .meals-heading h2 {
+    font-size: 24px;
+  }
+
+  .calendar-day-dashboard .macro-summary {
+    padding: 20px;
+  }
+}
+.week-meal {
+  --week-meal-accent: var(--difficulty-medium, #d0b16a);
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  min-width: 0;
+  padding: 9px;
+
+  border-left: 4px solid var(--week-meal-accent);
+  border-radius: 7px;
+
+  background: var(--color-highlight);
+  color: var(--color-text);
+  text-align: left;
+}
+
+.week-meal.difficulty-easy {
+  --week-meal-accent: var(--difficulty-easy, #718b74);
+}
+
+.week-meal.difficulty-hard {
+  --week-meal-accent: var(--difficulty-hard, #b65c4b);
+}
+
+.week-meal small {
+  color: var(--color-muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.week-meal strong {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+/* ==========================================
+   RESPONSIVE MEALS WIDGET
+   ========================================== */
+
+/* Enables container queries for the meal cards */
+.calendar-day-dashboard .meals-selection {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+/* One card per row inside the Meals widget */
+.calendar-day-dashboard .meals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  min-width: 0;
+  width: 100%;
+}
+
+.calendar-day-dashboard .meals-list > * {
+  min-width: 0;
+  width: 100%;
+}
+
+.calendar-day-dashboard .scheduled-meal-entry {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Smaller Remove button */
+
+.calendar-day-dashboard .remove-meal-button {
+  margin-top: 8px;
+  padding: 6px 10px;
+
+  border: 1px solid var(--color-secondary);
+  border-radius: 8px;
+  background: var(--color-surface);
+
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.calendar-day-dashboard .remove-meal-button:hover {
+  color: var(--color-terracotta);
+  border-color: var(--color-terracotta);
+}
+
+/* ==========================================
+   CALENDAR MEAL TYPE COLORS
+   ========================================== */
+
+.calendar-page .meal-type-breakfast {
+  --meal-accent: #d5ab59;
+}
+
+.calendar-page .meal-type-lunch {
+  --meal-accent: #7e9b7c;
+}
+
+.calendar-page .meal-type-dinner {
+  --meal-accent: #b97965;
+}
+
+.calendar-page .meal-type-snack {
+  --meal-accent: #aa8eba;
+}
+
+.calendar-page .meal-type-other {
+  --meal-accent: #988e82;
+}
+
+/* ==========================================
+   MONTH VIEW — COLORED MEAL DOTS
+   ========================================== */
+
+.calendar-meal-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: 10px;
+  min-width: 0;
+}
+
+.calendar-meal-dot {
+  display: inline-block;
+
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+
+  border-radius: 50%;
+  background: var(--meal-accent, #988e82);
+}
+
+.calendar-more-meals {
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendar-meal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+
+  padding: 14px 18px;
+  border-top: 1px solid var(--color-secondary);
+
+  background: var(--color-surface);
+}
+
+.calendar-meal-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+/* ==========================================
+   WEEK VIEW — MINI RECIPE CARDS
+   ========================================== */
+
+/*
+ * Allow day tiles to wrap instead of crushing
+ * seven cards into tiny columns.
+ */
+
+.calendar-week-grid {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(155px, 1fr)
+  );
+
+  align-items: stretch;
+  gap: 12px;
+}
+
+.calendar-week-day {
+  min-width: 0;
+  padding: 14px 10px;
+  overflow: hidden;
+
+  background: var(--color-surface);
+  border-color: var(--color-secondary);
+}
+
+.week-day-meals {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+
+  min-width: 0;
+}
+
+.week-meal {
+  display: grid;
+  grid-template-columns: 39px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+
+  min-width: 0;
+  padding: 6px;
+
+  border: 1px solid var(--color-secondary);
+  border-left: 3px solid var(--meal-accent, #988e82);
+  border-radius: 9px;
+
+  background: var(--color-surface);
+  color: var(--color-text);
+
+  text-align: left;
+
+  box-shadow: 0 2px 6px rgba(59, 45, 38, 0.04);
+}
+
+.week-meal-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 39px;
+  height: 43px;
+  min-width: 0;
+
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--color-highlight);
+}
+
+.week-meal-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.week-meal-thumb > span {
+  color: var(--color-primary);
+  font-family: var(--font-display, serif);
+  font-size: 25px;
+}
+
+.week-meal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.week-meal-content small {
+  color: var(--meal-accent, var(--color-terracotta));
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.week-meal-content strong {
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   MOBILE CALENDAR
+   ========================================== */
+
+@media (max-width: 500px) {
+  .calendar-meal-dots {
+    gap: 3px;
+    margin-top: 5px;
+  }
+
+  .calendar-meal-dot {
+    width: 7px;
+    height: 7px;
+    flex-basis: 7px;
+  }
+
+  .calendar-meal-legend {
+    padding: 12px;
+    gap: 9px 14px;
+  }
+
+  .calendar-week-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendar-week-day {
+    min-height: 0;
+  }
+}
+
+/* ==========================================
+   DAY VIEW — FULL RECIPE CARDS
+   ========================================== */
+
+.calendar-single-day {
+  padding: 28px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-secondary, #d8c7b2);
+  border-radius: 18px;
+}
+
+.calendar-day-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-secondary, #d8c7b2);
+}
+
+.calendar-day-header h2 {
+  margin: 10px 0;
+  font-size: clamp(26px, 3vw, 36px);
+  font-family: var(--font-display, serif);
+  color: var(--color-text);
+}
+
+.calendar-day-header p {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+/* Two-column layout within Day view */
+
+.calendar-single-day .calendar-day-dashboard--full {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(230px, 1fr);
+
+  align-items: start;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+/* Meals panel */
+
+.calendar-single-day .meals-selection {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-secondary, #d8c7b2);
+  border-radius: 16px;
+}
+
+/* Full-sized recipe cards */
+
+.calendar-single-day .calendar-day-dashboard .meals-list {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.calendar-single-day .scheduled-meal-entry {
+  min-width: 0;
+  width: 100%;
+}
+
+.calendar-single-day .meal-card--full {
+  width: 100%;
+  height: auto;
+}
+
+/* Keep photos proportional */
+
+.calendar-single-day .meal-card--full .meal-card-image {
+  aspect-ratio: 16 / 9;
+}
+
+/* Tablet and mobile */
+
+@media (max-width: 950px) {
+  .calendar-single-day .calendar-day-dashboard--full {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .calendar-single-day {
+    padding: 15px;
+  }
+
+  .calendar-single-day .meals-selection {
+    padding: 15px;
+  }
+
+  .calendar-single-day .calendar-day-dashboard .meals-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendar-single-day .meals-heading {
+    flex-wrap: wrap;
+  }
+}

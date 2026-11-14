@@ -3,9 +3,20 @@ import { useEffect, useState } from "react";
 import "./Calendar.css"; 
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import MealCard from "../../components/MealCard/MealCard";
+import DailyMacroSummary from "../../components/DailyMacroSummary/DailyMacroSummary";
+import { getRecipes } from "../../api/recipes";
 
 import AddMealForm from "./AddMealForm";
 import { getMeals, addMeal, removeMeal } from "../../api/meals";
+
+function getMealTypeClass(type) {
+  const value = String(type || "").trim().toLowerCase();
+
+  return ["breakfast", "lunch", "dinner", "snack"]
+    .includes(value)
+    ? value
+    : "other";
+}
 
 function Calendar() {
     const today = new Date();
@@ -26,13 +37,45 @@ function Calendar() {
     const [showForm, setShowForm] = useState(false);
     const [removing, setRemoving] = useState(null);
     const [revision, setRevision] = useState(0);
+    const [recipes, setRecipes] = useState([]);
+    const [recipesError, setRecipesError] = useState("");
 
     useEffect(() => {
-        let active = true;
-        getMeals().then(data => { if (active) setMeals(data); })
-            .catch(error => { if (active) setLoadError(error.message); })
-            .finally(() => { if (active) setLoading(false); });
-        return () => { active = false; };
+    let active = true;
+
+    setLoading(true);
+    setLoadError("");
+    setRecipesError("");
+
+    Promise.allSettled([getMeals(), getRecipes()])
+        .then(([mealResult, recipeResult]) => {
+        if (!active) return;
+
+        if (mealResult.status === "fulfilled") {
+            setMeals(mealResult.value);
+        } else {
+            setLoadError(
+            mealResult.reason?.message || "Unable to load meals."
+            );
+        }
+
+        if (recipeResult.status === "fulfilled") {
+            setRecipes(recipeResult.value);
+        } else {
+            setRecipes([]);
+            setRecipesError(
+            recipeResult.reason?.message ||
+            "Unable to load recipe nutrition."
+            );
+        }
+        })
+        .finally(() => {
+        if (active) setLoading(false);
+        });
+
+    return () => {
+        active = false;
+    };
     }, [revision]);
 
     async function saveMeal(fields) {
@@ -200,7 +243,47 @@ function Calendar() {
     }
 
     const selectedDateKey = getDateKey(selectedDate);
-    const selectedMeals = meals.filter(meal => meal.date === selectedDateKey);
+    const recipesById = new Map(
+    recipes.map((recipe) => [String(recipe.id), recipe])
+    );
+
+    const selectedMeals = meals
+    .filter((meal) => meal.date === selectedDateKey)
+    .map((meal) => {
+        const recipe = recipesById.get(String(meal.recipeId));
+
+        if (!recipe) {
+        return {
+            ...meal,
+            nutritionAvailable: false,
+        };
+        }
+
+        const nutrientFields = [
+        "calories",
+        "protein",
+        "carbohydrates",
+        "fat",
+        ];
+
+        const nutritionAvailable = nutrientFields.every(
+        (field) =>
+            recipe[field] !== null &&
+            recipe[field] !== undefined &&
+            recipe[field] !== "" &&
+            Number.isFinite(Number(recipe[field]))
+        );
+
+        return {
+        ...meal,
+        image: recipe.image || meal.image || "",
+        calories: recipe.calories,
+        protein: recipe.protein,
+        carbohydrates: recipe.carbohydrates,
+        fat: recipe.fat,
+        nutritionAvailable,
+        };
+    });
 
     const selectedDateText = selectedDate.toLocaleDateString(
         "default", { weekday: "long", year: "numeric", month: "long", day: "numeric" }
@@ -321,6 +404,10 @@ function Calendar() {
                                     );
                                 }
 
+                                const dayMeals = meals.filter(
+                                (meal) => meal.date === getDateKey(day)
+                                );
+
                                 return(
                                     <button
                                         key={day.toISOString()}
@@ -329,7 +416,7 @@ function Calendar() {
                                             ${isSelected(day) ? "selected" : ""}
                                             ${isToday(day) ? "today" : ""}`}
                                     
-                                        aria-label={getDateKey(day)}
+                                        aria-label={`${getDateKey(day)}: ${dayMeals.length} planned meals`}
                                     aria-pressed={isSelected(day)}
                                     onClick={() => selectDay(day)}
                                     >
@@ -337,8 +424,21 @@ function Calendar() {
                                             {day.getDate()}
                                         </span>
 
-                                        {meals.some(meal => meal.date === getDateKey(day)) && (
-                                            <span className="meal-count">{meals.filter(meal => meal.date === getDateKey(day)).length} planned</span>
+                                        {dayMeals.length > 0 && (
+                                        <span className="calendar-meal-dots" aria-hidden="true">
+                                            {dayMeals.slice(0, 4).map((meal, index) => (
+                                            <span
+                                                key={meal.id ?? index}
+                                                className={`calendar-meal-dot meal-type-${getMealTypeClass(meal.type)}`}
+                                            />
+                                            ))}
+
+                                            {dayMeals.length > 4 && (
+                                            <span className="calendar-more-meals">
+                                                +{dayMeals.length - 4}
+                                            </span>
+                                            )}
+                                        </span>
                                         )}
                                         {isToday(day) && (
                                             <span className="today-label">Today</span>
@@ -346,6 +446,17 @@ function Calendar() {
                                     </button>
                                 );
                             })}
+                        </div>
+                        <div className="calendar-meal-legend">
+                        {["Breakfast", "Lunch", "Dinner", "Snack"].map((type) => (
+                            <span key={type}>
+                            <i
+                                className={`calendar-meal-dot meal-type-${getMealTypeClass(type)}`}
+                                aria-hidden="true"
+                            />
+                            {type}
+                            </span>
+                        ))}
                         </div>
                     </div>
                 )}
@@ -357,7 +468,18 @@ function Calendar() {
                     <div className="calendar-week-grid">
                         {weekDays.map((day) => {
                             const key = getDateKey(day);
-                            const dayMeals = meals.filter(meal => meal.date === key);
+                            const dayMeals = meals
+                            .filter((meal) => meal.date === key)
+                            .map((meal) => {
+                                const recipe = recipes.find(
+                                (item) => String(item.id) === String(meal.recipeId)
+                                );
+
+                                return {
+                                ...meal,
+                                image: recipe?.image || meal.image || "",
+                                };
+                            });
 
                             return (
                                 <button
@@ -368,7 +490,7 @@ function Calendar() {
                                         isSelected(day) ? "selected" : "",
                                         isToday(day) ? "today" : ""
                                     ].filter(Boolean).join(" ")}
-                                    aria-label={getDateKey(day)}
+                                    aria-label={`${key}: ${dayMeals.length} planned meals`}
                                     aria-pressed={isSelected(day)}
                                     onClick={() => selectDay(day)}
                                 >
@@ -382,112 +504,252 @@ function Calendar() {
                                         {day.getDate()}
                                     </span>
 
-                                    <div className="week-day-meals">
-                                        {dayMeals.length === 0 ? (
-                                            <span className="no-meals">
-                                                No meals
-                                            </span>
+
+                                <span className="week-day-meals">
+                                {dayMeals.length === 0 ? (
+                                    <span className="no-meals">
+                                    No meals
+                                    </span>
+                                ) : (
+                                    dayMeals.map((meal, index) => (
+                                    <span
+                                        className={`week-meal meal-type-${getMealTypeClass(meal.type)}`}
+                                        key={meal.id ?? `${key}-${index}`}
+                                    >
+                                        <span className="week-meal-thumb">
+                                        {meal.image ? (
+                                            <img src={meal.image} alt="" loading="lazy" />
                                         ) : (
-                                            dayMeals.map((meal, index) => (
-                                                <div
-                                                    className="week-meal"
-                                                    key={meal.id ?? `${key}-${index}`}
-                                                >
-                                                    {meal.name}
-                                                </div>
-                                            ))
+                                            <span aria-hidden="true">✿</span>
                                         )}
-                                    </div>
+                                        </span>
+
+                                        <span className="week-meal-content">
+                                        <small>{meal.type || "Meal"}</small>
+                                        <strong>{meal.name}</strong>
+                                        </span>
+                                    </span>
+                                    ))
+                                )}
+                                </span>
+
                                 </button>
                             );
                         })}
                     </div>
                 )}
 
-                {/* Day View */}
+
+                {/* ==========================================
+                    DAY VIEW — FULL MEAL CARDS
+                    ========================================== */}
+
                 {view === "day" && (
-                    <div className="calendar-single-day">
-                        <span className="calendar-eyebrow">
-                            DAILY MEAL PLAN
-                        </span>
+                <section className="calendar-single-day">
 
-                        <h2>{selectedDateText}</h2>
+                    {/* Date heading and navigation */}
+                    <div className="calendar-day-header">
+                    <span className="calendar-eyebrow">
+                        DAILY MEAL PLAN
+                    </span>
 
-                        <p>
-                            {selectedMeals.length === 0
-                                ? "No meals planned for this day yet."
-                                : `${selectedMeals.length} meal${selectedMeals.length === 1 ? "" : "s"} planned`}
-                        </p>
+                    <h2>{selectedDateText}</h2>
 
-                        <div className="day-navigation">
-                            <button
-                                type="button"
-                                onClick={goToPreviousMonth}
-                                aria-label="Previous day"
-                            >
-                                ← Previous day
-                            </button>
+                    <p>
+                        {selectedMeals.length === 0
+                        ? "No meals planned for this day yet."
+                        : `${selectedMeals.length} meal${
+                            selectedMeals.length === 1 ? "" : "s"
+                            } planned`}
+                    </p>
 
-                            <button
-                                type="button"
-                                onClick={goToNextMonth}
-                                aria-label="Next day"
-                            >
-                                Next day →
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    <div className="day-navigation">
+                        <button
+                        type="button"
+                        onClick={goToPreviousMonth}
+                        >
+                        ← Previous day
+                        </button>
 
-
-                {/* Selected Day's Meals */}
-                <section className="meals-selection">
-                    <div className="meals-heading">
-                        <div>
-                            <span>
-                                {selectedDateText.toUpperCase()}
-                            </span>
-                            <h2>Meals</h2>
-                        </div>
-
-                        <button className="add-meal-button" disabled={loading || !!loadError} onClick={() => setShowForm(true)}>
-                            + Add Meal
+                        <button
+                        type="button"
+                        onClick={goToNextMonth}
+                        >
+                        Next day →
                         </button>
                     </div>
+                    </div>
 
-                    {showForm && <AddMealForm key={selectedDateKey} date={selectedDateKey} onSave={saveMeal} onCancel={() => setShowForm(false)} />}
-                    {actionError && <p role="alert">{actionError}</p>}
-                    {loading ? <p role="status">Loading meals...</p> : loadError ? (
-                        <div role="alert">{loadError} <button onClick={() => {
-                            setLoading(true); setLoadError(''); setRevision(value => value + 1);
-                        }}>Retry meals</button></div>
-                    ) : selectedMeals.length > 0 ? (
+                    {/* Day view widgets */}
+                    <div className="calendar-day-dashboard calendar-day-dashboard--full">
+
+                    {/* LEFT: Full meal cards */}
+                    <section className="meals-selection">
+
+                        <div className="meals-heading">
+                        <div>
+                            <span>YOUR DAILY MENU</span>
+                            <h2>Planned Meals</h2>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="add-meal-button"
+                            disabled={loading || !!loadError}
+                            onClick={() => setShowForm(true)}
+                        >
+                            + Add Meal
+                        </button>
+                        </div>
+
+                        {showForm && (
+                        <AddMealForm
+                            key={selectedDateKey}
+                            date={selectedDateKey}
+                            onSave={saveMeal}
+                            onCancel={() => setShowForm(false)}
+                        />
+                        )}
+
+                        {actionError && (
+                        <p role="alert">{actionError}</p>
+                        )}
+
+                        {loading ? (
+                        <p role="status">Loading meals...</p>
+                        ) : loadError ? (
+                        <div role="alert">
+                            <p>{loadError}</p>
+                            <button
+                            type="button"
+                            onClick={() => {
+                                setLoading(true);
+                                setLoadError("");
+                                setRevision((value) => value + 1);
+                            }}
+                            >
+                            Retry meals
+                            </button>
+                        </div>
+                        ) : selectedMeals.length > 0 ? (
 
                         <div className="meals-list">
 
                             {selectedMeals.map((meal) => (
-                                <div key={meal.id}>
-                                    <MealCard meal={meal} />
-                                    <button type="button" className="remove-meal-button" disabled={removing !== null} onClick={() => deleteMeal(meal.id)} aria-label={`Remove ${meal.name} from calendar`}>
-                                        {removing === meal.id ? 'Removing...' : 'Remove meal'}
-                                    </button>
-                                </div>
+                            <div
+                                className="scheduled-meal-entry"
+                                key={meal.id}
+                            >
+                                <MealCard
+                                meal={meal}
+                                variant="full"
+                                />
 
+                                <button
+                                type="button"
+                                className="remove-meal-button"
+                                disabled={removing !== null}
+                                onClick={() => deleteMeal(meal.id)}
+                                aria-label={`Remove ${meal.name} from calendar`}
+                                >
+                                {removing === meal.id
+                                    ? "Removing..."
+                                    : "Remove meal"}
+                                </button>
+                            </div>
                             ))}
+
                         </div>
-                    ) : (
 
+                        ) : (
                         <div className="empty-meals">
-                            <h3>No meals for this day.</h3>
+                            <h3>Nothing on the menu yet.</h3>
+                            <p>
+                            Choose a recipe to start planning your day.
+                            </p>
+                        </div>
+                        )}
 
-                            <p>Add a meal to start planning your day.</p>
+                    </section>
+
+                    {/* RIGHT: Daily nutrition */}
+                    <DailyMacroSummary
+                        meals={selectedMeals}
+                        loading={loading}
+                        error={loadError || recipesError}
+                    />
+
+                    </div>
+                </section>
+                )}
+
+
+
+                {/* Selected Day's Meals */}
+                {view !== "day" && (
+                <section className="calendar-day-dashboard">
+                    <section className="meals-selection">
+                        <div className="meals-heading">
+                            <div>
+                                <span>
+                                    {selectedDateText.toUpperCase()}
+                                </span>
+                                <h2>Meals</h2>
+                            </div>
 
                             <button className="add-meal-button" disabled={loading || !!loadError} onClick={() => setShowForm(true)}>
                                 + Add Meal
                             </button>
                         </div>
-                    )}
+
+                        {showForm && <AddMealForm key={selectedDateKey} date={selectedDateKey} onSave={saveMeal} onCancel={() => setShowForm(false)} />}
+                        {actionError && <p role="alert">{actionError}</p>}
+                        {loading ? <p role="status">Loading meals...</p> : loadError ? (
+                            <div role="alert">{loadError} <button onClick={() => {
+                                setLoading(true); setLoadError(''); setRevision(value => value + 1);
+                            }}>Retry meals</button></div>
+                        ) : selectedMeals.length > 0 ? (
+
+                            <div className="meals-list">
+
+                                {selectedMeals.map((meal) => (
+                                    <div key={meal.id} className="scheduled-meal-entry">
+                                    <MealCard
+                                        meal={meal}
+                                        variant={view === "day" ? "full" : "compact"}
+                                    />
+
+                                    <button
+                                        type="button"
+                                        className="remove-meal-button"
+                                        disabled={removing !== null}
+                                        onClick={() => deleteMeal(meal.id)}
+                                        aria-label={`Remove ${meal.name} from calendar`}
+                                    >
+                                        {removing === meal.id ? "Removing..." : "Remove meal"}
+                                    </button>
+                                    </div>
+
+                                ))}
+                            </div>
+                        ) : (
+
+                            <div className="empty-meals">
+                                <h3>No meals for this day.</h3>
+
+                                <p>Add a meal to start planning your day.</p>
+
+            
+                            </div>
+                        )}
+                    </section>
+                    <DailyMacroSummary
+                    meals={selectedMeals}
+                    loading={loading}
+                    error={loadError || recipesError}
+                    />
                 </section>
+                )}
             </section>   
         </main>
     );
