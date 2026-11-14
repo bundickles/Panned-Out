@@ -1,0 +1,350 @@
+
+/* PANNED OUT - AI PHOTO STUDIO */
+
+.ai-photo-page {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.ai-photo-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(18px, 4vw, 48px);
+  overscroll-behavior: contain;
+}
+
+.ai-photo-container {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* Welcome banner */
+
+.ai-photo-hero {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: clamp(26px, 4vw, 54px);
+  margin-bottom: 26px;
+  border-radius: 18px;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  overflow: hidden;
+}
+
+.ai-photo-hero h1 {
+  font-size: clamp(40px, 5vw, 68px);
+  line-height: 1;
+  margin: 10px 0 16px;
+}
+
+.ai-photo-hero p {
+  max-width: 600px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.ai-photo-eyebrow,
+.ai-photo-step {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.ai-photo-eyebrow {
+  color: var(--color-highlight);
+}
+
+.ai-photo-step {
+  color: var(--color-terracotta);
+}
+
+.ai-photo-hero-art {
+  opacity: 0.16;
+  font-size: clamp(90px, 12vw, 180px);
+  line-height: 1;
+}
+
+/* Main layout */
+
+.ai-photo-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    minmax(270px, 0.85fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.ai-photo-side {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
+/* Panels */
+
+.ai-photo-panel,
+.ai-photo-recipes-panel {
+  min-width: 0;
+  padding: clamp(20px, 2.6vw, 32px);
+  border: 1px solid var(--color-secondary);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.ai-photo-panel h2,
+.ai-photo-recipes-panel h2 {
+  margin: 9px 0 12px;
+  font-size: clamp(26px, 2.8vw, 36px);
+  line-height: 1.1;
+}
+
+.ai-photo-panel p,
+.ai-photo-recipes-panel p {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ai-photo-panel-heading {
+  margin-bottom: 18px;
+}
+
+/* Photo preview */
+
+.ai-photo-dropzone {
+  display: grid;
+  place-items: center;
+  min-height: 270px;
+  border: 2px dashed var(--color-secondary);
+  border-radius: 14px;
+  background: var(--color-background);
+  overflow: hidden;
+}
+
+.ai-photo-preview {
+  display: block;
+  width: 100%;
+  height: 320px;
+  object-fit: contain;
+  background: var(--color-background);
+}
+
+.ai-photo-empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 30px;
+  text-align: center;
+}
+
+.ai-photo-empty-mark {
+  font-size: 58px;
+  line-height: 1;
+  color: var(--color-terracotta);
+}
+
+.ai-photo-empty strong {
+  font-size: 18px;
+}
+
+.ai-photo-empty > span:last-child {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+/* Upload and camera buttons */
+
+.ai-photo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0 0;
+}
+
+.ai-photo-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 16px;
+  min-height: 42px;
+  border: 1px solid var(--color-secondary);
+  border-radius: 9px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ai-photo-button-primary {
+  background: var(--color-terracotta);
+  color: #fff;
+  border-color: var(--color-terracotta);
+}
+
+.ai-photo-button-quiet {
+  border-color: transparent;
+}
+
+.ai-photo-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-photo-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ai-photo-page
+:is(button, input, textarea, a):focus-visible {
+  outline: 3px solid var(--color-ochre);
+  outline-offset: 3px;
+}
+
+/* Messages */
+
+.ai-photo-error {
+  margin-top: 10px;
+  color: var(--color-deep-accent) !important;
+  font-weight: 700;
+}
+
+.ai-photo-ready {
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+
+/* Future AI integration notice */
+
+.ai-photo-coming-soon {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 10px;
+  background: var(--color-highlight);
+}
+
+.ai-photo-coming-soon-mark {
+  color: var(--color-terracotta);
+  font-size: 24px;
+}
+
+.ai-photo-coming-soon strong {
+  font-size: 13px;
+}
+
+.ai-photo-coming-soon p {
+  color: var(--color-text);
+  margin-top: 4px;
+}
+
+/* Ingredient search */
+
+.ai-photo-search-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.ai-photo-search-form label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ai-photo-search-form textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--color-secondary);
+  border-radius: 9px;
+  background: var(--color-background);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.ai-photo-results {
+  margin-top: 20px;
+}
+
+.ai-photo-results h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.ai-photo-recipe-link {
+  display: grid;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-highlight);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.ai-photo-recipe-link:hover strong {
+  color: var(--color-terracotta);
+  text-decoration: underline;
+}
+
+.ai-photo-recipe-link span {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+/* Recipe collection shortcut */
+
+.ai-photo-recipes-panel {
+  background: var(--color-highlight);
+}
+
+.ai-photo-recipes-panel p {
+  margin-bottom: 18px;
+  color: var(--color-text);
+}
+
+/* Responsive layout */
+
+@media (max-width: 1060px) {
+  .ai-photo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .ai-photo-content {
+    padding: 18px 12px;
+  }
+
+  .ai-photo-hero-art {
+    display: none;
+  }
+
+  .ai-photo-hero {
+    padding: 24px;
+  }
+
+  .ai-photo-dropzone {
+    min-height: 210px;
+  }
+}

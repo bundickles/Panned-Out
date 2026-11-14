@@ -6,6 +6,7 @@ import Recipes from './pages/Recipes/Recipes';
 import RecipeDetails from './pages/RecipesDetails/RecipeDetails';
 import MealPlans from './pages/MealPlans/MealPlans';
 import { AuthProvider, PrivatePages } from './auth/Auth';
+import AIPhoto from "./pages/AIPhoto/AIPhoto";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/recipes/:id" element={<RecipeDetails />} />
             <Route path="/meal-plans" element={<MealPlans />} />
             <Route path="/shopping" element={<Shopping />} />
+            <Route path="/ai-photo" element={<AIPhoto />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
