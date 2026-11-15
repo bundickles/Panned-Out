@@ -1,14 +1,46 @@
 """SCRUM-166 browser checks against Vite with deterministic API fixtures.
-Run Vite first, then: python -m unittest discover -s tests -p test_recipe_focus_ui.py
+Run: python -m unittest discover -s tests -p test_recipe_focus_ui.py
+Starts an isolated Vite server; install frontend dependencies first.
 Requires playwright and Edge, or set PLAYWRIGHT_CHANNEL.
 """
 import json
 import os
+from pathlib import Path
+import socket
+import subprocess
+import time
 import unittest
+from urllib.request import urlopen
+from urllib.error import URLError
 from playwright.sync_api import sync_playwright, expect
 
 
 class RecipeFocusTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        root = Path(__file__).resolve().parents[1]
+        with socket.socket() as sock:
+            sock.bind(('127.0.0.1', 0))
+            port = sock.getsockname()[1]
+        cls.base = f'http://127.0.0.1:{port}'
+        server = subprocess.Popen(
+            ['node', 'node_modules/vite/bin/vite.js', '--host', '127.0.0.1',
+             '--port', str(port), '--strictPort'], cwd=root / 'frontend',
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        def stop_server():
+            server.terminate()
+            server.wait(timeout=10)
+        cls.addClassCleanup(stop_server)
+        for _ in range(100):
+            if server.poll() is not None:
+                raise RuntimeError('Vite exited before becoming ready')
+            try:
+                with urlopen(cls.base, timeout=1):
+                    return
+            except (URLError, OSError):
+                time.sleep(0.1)
+        raise RuntimeError('Vite did not become ready')
+
     def test_focus_and_timer(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(channel=os.environ.get('PLAYWRIGHT_CHANNEL', 'msedge'))
@@ -20,10 +52,11 @@ class RecipeFocusTest(unittest.TestCase):
                 recipes = [{'id': 1, 'name': 'Test soup', 'instructions': 'Chop vegetables.\n\nSimmer soup.', 'ingredients': 'Carrots'},
                            {'id': 2, 'name': 'Empty recipe', 'instructions': ''}]
                 page.route('**/api/recipes', lambda route: route.fulfill(body=json.dumps(recipes), content_type='application/json'))
-                base = os.environ.get('PANNED_OUT_UI_URL', 'http://127.0.0.1:5173')
+                base = self.base
                 page.goto(base + '/recipes/1')
                 page.clock.install()
                 opener = page.get_by_role('button', name='Open cooking focus view')
+                expect(page.get_by_text('Chop vegetables.', exact=True)).to_have_count(1)
                 opener.click()
                 dialog = page.get_by_role('dialog')
                 expect(dialog).to_be_visible()
@@ -47,6 +80,8 @@ class RecipeFocusTest(unittest.TestCase):
                 dialog.get_by_role('button', name='Resume timer').click()
                 page.keyboard.press('Escape')
                 expect(dialog).not_to_be_visible()
+                expect(page.get_by_text('Chop vegetables.', exact=True)).to_have_count(1)
+                expect(page.locator('.cooking-instruction')).to_have_count(0)
                 expect(opener).to_be_focused()
                 page.clock.fast_forward(50000)
                 expect(page.get_by_text('Time’s up! Check your food.', exact=True).first).to_be_visible()

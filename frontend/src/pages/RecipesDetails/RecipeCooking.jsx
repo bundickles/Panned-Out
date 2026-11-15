@@ -3,6 +3,7 @@ import './RecipeCooking.css';
 
 export default function RecipeCooking({ instructions, name }) {
     const dialog = useRef(null);
+    const [open, setOpen] = useState(false);
     const [step, setStep] = useState(0);
     const [minutes, setMinutes] = useState('5');
     const [remaining, setRemaining] = useState(0);
@@ -10,6 +11,10 @@ export default function RecipeCooking({ instructions, name }) {
     const [finished, setFinished] = useState(false);
     const [error, setError] = useState('');
     const trigger = useRef(null);
+
+    useEffect(() => {
+        if (open) dialog.current.showModal();
+    }, [open]);
 
     useEffect(() => {
         if (deadline === null) return;
@@ -63,12 +68,13 @@ export default function RecipeCooking({ instructions, name }) {
 
     return (
         <div className="recipe-cooking">
-            <button ref={trigger} className="journal-secondary-button" onClick={() => dialog.current.showModal()}>
+            <button ref={trigger} className="journal-secondary-button" onClick={() => setOpen(true)}>
                 Open cooking focus view
             </button>
             {(remaining > 0 || finished) && <p role="status">{status} {remaining > 0 && display}</p>}
             <dialog ref={dialog} className="cooking-dialog" aria-labelledby="cooking-title"
-                onClose={() => trigger.current?.focus()}>
+                onClose={() => { setOpen(false); trigger.current?.focus(); }}>
+                {open && <>
                 <header className="cooking-header">
                     <div><p>COOKING FOCUS</p><h2 id="cooking-title">{name}</h2></div>
                     <button autoFocus className="journal-secondary-button" onClick={() => dialog.current.close()}>Close focus view</button>
@@ -100,6 +106,7 @@ export default function RecipeCooking({ instructions, name }) {
                     </div>
                     <p className="cooking-note">The timer keeps running when you close this view. Leaving or refreshing the recipe clears it.</p>
                 </section>
+                </>}
             </dialog>
         </div>
     );
