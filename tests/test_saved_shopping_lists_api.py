@@ -74,7 +74,8 @@ class SavedShoppingListsTest(unittest.TestCase):
         self.assertEqual(self.request(alice, '/api/recipes/' + str(recipe['id']), 'PUT',
                                      {**auth.RECIPE, 'ingredients': 'New ingredients'})[0], 200)
         self.assertEqual(self.request(alice, '/api/recipes/' + str(recipe['id']), 'DELETE')[0], 200)
-        self.assertEqual(self.request(alice, '/api/meals/' + meal['id'], 'DELETE')[0], 200)
+        # Recipe deletion already removes the calendar entry, not this saved snapshot.
+        self.assertEqual(self.request(alice, '/api/meals/' + meal['id'], 'DELETE')[0], 404)
         self.restart_login(alice)
         self.assertEqual(self.request(alice, BASE + '/' + saved['id'])[1], saved)
         self.assertEqual(self.request(alice, BASE)[1], [saved])
@@ -159,12 +160,14 @@ class SavedShoppingListsTest(unittest.TestCase):
 
     def test_empty_snapshot_and_missing_recipe_warning(self):
         alice = self.client()
-        self.register(alice, 'alice@example.com')
+        account, _ = self.register(alice, 'alice@example.com')
         empty = self.save(alice, dict(start='2026-10-15', end='2026-10-15', itemCount='0', warningCount='0'))
         self.assertEqual(empty['items'], [])
         self.assertEqual(empty['warnings'], [])
         fields, recipe, _ = self.fixture(alice)
-        self.request(alice, '/api/recipes/' + str(recipe['id']), 'DELETE')
+        # Simulate an unavailable recipe outside the API; ordinary deletion cascades.
+        storage = Path(str(self.storage) + '.accounts', 'users', account['id'], 'recipes.properties')
+        storage.write_text(f'version=1\ncount=0\nlastId={recipe["id"]}\n')
         fields['itemCount'] = '0'
         warning_only = self.save(alice, fields)
         self.restart_login(alice)

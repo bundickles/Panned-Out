@@ -9,8 +9,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** File-backed recipe storage. Use one shared instance per storage file. */
 public class RecipeRepository {
@@ -111,14 +114,32 @@ public class RecipeRepository {
             List<Recipe> recipes = new ArrayList<>();
             for (int i = 0; i < count; i++) {
                 String prefix = "recipe." + i + ".";
-                recipes.add(new Recipe(
+                Recipe recipe = new Recipe(
                         number(data, prefix, "id"), data.getProperty(prefix + "name"),
                         data.getProperty(prefix + "category"), data.getProperty(prefix + "difficulty"),
                         number(data, prefix, "prepTime"), number(data, prefix, "calories"),
                         number(data, prefix, "protein"), number(data, prefix, "fat"),
                         number(data, prefix, "carbohydrates"), number(data, prefix, "fiber"),
                         data.getProperty(prefix + "image"), data.getProperty(prefix + "ingredients"),
-                        data.getProperty(prefix + "instructions"), data.getProperty(prefix + "mealType")));
+                        data.getProperty(prefix + "instructions"), data.getProperty(prefix + "mealType"));
+                for (String nutrient : Recipe.NUTRIENTS) {
+                    int value = recipe.nutrition(nutrient);
+                    if (value < 0 || value > 100000)
+                        throw new IllegalArgumentException("Invalid stored nutrition value");
+                }
+                String storedKnown = data.getProperty(prefix + "knownNutrition");
+                Set<String> known = new LinkedHashSet<>();
+                if (storedKnown == null) {
+                    // Old API writes used zero for omitted values, so legacy zeroes are ambiguous.
+                    for (String nutrient : Recipe.NUTRIENTS)
+                        if (recipe.nutrition(nutrient) > 0) known.add(nutrient);
+                } else if (!storedKnown.isEmpty()) {
+                    for (String nutrient : storedKnown.split(",", -1)) {
+                        if (!Recipe.NUTRIENTS.contains(nutrient) || !known.add(nutrient))
+                            throw new IllegalArgumentException("Invalid nutrition presence metadata");
+                    }
+                }
+                recipes.add(recipe.withKnownNutrition(known));
             }
             int maximum = recipes.stream().mapToInt(Recipe::getId).max().orElse(0);
             highWaterMark = Integer.parseInt(data.getProperty("lastId", Integer.toString(maximum)));
@@ -151,6 +172,8 @@ public class RecipeRepository {
             put(data, prefix, "fat", recipe.getFat());
             put(data, prefix, "carbohydrates", recipe.getCarbohydrates());
             put(data, prefix, "fiber", recipe.getFiber());
+            put(data, prefix, "knownNutrition", Recipe.NUTRIENTS.stream().filter(recipe::hasNutrition)
+                    .collect(Collectors.joining(",")));
             put(data, prefix, "image", recipe.getImage());
         }
         Files.createDirectories(storageFile.getParent());

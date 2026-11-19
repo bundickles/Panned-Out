@@ -38,7 +38,9 @@ public class RecipeServer {
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
-                    handle(exchange, auth.recipes(exchange), catalog);
+                    handle(exchange, auth.recipes(exchange), auth.meals(exchange), catalog);
+                } else if (exchange.getRequestURI().getPath().equals("/api/nutrition/daily")) {
+                    DailyNutritionApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
                 } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
                     GeneratedShoppingListApi.handle(exchange, auth.meals(exchange), auth.recipes(exchange));
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/meals")) {
@@ -63,7 +65,7 @@ public class RecipeServer {
         System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
         System.out.println("Account storage: " + accounts);
     }
-    private static void handle(HttpExchange exchange, RecipeRepository repository,
+    private static void handle(HttpExchange exchange, RecipeRepository repository, MealPlanRepository meals,
                                SuggestedRecipeCatalog catalog) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
@@ -98,6 +100,7 @@ public class RecipeServer {
                             number(fields, "prepTime"), number(fields, "calories"), number(fields, "protein"),
                             number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), updating ? existing.getImage() : "",
                             ingredients, instructions, required(fields, "mealType"));
+                    recipe.withKnownNutrition(fields.keySet());
                     if (updating) repository.updateRecipe(recipe);
                     else repository.addRecipe(recipe);
                     respond(exchange, updating ? 200 : 201, json(recipe));
@@ -107,7 +110,8 @@ public class RecipeServer {
                 respond(exchange, 405, "{\"error\":\"Method not allowed\"}");
             }
         } else if (path.matches("/api/recipes/[0-9]+") && method.equals("DELETE")) {
-            boolean deleted = repository.deleteRecipe(Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)));
+            boolean deleted = RecipeCalendarService.deleteRecipe(repository, meals,
+                    Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)));
             respond(exchange, deleted ? 200 : 404, deleted ? "{}" : "{\"error\":\"Recipe not found\"}");
         } else {
             respond(exchange, 404, "{\"error\":\"Not found\"}");

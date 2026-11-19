@@ -17,7 +17,7 @@ class ShoppingApiTest(unittest.TestCase):
     def test_generation_privacy_missing_recipe_and_id_persistence(self):
         alice, bob = self.client(), self.client()
         self.assertEqual(self.request(alice, self.path)[0], 401)
-        self.register(alice, 'alice@example.com')
+        account, _ = self.register(alice, 'alice@example.com')
         self.register(bob, 'bob@example.com')
         empty = {'start': '2026-10-01', 'end': '2026-10-07', 'items': [], 'warnings': []}
         self.assertEqual(self.request(alice, self.path)[1], empty)
@@ -30,7 +30,10 @@ class ShoppingApiTest(unittest.TestCase):
         self.assertEqual([item['occurrences'] for item in result['items']], [4, 2])
         self.assertEqual({s['date'] for s in result['items'][0]['sources']}, {'2026-10-01', '2026-10-07'})
         self.assertEqual(self.request(bob, self.path + '&ownerId=alice')[1], empty)
-        self.request(alice, '/api/recipes/' + str(recipe['id']), 'DELETE')
+        # An out-of-band missing recipe must still produce explicit warnings.
+        # Normal API deletion now also removes its scheduled meals (SCRUM-181).
+        storage = Path(str(self.storage) + '.accounts', 'users', account['id'], 'recipes.properties')
+        storage.write_text(f'version=1\ncount=0\nlastId={recipe["id"]}\n')
         self.stop(); self.start()
         self.assertEqual(self.request(alice, self.path)[0], 401)
         self.request(alice, '/api/auth/login', 'POST', dict(email='alice@example.com', password=auth.PASSWORD))
