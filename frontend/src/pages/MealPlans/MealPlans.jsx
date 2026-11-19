@@ -4,6 +4,8 @@ import { useSearchParams } from 'react-router-dom';
 import PlanRecipes from '../../components/PlanRecipes/PlanRecipes';
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import "./MealPlans.css";
+import SchedulePlan from "./SchedulePlan";
+
 import highProteinArt from "../../assets/meal-plans/high-protein.png";
 import lowCalorieArt from "../../assets/meal-plans/low-calorie.png";
 import ketoArt from "../../assets/meal-plans/keto.png";
@@ -398,9 +400,11 @@ function MealPlans() {
             <p>{selectedPlan.description}</p>
 
             {selectedPlan.type === 'preset'
-              ? <PlanRecipes plan={selectedPlan.name} returnTo={returnTo} />
+              ? <>
+                  <PlanRecipes plan={selectedPlan.name} returnTo={returnTo} />
+                  <SchedulePlan key={selectedPlan.id} plan={selectedPlan.name} />
+                </>
               : <p className="plan-detail-note">No recipes have been added to this custom collection yet.</p>}
-
             {selectedPlan.type === "custom" && (
               <button
                 type="button"

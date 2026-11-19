@@ -20,6 +20,7 @@ function getMealTypeClass(type) {
 }
 
 function Calendar() {
+
     const [params] = useSearchParams();
     const today = new Date();
     const requested = params.get('date');
