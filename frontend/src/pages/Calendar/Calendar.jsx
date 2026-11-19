@@ -40,43 +40,44 @@ function Calendar() {
     const [recipes, setRecipes] = useState([]);
     const [recipesError, setRecipesError] = useState("");
 
+
     useEffect(() => {
-    let active = true;
+        let active = true;
 
-    setLoading(true);
-    setLoadError("");
-    setRecipesError("");
+        Promise.allSettled([getMeals(), getRecipes()])
+            .then(([mealResult, recipeResult]) => {
+                if (!active) return;
 
-    Promise.allSettled([getMeals(), getRecipes()])
-        .then(([mealResult, recipeResult]) => {
-        if (!active) return;
+                if (mealResult.status === "fulfilled") {
+                    setMeals(mealResult.value);
+                    setLoadError("");
+                } else {
+                    setLoadError(
+                        mealResult.reason?.message ||
+                        "Unable to load meals."
+                    );
+                }
 
-        if (mealResult.status === "fulfilled") {
-            setMeals(mealResult.value);
-        } else {
-            setLoadError(
-            mealResult.reason?.message || "Unable to load meals."
-            );
-        }
+                if (recipeResult.status === "fulfilled") {
+                    setRecipes(recipeResult.value);
+                    setRecipesError("");
+                } else {
+                    setRecipes([]);
+                    setRecipesError(
+                        recipeResult.reason?.message ||
+                        "Unable to load recipe nutrition."
+                    );
+                }
+            })
+            .finally(() => {
+                if (active) setLoading(false);
+            });
 
-        if (recipeResult.status === "fulfilled") {
-            setRecipes(recipeResult.value);
-        } else {
-            setRecipes([]);
-            setRecipesError(
-            recipeResult.reason?.message ||
-            "Unable to load recipe nutrition."
-            );
-        }
-        })
-        .finally(() => {
-        if (active) setLoading(false);
-        });
-
-    return () => {
-        active = false;
-    };
+        return () => {
+            active = false;
+        };
     }, [revision]);
+
 
     async function saveMeal(fields) {
         const saved = await addMeal(fields);
@@ -274,6 +275,10 @@ function Calendar() {
             Number.isFinite(Number(recipe[field]))
         );
 
+        const allNutritionZero = nutrientFields.every(
+            (field) => Number(recipe[field]) === 0
+        );
+
         return {
         ...meal,
         image: recipe.image || meal.image || "",
@@ -281,7 +286,7 @@ function Calendar() {
         protein: recipe.protein,
         carbohydrates: recipe.carbohydrates,
         fat: recipe.fat,
-        nutritionAvailable,
+        nutritionAvailable: nutritionAvailable && !allNutritionZero,
         };
     });
 

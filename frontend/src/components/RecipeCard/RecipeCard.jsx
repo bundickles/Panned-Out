@@ -84,6 +84,7 @@ export default function RecipeCard({
           className="recipe-edit"
           disabled={deleting}
           onClick={() => onEdit(recipe)}
+          aria-label={`Edit ${recipe.name}`}
         >
           Edit recipe
         </button>
