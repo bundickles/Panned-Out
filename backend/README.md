@@ -1,8 +1,15 @@
 # Recipe backend
 
+AI photo recipe drafts (SCRUM-139), Gemini setup, and the SCRUM-84 upload contract
+are documented in [AI_PHOTO_API.md](AI_PHOTO_API.md).
+
 Saved shopping-list storage and purchased-status endpoints (SCRUM-59/60) are
 documented in [SHOPPING_LIST_API.md](SHOPPING_LIST_API.md), including the pending
 generator/UI integration contract and focused test command.
+
+Profile and account settings endpoints (SCRUM-179/180) are documented in
+[PROFILE_SETTINGS_API.md](PROFILE_SETTINGS_API.md). Their proposed options and
+defaults need Vanny's review before frontend integration.
 
 Plain Java (JDK 11 or newer), with no external dependencies. The existing model
 constructor and meal-card fields remain available.

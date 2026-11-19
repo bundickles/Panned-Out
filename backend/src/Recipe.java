@@ -7,6 +7,7 @@ public class Recipe {
     static final List<String> NUTRIENTS = List.of("calories", "protein", "carbohydrates", "fat", "fiber");
 
     private int id;
+    private String suggestedId;
     private String name;
     private String category;
     private String difficulty;
@@ -57,6 +58,13 @@ public class Recipe {
         this.ingredients = ingredients;
         this.instructions = instructions;
         this.mealType = mealType;
+    }
+
+    public String getSuggestedId() { return suggestedId; }
+
+    Recipe withSuggestedId(String value) {
+        this.suggestedId = value;
+        return this;
     }
 
     public int getId() {

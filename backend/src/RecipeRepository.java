@@ -121,7 +121,9 @@ public class RecipeRepository {
                         number(data, prefix, "protein"), number(data, prefix, "fat"),
                         number(data, prefix, "carbohydrates"), number(data, prefix, "fiber"),
                         data.getProperty(prefix + "image"), data.getProperty(prefix + "ingredients"),
-                        data.getProperty(prefix + "instructions"), data.getProperty(prefix + "mealType"));
+   aayush-SCRUM-181-182-feature-calendar-backend
+                        data.getProperty(prefix + "instructions"), data.getProperty(prefix + "mealType"))
+                        .withSuggestedId(data.getProperty(prefix + "suggestedId"));
                 for (String nutrient : Recipe.NUTRIENTS) {
                     int value = recipe.nutrition(nutrient);
                     if (value < 0 || value > 100000)
@@ -140,6 +142,7 @@ public class RecipeRepository {
                     }
                 }
                 recipes.add(recipe.withKnownNutrition(known));
+
             }
             int maximum = recipes.stream().mapToInt(Recipe::getId).max().orElse(0);
             highWaterMark = Integer.parseInt(data.getProperty("lastId", Integer.toString(maximum)));
@@ -175,6 +178,7 @@ public class RecipeRepository {
             put(data, prefix, "knownNutrition", Recipe.NUTRIENTS.stream().filter(recipe::hasNutrition)
                     .collect(Collectors.joining(",")));
             put(data, prefix, "image", recipe.getImage());
+            put(data, prefix, "suggestedId", recipe.getSuggestedId());
         }
         Files.createDirectories(storageFile.getParent());
         Path temporary = Files.createTempFile(storageFile.getParent(), "recipes-", ".tmp");
