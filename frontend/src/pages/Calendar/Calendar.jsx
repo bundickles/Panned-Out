@@ -8,7 +8,10 @@ import AddMealForm from "./AddMealForm";
 import { getMeals, addMeal, removeMeal } from "../../api/meals";
 
 function Calendar() {
-    const today = new Date();
+    const requestedDate = new URLSearchParams(window.location.search).get('date');
+    const parsed = requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+        ? new Date(`${requestedDate}T12:00:00`) : new Date();
+    const today = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
     const [view, setView] = useState("month");
 
     const [currentDate, setCurrentDate] = useState(

@@ -19,3 +19,5 @@ async function request(path = '', options = {}) {
 export const getMeals = () => request();
 export const addMeal = (fields) => request('', { method: 'POST', body: new URLSearchParams(fields) });
 export const removeMeal = (id) => request(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
+export const addMealPlan = (fields) => request('/plan', { method: 'POST', body: new URLSearchParams(fields) });

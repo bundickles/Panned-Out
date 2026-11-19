@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import "./MealPlans.css";
+import SchedulePlan from "./SchedulePlan";
 
 // Built-in dietary collections
 const presetPlans = [
@@ -344,10 +345,9 @@ function MealPlans() {
 
             <p>{selectedPlan.description}</p>
 
-            <div className="plan-detail-note">
-              Recipe selection and calendar scheduling
-              will be added in the next step.
-            </div>
+            {selectedPlan.type === "preset"
+              ? <SchedulePlan key={selectedPlan.id} plan={selectedPlan.name} />
+              : <p className="plan-detail-note">Custom collections are not premade scheduling plans.</p>}
 
             {selectedPlan.type === "custom" && (
               <button

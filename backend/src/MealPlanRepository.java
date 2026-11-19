@@ -80,6 +80,28 @@ final class MealPlanRepository {
         return meal;
     }
 
+    /** Validate the complete plan, then replace storage once; existing meals stay intact. */
+    synchronized List<Meal> addPlan(String startDate, String type, List<Recipe> recipes) {
+        LocalDate start = LocalDate.parse(date(startDate));
+        if (!List.of("Breakfast", "Lunch", "Dinner", "Snack").contains(type))
+            throw new IllegalArgumentException("Choose a valid meal type.");
+        if (recipes.isEmpty() || recipes.size() > 31)
+            throw new IllegalArgumentException("Choose between 1 and 31 saved recipes.");
+        List<Meal> added = new ArrayList<>();
+        for (int i = 0; i < recipes.size(); i++) {
+            String day;
+            try { day = date(start.plusDays(i).toString()); }
+            catch (java.time.DateTimeException e) { throw new IllegalArgumentException("Choose an earlier start date."); }
+            Recipe recipe = recipes.get(i);
+            added.add(new Meal(UUID.randomUUID().toString(), day, type, recipe.getId(),
+                    recipe.getName(), recipe.getDifficulty(), recipe.getPrepTime()));
+        }
+        List<Meal> all = getMeals();
+        all.addAll(added);
+        save(all);
+        return added;
+    }
+
     synchronized boolean remove(String id) {
         List<Meal> meals = getMeals();
         boolean removed = meals.removeIf(meal -> meal.id.equals(id));

@@ -401,3 +401,10 @@
     padding: 28px 22px;
   }
 }
+
+.plan-schedule { margin-top: 20px; text-align: left; }
+.plan-schedule fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.plan-schedule .plan-recipe-option { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.plan-schedule input[type="checkbox"] { width: 18px; height: 18px; margin: 0; }
+.plan-schedule select { display: block; width: 100%; padding: 10px; }
+.plan-detail-modal { max-height: 88dvh; overflow-y: auto; }
