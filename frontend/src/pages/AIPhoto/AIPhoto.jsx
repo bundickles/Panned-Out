@@ -2,17 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
+import PhotoRecipeStudio from "../../components/PhotoRecipeStudio/PhotoRecipeStudio";
+import { validatePhoto } from "../../api/photo";
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import { getRecipes } from "../../api/recipes";
 
 import "./AIPhoto.css";
-
-const MAX_PHOTO_SIZE = 10 * 1024 * 1024;
-const SUPPORTED_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
 
 export default function AIPhoto() {
   const [photo, setPhoto] = useState(null);
@@ -74,19 +69,8 @@ export default function AIPhoto() {
   function choosePhoto(file) {
     if (!file) return;
 
-    if (!SUPPORTED_TYPES.includes(file.type)) {
-      setPhotoError(
-        "Choose a JPEG, PNG, or WebP image."
-      );
-      return;
-    }
-
-    if (file.size > MAX_PHOTO_SIZE) {
-      setPhotoError(
-        "Choose an image smaller than 10 MB."
-      );
-      return;
-    }
+    try { validatePhoto(file); }
+    catch (error) { setPhotoError(error.message); return; }
 
     setPhotoError("");
 
@@ -97,6 +81,7 @@ export default function AIPhoto() {
     setPhoto({
       url: URL.createObjectURL(file),
       name: file.name,
+      file,
     });
   }
 
@@ -334,10 +319,9 @@ export default function AIPhoto() {
                 </h2>
 
                 <p>
-                  For now, photos are previewed
-                  only in your browser. AI image
-                  recognition will be connected
-                  in a future backend integration.
+                  Upload ingredients or a prepared dish,
+                  then analyze it to get a recipe draft
+                  you can review, edit, and save.
                 </p>
               </div>
 
@@ -371,7 +355,7 @@ export default function AIPhoto() {
                     </strong>
 
                     <span>
-                      JPEG, PNG or WebP · up to 10 MB
+                      JPEG or PNG · up to 5 MB
                     </span>
                   </div>
                 )}
@@ -395,7 +379,7 @@ export default function AIPhoto() {
                   id="ai-photo-upload"
                   className="ai-photo-file-input"
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png"
                   onChange={(event) => {
                     choosePhoto(
                       event.target.files?.[0]
@@ -470,34 +454,13 @@ export default function AIPhoto() {
                   className="ai-photo-ready"
                   role="status"
                 >
-                  Photo ready: {photo.name}.
-                  It has not been uploaded or
-                  analyzed.
+                  Photo selected: {photo.name}.
+                  Choose Analyze photo below when ready.
                 </p>
               )}
 
-              <div className="ai-photo-coming-soon">
-                <span
-                  className="ai-photo-coming-soon-mark"
-                  aria-hidden="true"
-                >
-                  ✦
-                </span>
+              {photo && !cameraOpen && <PhotoRecipeStudio key={photo.url} file={photo.file} />}
 
-                <div>
-                  <strong>
-                    AI photo recognition is the
-                    next connection
-                  </strong>
-
-                  <p>
-                    A future endpoint will identify
-                    ingredients in your photo and
-                    suggest recipes. No photo is
-                    sent to a server in this version.
-                  </p>
-                </div>
-              </div>
             </section>
 
             {/* RECIPE SEARCH PANEL */}
