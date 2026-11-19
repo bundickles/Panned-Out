@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getRecipes } from "../../api/recipes";
 import "./RecipeDetails.css";
+import RecipeCooking from "./RecipeCooking";
 
 
 function RecipeDetails() {
@@ -287,6 +288,8 @@ function RecipeDetails() {
                             <h2>Instructions</h2>
                             <p>There's no rush. Enjoy the process.</p>
                         </header>
+
+                        {instructions.length > 0 && <RecipeCooking key={id} instructions={instructions} name={recipe.name} />}
 
                         {instructions.length > 0 ? (
                             <ol className="journal-instructions">
