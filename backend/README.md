@@ -1,5 +1,8 @@
 # Recipe backend
 
+AI photo recipe drafts (SCRUM-139), Gemini setup, and the SCRUM-84 upload contract
+are documented in [AI_PHOTO_API.md](AI_PHOTO_API.md).
+
 Saved shopping-list storage and purchased-status endpoints (SCRUM-59/60) are
 documented in [SHOPPING_LIST_API.md](SHOPPING_LIST_API.md), including the pending
 generator/UI integration contract and focused test command.

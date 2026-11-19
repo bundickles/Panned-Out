@@ -24,10 +24,19 @@ public class RecipeServer {
         // Keep legacy shared data untouched and use the team's stable default path.
         Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
                 : RecipeRepository.defaultStorageFile();
+        HttpServer server = createServer(port, legacy, new AiPhotoApi(new GeminiPhotoClient()));
+        server.start();
+        System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
+        System.out.println("Account storage: " + legacy.resolveSibling(legacy.getFileName() + ".accounts"));
+    }
+
+    // Dependency injection keeps endpoint tests independent of Google and real credentials.
+    static HttpServer createServer(int port, Path legacy, AiPhotoApi photo) throws IOException {
         Path accounts = legacy.resolveSibling(legacy.getFileName() + ".accounts");
         AuthService auth = new AuthService(accounts);
         SuggestedRecipeCatalog catalog = SuggestedRecipeCatalog.loadDefault();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
+        server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(8));
         server.createContext("/api/", exchange -> {
             try {
                 // Cross-origin forms cannot set this header; no CORS permission is granted.
@@ -40,6 +49,9 @@ public class RecipeServer {
                 } else if (exchange.getRequestURI().getPath().equals("/api/profile")
                         || exchange.getRequestURI().getPath().equals("/api/settings")) {
                     ProfileSettingsApi.handle(exchange, auth.preferences(exchange));
+                } else if (exchange.getRequestURI().getPath().equals("/api/ai/photo-recipe")) {
+                    auth.requireSignedIn(exchange);
+                    photo.handle(exchange);
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
                     handle(exchange, auth.recipes(exchange), catalog);
                 } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
@@ -62,14 +74,37 @@ public class RecipeServer {
                 exchange.close();
             }
         });
-        server.start();
-        System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
-        System.out.println("Account storage: " + accounts);
+        return server;
     }
     private static void handle(HttpExchange exchange, RecipeRepository repository,
                                SuggestedRecipeCatalog catalog) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
+        if (path.matches("/api/recipes/suggested:[0-9]+/save")) {
+            if (!method.equals("POST")) {
+                exchange.getResponseHeaders().set("Allow", "POST");
+                throw new ApiError(405, "Method not allowed.");
+            }
+            String suggestedId = path.substring("/api/recipes/".length(), path.length() - "/save".length());
+            Recipe original = catalog.original(suggestedId);
+            Map<String, String> fields = form(exchange);
+            String mealType = required(fields, "mealType");
+            if (!java.util.List.of("Breakfast", "Lunch", "Dinner", "Snack").contains(mealType))
+                throw new IllegalArgumentException("Choose a valid meal type.");
+            synchronized (repository) {
+                Recipe existing = repository.getRecipes().stream()
+                        .filter(recipe -> suggestedId.equals(recipe.getSuggestedId())).findFirst().orElse(null);
+                if (existing != null) { respond(exchange, 200, json(existing)); return; }
+                String category = java.util.List.of("High Protein", "Low Calorie", "Keto")
+                        .contains(original.getCategory()) ? original.getCategory() : "My Recipes";
+                Recipe saved = new Recipe(repository.nextId(), original.getName(), category,
+                        original.getDifficulty(), original.getPrepTime(), 0, 0, 0, 0, 0, "",
+                        original.getIngredients(), original.getInstructions(), mealType).withSuggestedId(suggestedId);
+                repository.addRecipe(saved);
+                respond(exchange, 201, json(saved));
+            }
+            return;
+        }
         boolean updating = path.matches("/api/recipes/[0-9]+") && method.equals("PUT");
         if (path.equals("/api/recipes") || updating) {
             if (method.equals("GET") && !updating) {
@@ -101,6 +136,7 @@ public class RecipeServer {
                             number(fields, "prepTime"), number(fields, "calories"), number(fields, "protein"),
                             number(fields, "fat"), number(fields, "carbohydrates"), number(fields, "fiber"), updating ? existing.getImage() : "",
                             ingredients, instructions, required(fields, "mealType"));
+                    if (updating) recipe.withSuggestedId(existing.getSuggestedId());
                     if (updating) repository.updateRecipe(recipe);
                     else repository.addRecipe(recipe);
                     respond(exchange, updating ? 200 : 201, json(recipe));
@@ -180,6 +216,7 @@ public class RecipeServer {
                 + ",\"prepTime\":" + r.getPrepTime() + ",\"calories\":" + r.getCalories()
                 + ",\"protein\":" + r.getProtein() + ",\"fat\":" + r.getFat()
                 + ",\"carbohydrates\":" + r.getCarbohydrates() + ",\"fiber\":" + r.getFiber()
+                + (r.getSuggestedId() == null ? "" : ",\"suggestedId\":" + quote(r.getSuggestedId()))
                 + ",\"image\":" + quote(r.getImage()) + ",\"ingredients\":" + quote(r.getIngredients())
                 + ",\"instructions\":" + quote(r.getInstructions()) + ",\"mealType\":" + quote(r.getMealType()) + "}";
     }
