@@ -1,3 +1,5 @@
+import SaveSuggestedRecipe from '../SaveSuggestedRecipe/SaveSuggestedRecipe';
+import { useSavedSuggestions } from '../../hooks/useSavedSuggestions';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getRecipes } from '../../api/recipes';
@@ -5,6 +7,7 @@ import './PlanRecipes.css';
 
 export default function PlanRecipes({ plan, filter = 'suggested', returnTo = '/meal-plans' }) {
     const navigate = useNavigate();
+    const saved = useSavedSuggestions();
     const [result, setResult] = useState({ key: null, recipes: [], error: '' });
     const [reload, setReload] = useState(0);
     const requestKey = `${filter}:${reload}`;
@@ -28,6 +31,7 @@ export default function PlanRecipes({ plan, filter = 'suggested', returnTo = '/m
 
     const recipes = (loading ? [] : result.recipes).filter(recipe => !plan || recipe.plan === plan);
     return <section className="plan-recipes" aria-label={plan ? `${plan} recipes` : 'Browse recipes'} aria-busy={loading}>
+        {saved.error && <div role="alert">{saved.error} <button type="button" onClick={saved.retry}>Retry saved state</button></div>}
         {loading ? <p role="status">Loading recipes…</p> : result.error ? <div role="alert">
             <p>{result.error}</p>
             <button type="button" onClick={() => setReload(value => value + 1)}>Retry loading recipes</button>
@@ -43,6 +47,7 @@ export default function PlanRecipes({ plan, filter = 'suggested', returnTo = '/m
                         <p>{recipe.difficulty || 'Difficulty unavailable'} · {recipe.prepTime == null ? 'Prep time unavailable' : `${recipe.prepTime} min prep`}</p>
                         <span>Open recipe →</span>
                     </Link>
+                    <SaveSuggestedRecipe recipe={recipe} savedId={saved.ids[recipe.id]} checking={saved.loading} />
                 </li>)}
             </ul>
         </>}

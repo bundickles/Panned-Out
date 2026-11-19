@@ -1,5 +1,6 @@
+import { sortRecipes, normalizeRecipeSort, recipeSortOptions } from './sortRecipes.js';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 import './Recipes.css';
 import Sidebar from '../../components/Sidebar/Sidebar.jsx';
@@ -12,6 +13,8 @@ import highProteinArt from "../../assets/meal-plans/high-protein.png";
 
 function Recipes() {
     const navigate = useNavigate();
+    const [params, setParams] = useSearchParams();
+    const sort = normalizeRecipeSort(params.get('sort'));
 
     const categories = ['All', 'High Protein', 'Low Calorie', 'Keto', 'My Recipes'];
 
@@ -65,7 +68,7 @@ function Recipes() {
         }
     }
 
-    const filteredRecipes = filterRecipes(recipes, search, activeCategory);
+    const filteredRecipes = sortRecipes(filterRecipes(recipes, search, activeCategory), sort);
     const hasFilters = search.trim() !== '' || activeCategory !== 'All';
 
     return (
@@ -110,6 +113,17 @@ function Recipes() {
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                     />
+                </div>
+
+                <div className="recipe-search">
+                    <label htmlFor="recipe-sort">Sort recipes</label>
+                    <select id="recipe-sort" value={sort} onChange={event => {
+                        const next = new URLSearchParams(params);
+                        next.set('sort', event.target.value);
+                        setParams(next, { replace: true });
+                    }}>
+                        {recipeSortOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
                 </div>
 
                 {/*Categories */}
