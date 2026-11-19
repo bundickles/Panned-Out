@@ -59,6 +59,7 @@ class ShoppingUiTest(unittest.TestCase):
                         context.request.post(url + '/api/meals', form={'recipeId': recipe['id'], 'date': '2026-10-04', 'mealType': 'Dinner'}, headers={'X-Panned-Out-Request': '1'})
                         shopping = url + '/shopping?start=2026-10-01&end=2026-10-07'
                         page.goto(shopping)
+                        page.get_by_role('button', name='Skip tour', exact=True).click()
                         expect(page.get_by_text('Rice', exact=True)).to_be_visible()
                         expect(page.get_by_text('Alice rice — 2026-10-04', exact=True)).to_have_count(2)
                         page.get_by_label('End date').fill('2026-10-02')
@@ -104,6 +105,7 @@ class ShoppingUiTest(unittest.TestCase):
                         page.unroute('**/api/shopping-list?**')
                         context.request.post(url + '/api/auth/register', form={'email': 'bob@example.com', 'password': PASSWORD}, headers={'X-Panned-Out-Request': '1'})
                         page.goto(shopping)
+                        page.get_by_role('button', name='Skip tour', exact=True).click()
                         expect(page.get_by_text('No ingredients found', exact=False)).to_be_visible()
                         expect(page.get_by_role('heading', name='Some ingredients are unavailable')).to_have_count(0)
                         page.get_by_role('button', name='Log out', exact=True).click()

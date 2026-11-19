@@ -43,17 +43,19 @@ final class MealPlanApi {
             }
         } else if (path.equals("/api/meals")) {
             if (method.equals("GET")) {
-                RecipeServer.respond(exchange, 200, meals.getMeals().stream()
+                RecipeServer.respond(exchange, 200, RecipeCalendarService.currentMeals(recipes, meals).stream()
                         .map(MealPlanApi::json).collect(Collectors.joining(",", "[", "]")));
             } else if (method.equals("POST")) {
                 Map<String, String> fields = RecipeServer.form(exchange);
                 int recipeId;
                 try { recipeId = Integer.parseInt(fields.getOrDefault("recipeId", "")); }
                 catch (NumberFormatException e) { throw new IllegalArgumentException("Choose a recipe."); }
-                Recipe recipe = recipes.getRecipes().stream().filter(r -> r.getId() == recipeId).findFirst()
-                        .orElseThrow(() -> new RecipeServer.ApiError(404, "Recipe not found. Choose one of your saved recipes."));
-                MealPlanRepository.Meal saved = meals.add(fields.get("date"), fields.getOrDefault("mealType", ""), recipe);
-                RecipeServer.respond(exchange, 201, json(saved));
+                synchronized (recipes) {
+                    Recipe recipe = recipes.getRecipes().stream().filter(r -> r.getId() == recipeId).findFirst()
+                            .orElseThrow(() -> new RecipeServer.ApiError(404, "Recipe not found. Choose one of your saved recipes."));
+                    MealPlanRepository.Meal saved = meals.add(fields.get("date"), fields.getOrDefault("mealType", ""), recipe);
+                    RecipeServer.respond(exchange, 201, json(saved));
+                }
             } else {
                 exchange.getResponseHeaders().set("Allow", "GET, POST");
                 throw new RecipeServer.ApiError(405, "Method not allowed.");

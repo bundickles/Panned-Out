@@ -408,3 +408,49 @@
 .plan-schedule input[type="checkbox"] { width: 18px; height: 18px; margin: 0; }
 .plan-schedule select { display: block; width: 100%; padding: 10px; }
 .plan-detail-modal { max-height: 88dvh; overflow-y: auto; }
+.meal-plan-art img {
+  width: min(85%, 160px);
+  height: 145px;
+  object-fit: contain;
+}
+/* ==========================================
+   WATERCOLOR MEAL PLAN ARTWORK
+   ========================================== */
+
+/* Images displayed on meal plan cards */
+
+.meal-plan-art .po-plan-art-image {
+  display: block;
+
+  width: min(85%, 175px);
+  height: 148px;
+
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+/* Images displayed inside plan detail popups */
+
+.detail-plan-icon img {
+  display: block;
+
+  width: 120px;
+  height: 120px;
+
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+/* Smaller displays */
+
+@media (max-width: 700px) {
+  .meal-plan-art .po-plan-art-image {
+    width: min(90%, 140px);
+    height: 125px;
+  }
+
+  .detail-plan-icon img {
+    width: 100px;
+    height: 100px;
+  }
+}

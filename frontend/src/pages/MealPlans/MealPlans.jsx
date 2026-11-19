@@ -1,8 +1,24 @@
 
 import { useState } from "react";
+import { useSearchParams } from 'react-router-dom';
+import PlanRecipes from '../../components/PlanRecipes/PlanRecipes';
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import "./MealPlans.css";
 import SchedulePlan from "./SchedulePlan";
+
+import highProteinArt from "../../assets/meal-plans/high-protein.png";
+import lowCalorieArt from "../../assets/meal-plans/low-calorie.png";
+import ketoArt from "../../assets/meal-plans/keto.png";
+import balancedArt from "../../assets/meal-plans/balanced.png";
+import customArt from "../../assets/meal-plans/custom.png";
+
+
+const PLAN_ART = {
+  "high-protein": highProteinArt,
+  "low-calorie": lowCalorieArt,
+  keto: ketoArt,
+  balanced: balancedArt,
+};
 
 // Built-in dietary collections
 const presetPlans = [
@@ -41,6 +57,17 @@ const presetPlans = [
 ];
 
 function MealPlans() {
+  const [params, setParams] = useSearchParams();
+  const filter = ['suggested', 'saved', 'all'].includes(params.get('filter')) ? params.get('filter') : 'suggested';
+  const selectedPreset = presetPlans.find(plan => plan.id === params.get('plan'));
+  function selectPlan(plan) {
+    setSelectedCustom(plan?.type === 'custom' ? plan : null);
+    const next = new URLSearchParams(params);
+    if (plan?.type === 'preset') next.set('plan', plan.id);
+    else next.delete('plan');
+    setParams(next);
+  }
+
   // Load saved custom plans when the page first renders.
   const [customPlans, setCustomPlans] = useState(() => {
     try {
@@ -55,7 +82,10 @@ function MealPlans() {
   });
 
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedCustom, setSelectedCustom] = useState(null);
+  const selectedPlan = selectedPreset || selectedCustom;
+  const setSelectedPlan = selectPlan;
+  const returnTo = `/meal-plans?${params.toString()}`;
   const [planName, setPlanName] = useState("");
   const [planDescription, setPlanDescription] = useState("");
 
@@ -119,7 +149,12 @@ function MealPlans() {
         </div>
 
         <div className="meal-plan-art">
-          <span>{plan.icon}</span>
+          <img
+            className="po-plan-art-image"
+            src={PLAN_ART[plan.id] || customArt}
+            alt=""
+            draggable="false"
+          />
         </div>
 
         <div className="meal-plan-card-body">
@@ -177,6 +212,21 @@ function MealPlans() {
           <div className="meal-plans-grid">
             {presetPlans.map(renderPlanCard)}
           </div>
+
+          <h2>Browse Recipes</h2>
+          <label className="plan-recipe-filter" htmlFor="plan-recipe-filter">
+            Recipe collection
+            <select id="plan-recipe-filter" value={filter} onChange={event => {
+              const next = new URLSearchParams(params);
+              next.set('filter', event.target.value);
+              setParams(next);
+            }}>
+              <option value="suggested">Suggested recipes</option>
+              <option value="saved">My saved recipes</option>
+              <option value="all">All recipes</option>
+            </select>
+          </label>
+          <PlanRecipes filter={filter} returnTo={returnTo} />
 
           {/* Custom plans */}
           <div className="meal-plans-section-heading custom-heading">
@@ -331,9 +381,13 @@ function MealPlans() {
               ×
             </button>
 
-            <div className="detail-plan-icon">
-              {selectedPlan.icon}
-            </div>
+          <div className="detail-plan-icon">
+            <img
+              src={PLAN_ART[selectedPlan.id] || customArt}
+              alt=""
+              draggable="false"
+            />
+          </div>
 
             <span className="meal-plans-section-label">
               {selectedPlan.category}
@@ -345,10 +399,12 @@ function MealPlans() {
 
             <p>{selectedPlan.description}</p>
 
-            {selectedPlan.type === "preset"
-              ? <SchedulePlan key={selectedPlan.id} plan={selectedPlan.name} />
-              : <p className="plan-detail-note">Custom collections are not premade scheduling plans.</p>}
-
+            {selectedPlan.type === 'preset'
+              ? <>
+                  <PlanRecipes plan={selectedPlan.name} returnTo={returnTo} />
+                  <SchedulePlan key={selectedPlan.id} plan={selectedPlan.name} />
+                </>
+              : <p className="plan-detail-note">No recipes have been added to this custom collection yet.</p>}
             {selectedPlan.type === "custom" && (
               <button
                 type="button"

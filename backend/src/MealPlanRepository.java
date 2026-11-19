@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-/** One account's scheduled meals. Snapshots keep plans intact if a recipe changes. */
+/** One account's scheduled meals. Recipe names are resolved when the calendar is read. */
 final class MealPlanRepository {
     static final class Meal {
         final String id, date, type, name, difficulty;
@@ -107,6 +107,11 @@ final class MealPlanRepository {
         boolean removed = meals.removeIf(meal -> meal.id.equals(id));
         if (removed) save(meals);
         return removed;
+    }
+
+    /** Used by recipe deletion and rollback while holding this account's repository locks. */
+    synchronized void replaceMeals(List<Meal> meals) {
+        save(meals);
     }
 
     private void save(List<Meal> meals) {

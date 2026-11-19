@@ -65,7 +65,9 @@ There is no quantity math, unit conversion, or serving scaling. Ingredients come
 from the current recipe, while the source name comes from the scheduled snapshot.
 A range without meals returns empty `items` and `warnings` arrays.
 
-A deleted recipe contributes only a warning, with its source:
+Successful recipe deletion removes its scheduled meals (SCRUM-181). If a legacy
+record or manual storage change leaves a missing recipe, it contributes only a
+warning, with its source:
 
 ```json
 {"message":"Recipe unavailable; its ingredients were omitted.","source":{"mealId":"scheduled-meal-uuid","recipeId":1,"date":"2026-10-04","recipeName":"Rice bowl"}}

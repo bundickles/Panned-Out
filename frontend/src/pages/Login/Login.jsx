@@ -1,14 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { SessionStatus } from "../../auth/Auth";
 import { useAuth } from "../../auth/AuthContext";
 import Button from "../../components/Button/Button";
 import "./Login.css";
 import "../../styles/Logintheme.css";
+import "./login-art.css";
 import Input from "../../components/Input/Input";
 import PannedOutLogo from "../../assets/logo/Panned_Out_Logo.PNG";
 
 function Login() {
+    // Login-only appearance setting. It does not change an account's saved theme.
+    const [loginMode, setLoginMode] = useState(() => {
+        try {
+            return localStorage.getItem("panned-out-login-mode") === "dark"
+                ? "dark"
+                : "light";
+        } catch {
+            return "light";
+        }
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem("panned-out-login-mode", loginMode);
+        } catch {
+            // Storage may be disabled; the toggle still works for this visit.
+        }
+    }, [loginMode]);
+
     const [message, setMessage] = useState("");
     const { user, loading, error, signIn } = useAuth();
     const [registering, setRegistering] = useState(false);
@@ -28,7 +48,17 @@ function Login() {
     if (loading || error) return <SessionStatus />;
     if (user) return <Navigate to="/calendar" replace />;
     return(
-        <main className="login-page">
+        <main className="login-page" data-login-mode={loginMode}>
+
+            {/* Only changes the login screen; account themes stay separate. */}
+            <button
+                type="button"
+                className="po-login-mode-toggle"
+                onClick={() => setLoginMode(mode => mode === "light" ? "dark" : "light")}
+            >
+                <span aria-hidden="true">{loginMode === "dark" ? "☀" : "☾"}</span>
+                {loginMode === "dark" ? "Light mode" : "Dark mode"}
+            </button>
 
             {/* Left Side of page */}
             <section className="login-brand">
@@ -42,7 +72,7 @@ function Login() {
                         />
                     </div>
 
-                    <h1>Panned Out</h1>
+                    <h1 className="po-login-sr-only">Welcome to Panned Out</h1>
 
                     <p>
                         Plan your meals. 
@@ -65,10 +95,6 @@ function Login() {
                 <div className="login-card">
 
                     <div className="login-heading">
-                        <span className="eyebrow">
-                            PANNED OUT
-                        </span>
-
                         <h2>{registering ? "Create your account" : "Welcome back!"}</h2>
 
                         <p>
