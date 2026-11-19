@@ -36,6 +36,7 @@ public class RecipeServer {
         AuthService auth = new AuthService(accounts);
         SuggestedRecipeCatalog catalog = SuggestedRecipeCatalog.loadDefault();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
+        ChatApi chat = new ChatApi();
         server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(8));
         server.createContext("/api/", exchange -> {
             try {
@@ -46,6 +47,9 @@ public class RecipeServer {
                     throw new ApiError(403, "Request verification failed.");
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
+                } else if (exchange.getRequestURI().getPath().equals("/api/chat")) {
+                    auth.requireSignedIn(exchange);
+                    chat.handle(exchange);
                 } else if (exchange.getRequestURI().getPath().equals("/api/profile")
                         || exchange.getRequestURI().getPath().equals("/api/settings")) {
                     ProfileSettingsApi.handle(exchange, auth.preferences(exchange));

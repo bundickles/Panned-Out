@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { authRequest } from '../api/auth';
 import './Auth.css';
+import ChatAssistant from '../components/ChatAssistant/ChatAssistant';
  feature/SCRUM-165-ready
 import AppWalkthrough from '../components/AppWalkthrough/AppWalkthrough';
 
@@ -111,5 +112,6 @@ export function PrivatePages() {
             {logoutError && <span role="alert">{logoutError}</span>}
         </div>
         <Outlet />
+        <ChatAssistant key={user.id} />
     </div>;
 }
