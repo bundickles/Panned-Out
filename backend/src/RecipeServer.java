@@ -24,10 +24,19 @@ public class RecipeServer {
         // Keep legacy shared data untouched and use the team's stable default path.
         Path legacy = args.length > 1 ? Path.of(args[1]).toAbsolutePath().normalize()
                 : RecipeRepository.defaultStorageFile();
+        HttpServer server = createServer(port, legacy, new AiPhotoApi(new GeminiPhotoClient()));
+        server.start();
+        System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
+        System.out.println("Account storage: " + legacy.resolveSibling(legacy.getFileName() + ".accounts"));
+    }
+
+    // Dependency injection keeps endpoint tests independent of Google and real credentials.
+    static HttpServer createServer(int port, Path legacy, AiPhotoApi photo) throws IOException {
         Path accounts = legacy.resolveSibling(legacy.getFileName() + ".accounts");
         AuthService auth = new AuthService(accounts);
         SuggestedRecipeCatalog catalog = SuggestedRecipeCatalog.loadDefault();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
+        server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(8));
         server.createContext("/api/", exchange -> {
             try {
                 // Cross-origin forms cannot set this header; no CORS permission is granted.
@@ -37,6 +46,9 @@ public class RecipeServer {
                     throw new ApiError(403, "Request verification failed.");
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
+                } else if (exchange.getRequestURI().getPath().equals("/api/ai/photo-recipe")) {
+                    auth.requireSignedIn(exchange);
+                    photo.handle(exchange);
                 } else if (exchange.getRequestURI().getPath().startsWith("/api/recipes")) {
                     handle(exchange, auth.recipes(exchange), catalog);
                 } else if (exchange.getRequestURI().getPath().equals("/api/shopping-list")) {
@@ -59,9 +71,7 @@ public class RecipeServer {
                 exchange.close();
             }
         });
-        server.start();
-        System.out.println("Recipe API: http://127.0.0.1:" + server.getAddress().getPort());
-        System.out.println("Account storage: " + accounts);
+        return server;
     }
     private static void handle(HttpExchange exchange, RecipeRepository repository,
                                SuggestedRecipeCatalog catalog) throws IOException {

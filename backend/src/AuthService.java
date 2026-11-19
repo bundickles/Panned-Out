@@ -47,6 +47,8 @@ final class AuthService {
         this.clock = clock;
     }
 
+    synchronized void requireSignedIn(HttpExchange exchange) { requireSession(exchange); }
+
     synchronized RecipeRepository recipes(HttpExchange exchange) {
         AccountRepository.Account account = requireSession(exchange).account;
         // The directory comes only from a server-generated account UUID, never request fields.
