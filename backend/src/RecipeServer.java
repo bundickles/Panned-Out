@@ -46,6 +46,9 @@ public class RecipeServer {
                     throw new ApiError(403, "Request verification failed.");
                 if (exchange.getRequestURI().getPath().startsWith("/api/auth/")) {
                     auth.handle(exchange);
+                } else if (exchange.getRequestURI().getPath().equals("/api/profile")
+                        || exchange.getRequestURI().getPath().equals("/api/settings")) {
+                    ProfileSettingsApi.handle(exchange, auth.preferences(exchange));
                 } else if (exchange.getRequestURI().getPath().equals("/api/ai/photo-recipe")) {
                     auth.requireSignedIn(exchange);
                     photo.handle(exchange);
