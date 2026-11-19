@@ -53,7 +53,17 @@ function Sidebar() {
                     >
                     <span aria-hidden="true">▤</span>
                     Meal Plans
-                    </NavLink>
+                </NavLink>
+
+                <NavLink
+                    to="/ai-photo"
+                    className={({ isActive }) =>
+                        `app-nav-item ${isActive ? "active" : ""}`
+                    }
+                >
+                    <span aria-hidden="true">🖼</span>
+                    AI Photo Search
+                </NavLink>
 
             </nav>
 
