@@ -32,3 +32,5 @@ export const getSavedLists = (options={}) => request('',options);
 export const getSavedList = (id,options={}) => request(`/${encodeURIComponent(id)}`,options);
 export const saveShoppingList = snapshot => request('',{method:'POST',body:new URLSearchParams(snapshotFields(snapshot))});
 export const setItemPurchased = (listId,itemId,purchased) => request(`/${encodeURIComponent(listId)}/items/${encodeURIComponent(itemId)}/purchased`,{method:'PATCH',body:new URLSearchParams({purchased:String(purchased)})});
+
+export const deleteSavedList = id => request(`/${encodeURIComponent(id)}`, {method:'DELETE'});
