@@ -3,11 +3,13 @@
 This backend work covers [SCRUM-179](https://txst-fall26-cs3398-009-team02.atlassian.net/browse/SCRUM-179)
 and [SCRUM-180](https://txst-fall26-cs3398-009-team02.atlassian.net/browse/SCRUM-180).
 
-**Draft contract for Vanny's review:** the field names, options, defaults, and
-validation limits below are proposed. They have not been agreed with the UI
-owner yet. Confirm them before making the PR ready or merging it. The icon
-values are symbolic IDs, not new image assets. The backend does not add profile
-or settings pages or apply themes and accessibility settings in the browser.
+**UI handoff:** theme IDs and the display-name input limit now match Vanny's
+[PR #41](https://github.com/bundickles/Panned-Out/pull/41). The allergen label
+mapping below connects its checkbox labels to the stable API values. That UI
+still stores names/themes in the browser and has not been connected to these
+endpoints. The backend does not add profile or settings pages or apply themes
+and accessibility settings in the browser. Icon IDs, protein preferences,
+calendar view, and reduced motion remain proposed controls not present in #41.
 
 ## Requests and account access
 
@@ -45,9 +47,9 @@ The empty name means the profile has not been configured. The first profile
 PATCH must supply a valid `displayName`. Later updates can change individual
 fields without sending the name again.
 
-| Field | Proposed values and rules |
+| Field | Values and rules |
 | --- | --- |
-| `displayName` | Trim surrounding whitespace. Require 1 to 80 Unicode code points. Reject control characters and blank names. |
+| `displayName` | Trim surrounding whitespace. Require 1 to 60 UTF-16 code units, matching #41's HTML `maxLength={60}`. Reject control characters and blank names. |
 | `icon` | `default`, `pan`, `leaf`, `bowl` |
 | `allergenPreferences` | `milk`, `eggs`, `fish`, `shellfish`, `tree-nuts`, `peanuts`, `wheat`, `soy`, `sesame` |
 | `proteinPreferences` | `chicken`, `beef`, `fish`, `eggs`, `tofu`, `beans` |
@@ -61,27 +63,68 @@ Protein preferences describe preferred foods, not a protein intake goal. These
 fields only store user choices. They do not filter recipes, detect allergens,
 or generate recommendations.
 
+The frontend should show validation errors rather than silently truncating a
+name or claiming an invalid blank name was saved. Most characters use one
+UTF-16 unit; characters such as emoji can use two. For example, 60 ASCII letters
+or 30 pot emoji fit the input limit. A supplied name above the limit returns
+400 and leaves all saved values unchanged.
+
+Profiles saved with the original 80-code-point limit remain readable. Patching
+an icon or preference while omitting `displayName` keeps the old name intact,
+even if it exceeds the new input limit. Changing or explicitly resubmitting a
+name uses the new 60-unit limit. Clients should send only changed fields and
+must not automatically shorten existing names while loading them.
+
+### Allergen labels in PR #41
+
+Keep readable labels in the UI and send the corresponding API IDs. Convert
+returned IDs back to labels when restoring checkbox selections.
+
+| UI label | API value |
+| --- | --- |
+| Milk | `milk` |
+| Eggs | `eggs` |
+| Peanuts | `peanuts` |
+| Tree nuts | `tree-nuts` |
+| Soy | `soy` |
+| Wheat | `wheat` |
+| Fish | `fish` |
+| Shellfish | `shellfish` |
+| Sesame | `sesame` |
+
+The API field is `allergenPreferences`, not the UI state variable `allergies`.
+Send the IDs in one newline-separated form field, not the displayed labels.
+The `diet` and `avoidFoods` preview fields in #41 are not supported by these
+tickets. Sending them to this API returns 400; their storage needs separate
+scope agreement. No allergy-safety or recipe-filtering behavior is implied.
+
 ## Settings fields
 
 An account without saved settings receives:
 
 ```json
 {
-  "theme": "default",
+  "theme": "rustic",
   "calendarView": "month",
   "reducedMotion": false
 }
 ```
 
-| Field | Proposed values | Default |
+| Field | Values | Default |
 | --- | --- | --- |
-| `theme` | `default`, `pastel`, `dark`, `colorful` | `default` |
+| `theme` | `rustic`, `pastel`, `dark`, `playful` | `rustic` |
 | `calendarView` | `month`, `week`, `day` | `month` |
 | `reducedMotion` | Form text `true` or `false`, returned as a JSON boolean | `false` |
 
 Values are case sensitive. For `reducedMotion`, values such as `1`, `yes`, and
 `TRUE` are rejected. The theme is stored only here. Both the profile page's
 theme picker and the settings page should read and update this same value.
+
+The UI labels are Original Rustic, Pastel Garden, Dark Brown, and Playful /
+Colorful. Earlier API IDs `default` and `colorful` remain accepted aliases for
+`rustic` and `playful`. Existing settings files with those old IDs load without
+an error. GET and PATCH return canonical UI IDs, and the next successful
+settings PATCH writes canonical IDs. GET does not rewrite the file.
 
 `calendarView` and `reducedMotion` are proposed view and accessibility controls.
 Their UI behavior must be agreed with Vanny. Saving them does not yet change
@@ -193,14 +236,20 @@ child Java process running after a test stops it, causing temporary-file locks.
 
 The focused tests exercise the actual Java HTTP server with temporary storage.
 They cover defaults, saving, partial updates, clearing preferences, validation,
-account isolation, logout/login, restart persistence, and storage errors.
+account isolation, logout/login, restart persistence, storage errors, old theme
+aliases, and preservation of longer profiles saved before the UI alignment.
 
 Remaining team work:
 
-- Confirm this proposed contract with Vanny, including IDs, options, defaults,
-  and limits.
+- Review the aligned contract and label mapping with Vanny. Decide how the
+  proposed icon, protein, calendar-view, and reduced-motion controls will be
+  exposed; they are not currently in #41.
 - Connect the pages in [SCRUM-90](https://txst-fall26-cs3398-009-team02.atlassian.net/browse/SCRUM-90)
   and the theme picker in [SCRUM-86](https://txst-fall26-cs3398-009-team02.atlassian.net/browse/SCRUM-86).
+  Replace local-only persistence with authenticated API reads/writes, apply the
+  allergen mapping, and show save/validation failures. Account changes must
+  reload the correct account's data. This backend change does not implement
+  that frontend integration.
 - Run UI and end-to-end checks under Jamiyah's
   [SCRUM-48](https://txst-fall26-cs3398-009-team02.atlassian.net/browse/SCRUM-48),
   [SCRUM-49](https://txst-fall26-cs3398-009-team02.atlassian.net/browse/SCRUM-49), and

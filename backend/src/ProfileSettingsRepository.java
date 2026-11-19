@@ -16,13 +16,14 @@ import java.util.stream.Collectors;
 
 /** One account's profile and settings, using the existing atomic properties-file storage. */
 final class ProfileSettingsRepository {
-    // Proposed UI contract for SCRUM-179/180. Confirm these choices with SCRUM-90/86.
-    private static final int NAME_LIMIT = 80;
+    // Match PR #41's theme IDs and HTML input maxlength; retain old stored profiles.
+    private static final int NAME_LIMIT = 60;
+    private static final int LEGACY_NAME_LIMIT = 80;
     private static final List<String> ICONS = List.of("default", "pan", "leaf", "bowl");
     private static final List<String> ALLERGENS = List.of("milk", "eggs", "fish", "shellfish",
             "tree-nuts", "peanuts", "wheat", "soy", "sesame");
     private static final List<String> PROTEINS = List.of("chicken", "beef", "fish", "eggs", "tofu", "beans");
-    private static final List<String> THEMES = List.of("default", "pastel", "dark", "colorful");
+    private static final List<String> THEMES = List.of("rustic", "pastel", "dark", "playful");
     private static final List<String> VIEWS = List.of("month", "week", "day");
     private static final Set<String> PROFILE_FIELDS = Set.of("displayName", "icon",
             "allergenPreferences", "proteinPreferences");
@@ -74,7 +75,7 @@ final class ProfileSettingsRepository {
         // Existing accounts need no migration. An empty name means no profile has been saved yet.
         if (data == null) return new Profile("", "default", List.of(), List.of());
         try {
-            return new Profile(name(data.getProperty("displayName")),
+            return new Profile(storedName(data.getProperty("displayName")),
                     choice(data.getProperty("icon"), ICONS, "icon"),
                     preferences(data.getProperty("allergenPreferences"), ALLERGENS, "allergenPreferences"),
                     preferences(data.getProperty("proteinPreferences"), PROTEINS, "proteinPreferences"));
@@ -83,9 +84,9 @@ final class ProfileSettingsRepository {
 
     synchronized Settings getSettings() {
         Properties data = load("settings.properties", SETTINGS_FIELDS);
-        if (data == null) return new Settings("default", "month", false);
+        if (data == null) return new Settings("rustic", "month", false);
         try {
-            return new Settings(choice(data.getProperty("theme"), THEMES, "theme"),
+            return new Settings(theme(data.getProperty("theme")),
                     choice(data.getProperty("calendarView"), VIEWS, "calendarView"),
                     bool(data.getProperty("reducedMotion")));
         } catch (IllegalArgumentException e) { throw storageError(e); }
@@ -94,7 +95,10 @@ final class ProfileSettingsRepository {
     synchronized Profile updateProfile(Map<String, String> fields) {
         checkFields(fields, PROFILE_FIELDS);
         Profile current = getProfile();
-        Profile updated = new Profile(name(fields.getOrDefault("displayName", current.displayName)),
+        // An unrelated patch must not truncate or invalidate a previously saved longer name.
+        String displayName = fields.containsKey("displayName") || current.displayName.isEmpty()
+                ? name(fields.getOrDefault("displayName", current.displayName)) : current.displayName;
+        Profile updated = new Profile(displayName,
                 choice(fields.getOrDefault("icon", current.icon), ICONS, "icon"),
                 fields.containsKey("allergenPreferences")
                         ? preferences(fields.get("allergenPreferences"), ALLERGENS, "allergenPreferences")
@@ -114,7 +118,7 @@ final class ProfileSettingsRepository {
     synchronized Settings updateSettings(Map<String, String> fields) {
         checkFields(fields, SETTINGS_FIELDS);
         Settings current = getSettings();
-        Settings updated = new Settings(choice(fields.getOrDefault("theme", current.theme), THEMES, "theme"),
+        Settings updated = new Settings(theme(fields.getOrDefault("theme", current.theme)),
                 choice(fields.getOrDefault("calendarView", current.calendarView), VIEWS, "calendarView"),
                 fields.containsKey("reducedMotion") ? bool(fields.get("reducedMotion")) : current.reducedMotion);
         Properties data = new Properties();
@@ -131,18 +135,39 @@ final class ProfileSettingsRepository {
     }
 
     private static String name(String value) {
+        String trimmed = normalizedName(value);
+        // HTML maxlength and JavaScript string.length both count UTF-16 code units.
+        if (trimmed.length() > NAME_LIMIT)
+            throw new IllegalArgumentException("displayName must fit the 60-character input limit.");
+        return trimmed;
+    }
+
+    private static String storedName(String value) {
+        String trimmed = normalizedName(value);
+        if (trimmed.codePointCount(0, trimmed.length()) > LEGACY_NAME_LIMIT)
+            throw new IllegalArgumentException("Invalid saved displayName.");
+        return trimmed;
+    }
+
+    private static String normalizedName(String value) {
         if (value == null) throw new IllegalArgumentException("Enter a displayName.");
         if (value.codePoints().anyMatch(Character::isISOControl))
-            throw new IllegalArgumentException("displayName must contain 1 to 80 characters without control characters.");
+            throw new IllegalArgumentException("displayName cannot contain control characters.");
         int start = 0, end = value.length();
         while (start < end && space(value.codePointAt(start)))
             start += Character.charCount(value.codePointAt(start));
         while (end > start && space(value.codePointBefore(end)))
             end -= Character.charCount(value.codePointBefore(end));
         String trimmed = value.substring(start, end);
-        if (trimmed.isEmpty() || trimmed.codePointCount(0, trimmed.length()) > NAME_LIMIT)
-            throw new IllegalArgumentException("displayName must contain 1 to 80 characters without control characters.");
+        if (trimmed.isEmpty()) throw new IllegalArgumentException("Enter a displayName.");
         return trimmed;
+    }
+
+    private static String theme(String value) {
+        // Earlier PR #33 clients/files used these names. Responses and new writes use UI IDs.
+        if ("default".equals(value)) value = "rustic";
+        if ("colorful".equals(value)) value = "playful";
+        return choice(value, THEMES, "theme");
     }
 
     private static boolean space(int codePoint) {

@@ -1,6 +1,6 @@
 """SCRUM-179/180 checks against the real Java server and temporary account storage.
 
-Option IDs below are the proposed draft contract, pending Vanny's UI review.
+Theme IDs and the name input limit match PR #41; remaining controls are proposed.
 Run after compiling the backend:
     python -m unittest discover -s tests -p test_profile_settings_api.py
 """
@@ -13,7 +13,7 @@ import test_auth_api as auth
 PROFILE = '/api/profile'
 SETTINGS = '/api/settings'
 DEFAULT_PROFILE = dict(displayName='', icon='default', allergenPreferences=[], proteinPreferences=[])
-DEFAULT_SETTINGS = dict(theme='default', calendarView='month', reducedMotion=False)
+DEFAULT_SETTINGS = dict(theme='rustic', calendarView='month', reducedMotion=False)
 
 
 class ProfileSettingsApiTest(unittest.TestCase):
@@ -74,9 +74,10 @@ class ProfileSettingsApiTest(unittest.TestCase):
         self.assertEqual(saved['allergenPreferences'], [])
         self.assertEqual(saved['proteinPreferences'], [])
         self.assertEqual(saved['icon'], 'leaf')
-        # The documented limit counts Unicode characters, not UTF-16 code units.
-        saved = self.patch(alice, PROFILE, displayName='🍲' * 80)
-        self.assertEqual(saved['displayName'], '🍲' * 80)
+        # Match the UI's HTML maxlength: emoji use two UTF-16 code units each.
+        for name in ('a' * 60, '🍲' * 30, 'a' * 58 + '🍲'):
+            saved = self.patch(alice, PROFILE, displayName=name)
+            self.assertEqual(saved['displayName'], name)
 
     def test_settings_partial_updates_and_persistence_after_login_and_restart(self):
         alice = self.client()
@@ -85,8 +86,8 @@ class ProfileSettingsApiTest(unittest.TestCase):
                              allergenPreferences='eggs', proteinPreferences='beans')
         settings = self.patch(alice, SETTINGS, theme='dark', calendarView='week', reducedMotion='true')
         self.assertEqual(settings, dict(theme='dark', calendarView='week', reducedMotion=True))
-        settings = self.patch(alice, SETTINGS, theme='colorful')
-        self.assertEqual(settings, dict(theme='colorful', calendarView='week', reducedMotion=True))
+        settings = self.patch(alice, SETTINGS, theme='playful')
+        self.assertEqual(settings, dict(theme='playful', calendarView='week', reducedMotion=True))
         self.assertEqual(self.get(alice, PROFILE), profile)
         self.assertEqual(self.request(alice, '/api/auth/logout', 'POST', {})[0], 200)
         for path in (PROFILE, SETTINGS):
@@ -102,7 +103,63 @@ class ProfileSettingsApiTest(unittest.TestCase):
         self.assertEqual(self.get(alice, PROFILE), profile)
         self.assertEqual(self.get(alice, SETTINGS), settings)
         self.assertEqual(self.patch(alice, SETTINGS, reducedMotion='false'),
-                         dict(theme='colorful', calendarView='week', reducedMotion=False))
+                         dict(theme='playful', calendarView='week', reducedMotion=False))
+
+    def test_ui_themes_and_legacy_aliases_preserve_stored_settings(self):
+        alice = self.client()
+        account, _ = self.register(alice, 'alice@example.com')
+        for theme in ('rustic', 'pastel', 'dark', 'playful'):
+            settings = self.patch(alice, SETTINGS, theme=theme)
+            self.assertEqual(settings['theme'], theme)
+            self.assertEqual(self.get(alice, SETTINGS), settings)
+        storage = self.account_directory(account) / 'settings.properties'
+        for old, current in (('default', 'rustic'), ('colorful', 'playful')):
+            with self.subTest(old=old):
+                # A file saved by the original PR #33 must still load, without a GET write.
+                legacy = f'version=1\ntheme={old}\ncalendarView=week\nreducedMotion=true\n'
+                storage.write_text(legacy, encoding='utf-8')
+                before = storage.read_bytes()
+                self.assertEqual(self.get(alice, SETTINGS),
+                                 dict(theme=current, calendarView='week', reducedMotion=True))
+                self.assertEqual(storage.read_bytes(), before)
+                self.assertEqual(self.patch(alice, SETTINGS, calendarView='day'),
+                                 dict(theme=current, calendarView='day', reducedMotion=True))
+                self.assertIn(f'theme={current}\n', storage.read_text(encoding='utf-8'))
+                # Old clients can also save an alias; the response/file use the UI ID.
+                self.assertEqual(self.patch(alice, SETTINGS, theme=old)['theme'], current)
+                self.assertIn(f'theme={current}\n', storage.read_text(encoding='utf-8'))
+        self.stop()
+        self.start()
+        self.login(alice)
+        self.assertEqual(self.get(alice, SETTINGS),
+                         dict(theme='playful', calendarView='day', reducedMotion=True))
+
+    def test_longer_legacy_names_survive_reads_and_unrelated_updates(self):
+        alice = self.client()
+        account, _ = self.register(alice, 'alice@example.com')
+        self.patch(alice, PROFILE, displayName='Alice')
+        storage = self.account_directory(account) / 'profile.properties'
+        for old_name in ('a' * 61, 'a' * 80, '🍲' * 80):
+            with self.subTest(name_length=len(old_name)):
+                legacy = (f'version=1\ndisplayName={old_name}\nicon=pan\n'
+                          'allergenPreferences=milk\nproteinPreferences=tofu\n')
+                storage.write_text(legacy, encoding='utf-8')
+                before = storage.read_bytes()
+                self.assertEqual(self.get(alice, PROFILE)['displayName'], old_name)
+                self.assertEqual(storage.read_bytes(), before)
+                changed = self.patch(alice, PROFILE, icon='leaf', allergenPreferences='')
+                self.assertEqual(changed['displayName'], old_name)
+                self.assertEqual(changed['proteinPreferences'], ['tofu'])
+                self.assertEqual(changed['allergenPreferences'], [])
+                self.assertEqual(self.get(alice, PROFILE), changed)
+                self.assertEqual(self.request(alice, PROFILE, 'PATCH',
+                                             dict(displayName=old_name))[0], 400)
+                self.assertEqual(self.get(alice, PROFILE), changed)
+        self.stop()
+        self.start()
+        self.login(alice)
+        self.assertEqual(self.get(alice, PROFILE), changed)
+        self.assertEqual(self.patch(alice, PROFILE, displayName='Updated')['displayName'], 'Updated')
 
     def test_profiles_and_settings_are_private_to_the_session(self):
         alice, bob, anonymous = self.client(), self.client(), self.client()
@@ -136,10 +193,12 @@ class ProfileSettingsApiTest(unittest.TestCase):
                              allergenPreferences='milk', proteinPreferences='tofu')
         settings = self.patch(alice, SETTINGS, theme='dark', calendarView='week', reducedMotion='true')
         invalid_profiles = [
-            {}, dict(displayName=''), dict(displayName=' \u2003 '), dict(displayName='a' * 81),
+            {}, dict(displayName=''), dict(displayName=' \u2003 '), dict(displayName='a' * 61),
             dict(displayName='\u00a0\u202f'), dict(displayName='\nAlice\t'),
-            dict(displayName='🍲' * 81), dict(displayName='Alice\nBob'), dict(displayName='Alice\x7f'),
+            dict(displayName='🍲' * 31), dict(displayName='a' * 59 + '🍲'),
+            dict(displayName='Alice\nBob'), dict(displayName='Alice\x7f'),
             dict(icon='unknown'), dict(allergenPreferences='unknown'), dict(proteinPreferences='unknown'),
+            dict(allergenPreferences='Milk'), dict(allergenPreferences='Tree nuts'),
             dict(allergenPreferences='milk\nmilk'), dict(proteinPreferences='tofu\n tofu'),
             dict(displayName='Changed', icon='unknown'), dict(theme='dark'), dict(userId='someone-else'),
         ]
