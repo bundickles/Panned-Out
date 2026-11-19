@@ -250,8 +250,32 @@
     background-color: var(--color-surface);
 }
 
+/* Watercolor illustrations on Recipes page meal-plan cards */
+
 .plan-icon {
-    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 130px;
+
+    margin-bottom: 12px;
+}
+
+.plan-icon img {
+    width: 145px;
+    height: 125px;
+
+    object-fit: contain;
+
+    transition: transform 0.2s ease;
+}
+
+/* Gentle hover animation */
+
+.plan-card:hover .plan-icon img {
+    transform: scale(1.05);
 }
 
 .plan-card h3 {
