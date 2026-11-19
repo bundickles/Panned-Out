@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { authRequest } from '../api/auth';
 import './Auth.css';
+ feature/SCRUM-165-ready
+import AppWalkthrough from '../components/AppWalkthrough/AppWalkthrough';
+
 import { useSettings } from "../features/preferences/SettingsContext";
+ main
 
 import { AuthContext, useAuth } from "./AuthContext";
 const CHANGE_KEY = 'panned-out-account-change';
@@ -84,6 +88,9 @@ export function PrivatePages() {
     return <div key={user.id}>
         <div className="account-bar">
             <span>Signed in as {user.email}</span>
+ feature/SCRUM-165-ready
+            <AppWalkthrough key={user.id} userId={user.id} />
+
             <button
                 type="button"
                 onClick={openSettings}
@@ -93,6 +100,7 @@ export function PrivatePages() {
                 <span aria-hidden="true">⚙</span>
                 Settings
             </button>
+ main
             <button disabled={busy} onClick={async () => {
                 setBusy(true);
                 setLogoutError('');
