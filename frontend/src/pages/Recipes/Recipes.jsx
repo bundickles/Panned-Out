@@ -1,3 +1,4 @@
+import { sortRecipes, normalizeRecipeSort, recipeSortOptions } from './sortRecipes.js';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
@@ -6,7 +7,6 @@ import Sidebar from '../../components/Sidebar/Sidebar.jsx';
 import RecipeForm from './RecipeForm';
 import { getRecipes, createRecipe, updateRecipe, removeRecipe } from '../../api/recipes';
 import { filterRecipes } from './filterRecipes.js';
-import { sortRecipes, normalizeRecipeSort, recipeSortOptions } from './sortRecipes.js';
 
 function Recipes() {
     const navigate = useNavigate();
