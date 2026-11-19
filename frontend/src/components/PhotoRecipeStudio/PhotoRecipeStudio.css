@@ -1,0 +1,10 @@
+.photo-recipe-studio { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--po-border, #d8cdc0); overflow-wrap: anywhere; }
+.photo-recipe-studio h3 { margin: 12px 0; }
+.photo-recipe-studio p, .photo-recipe-studio li { margin: 10px 0; line-height: 1.6; }
+.photo-recipe-studio .ai-photo-button { margin: 8px 8px 8px 0; }
+.photo-recipe-review { display: flex; gap: 10px; align-items: start; margin: 18px 0; }
+.photo-recipe-review input { width: 20px; height: 20px; flex: 0 0 20px; }
+.photo-recipe-studio .recipe-form { width: 100%; max-width: 100%; margin: 16px 0; color: var(--color-text); background: var(--color-surface); }
+.photo-recipe-studio .recipe-form fieldset { min-width: 0; }
+.photo-recipe-studio .recipe-form input, .photo-recipe-studio .recipe-form textarea, .photo-recipe-studio .recipe-form select { max-width: 100%; box-sizing: border-box; }
+.photo-recipe-studio [role=alert] { color: var(--color-deep-accent); }

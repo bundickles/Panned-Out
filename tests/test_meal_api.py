@@ -39,8 +39,7 @@ class MealApiTest(unittest.TestCase):
         bob_meal = self.request(bob, '/api/meals', 'POST', {**fields, 'ownerId': 'alice'})[1]
         self.assertEqual(bob_meal['name'], 'Bob meal')
         self.assertEqual(self.request(alice, '/api/meals')[1], [meal])
-        # Existing scheduled meals retain their snapshot after the recipe is deleted.
-        self.assertEqual(self.request(alice, '/api/recipes/' + str(recipe['id']), 'DELETE')[0], 200)
+        # Scheduled meals persist across a restart while their recipe remains saved.
         self.stop()
         self.start()
         self.assertEqual(self.request(alice, '/api/meals')[0], 401)

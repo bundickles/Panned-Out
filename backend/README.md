@@ -1,8 +1,15 @@
 # Recipe backend
 
+AI photo recipe drafts (SCRUM-139), Gemini setup, and the SCRUM-84 upload contract
+are documented in [AI_PHOTO_API.md](AI_PHOTO_API.md).
+
 Saved shopping-list storage and purchased-status endpoints (SCRUM-59/60) are
 documented in [SHOPPING_LIST_API.md](SHOPPING_LIST_API.md), including the pending
 generator/UI integration contract and focused test command.
+
+Profile and account settings endpoints (SCRUM-179/180) are documented in
+[PROFILE_SETTINGS_API.md](PROFILE_SETTINGS_API.md). Their proposed options and
+defaults need Vanny's review before frontend integration.
 
 Plain Java (JDK 11 or newer), with no external dependencies. The existing model
 constructor and meal-card fields remain available.
@@ -90,7 +97,8 @@ the user, not calculated. Changes survive API restarts.
   IDs are assigned by the server. Requests over 64 KiB are rejected.
 - `PUT /api/recipes/{id}`: same fields as POST; returns 200 with the updated recipe,
   or 404 for an unknown ID. Preserves the recipe ID and image.
-- `DELETE /api/recipes/{id}`: 200 on deletion, 404 for an unknown ID.
+- `DELETE /api/recipes/{id}`: deletes the recipe and its scheduled meals in this
+  account; 200 on success, 404 for an unknown ID. Saved shopping lists are preserved.
 - Errors return a JSON `error` message; invalid input is 400 and storage failures
   are 500. Failed storage reads do not overwrite the existing data.
 
@@ -246,9 +254,11 @@ These endpoints require the existing session cookie and request verification
 header. Files use the same UTF-8 properties and atomic-write approach as recipes:
 `<recipe-filename>.accounts/users/<account-UUID>/meals.properties`. Only one server
 process should write a given store. Dates represent local calendar days, without
-UTC conversion. Meal cards store a snapshot of the recipe's name, difficulty,
-and prep time at scheduling time. Editing/deleting that recipe later does not
-change an already scheduled card. The same recipe can be scheduled more than once.
+UTC conversion. Calendar reads resolve the current recipe name, so renames appear
+on the next load. Deleting a recipe also removes its scheduled meals. Difficulty
+and prep time remain scheduling-time snapshots. The same recipe can be scheduled
+more than once. See [calendar recipe updates](CALENDAR_RECIPE_SYNC.md) for storage
+failure behavior, legacy orphan records, and saved-shopping-list preservation.
 The integrated day/week/month views share these saved meals. Recurring schedules
 remain outside this change.
 
@@ -265,6 +275,14 @@ and removal. API tests cover restart persistence, authentication, invalid dates,
 private recipe selection, and storage errors. On Windows, put the actual JDK
 `bin` directory on PATH when testing; the Oracle `javapath` launcher can leave a
 child server running after the test terminates its parent.
+
+## Daily planned nutrition
+
+`GET /api/nutrition/daily?start=YYYY-MM-DD&end=YYYY-MM-DD` returns daily totals
+from the signed-in account's scheduled meals and current recipes. See
+[the nutrition API guide](DAILY_NUTRITION_API.md) for the response, missing-value
+handling, serving assumptions, and frontend handoff. This adds the backend API;
+the calendar widget is maintained in the team's separate frontend work.
 
 ## Generated shopping lists
 
