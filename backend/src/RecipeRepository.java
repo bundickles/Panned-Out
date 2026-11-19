@@ -121,7 +121,6 @@ public class RecipeRepository {
                         number(data, prefix, "protein"), number(data, prefix, "fat"),
                         number(data, prefix, "carbohydrates"), number(data, prefix, "fiber"),
                         data.getProperty(prefix + "image"), data.getProperty(prefix + "ingredients"),
-   aayush-SCRUM-181-182-feature-calendar-backend
                         data.getProperty(prefix + "instructions"), data.getProperty(prefix + "mealType"))
                         .withSuggestedId(data.getProperty(prefix + "suggestedId"));
                 for (String nutrient : Recipe.NUTRIENTS) {
