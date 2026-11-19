@@ -1,5 +1,7 @@
 
 import { useState } from "react";
+import { useSearchParams } from 'react-router-dom';
+import PlanRecipes from '../../components/PlanRecipes/PlanRecipes';
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 import "./MealPlans.css";
 import highProteinArt from "../../assets/meal-plans/high-protein.png";
@@ -53,6 +55,17 @@ const presetPlans = [
 ];
 
 function MealPlans() {
+  const [params, setParams] = useSearchParams();
+  const filter = ['suggested', 'saved', 'all'].includes(params.get('filter')) ? params.get('filter') : 'suggested';
+  const selectedPreset = presetPlans.find(plan => plan.id === params.get('plan'));
+  function selectPlan(plan) {
+    setSelectedCustom(plan?.type === 'custom' ? plan : null);
+    const next = new URLSearchParams(params);
+    if (plan?.type === 'preset') next.set('plan', plan.id);
+    else next.delete('plan');
+    setParams(next);
+  }
+
   // Load saved custom plans when the page first renders.
   const [customPlans, setCustomPlans] = useState(() => {
     try {
@@ -67,7 +80,10 @@ function MealPlans() {
   });
 
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedCustom, setSelectedCustom] = useState(null);
+  const selectedPlan = selectedPreset || selectedCustom;
+  const setSelectedPlan = selectPlan;
+  const returnTo = `/meal-plans?${params.toString()}`;
   const [planName, setPlanName] = useState("");
   const [planDescription, setPlanDescription] = useState("");
 
@@ -194,6 +210,21 @@ function MealPlans() {
           <div className="meal-plans-grid">
             {presetPlans.map(renderPlanCard)}
           </div>
+
+          <h2>Browse Recipes</h2>
+          <label className="plan-recipe-filter" htmlFor="plan-recipe-filter">
+            Recipe collection
+            <select id="plan-recipe-filter" value={filter} onChange={event => {
+              const next = new URLSearchParams(params);
+              next.set('filter', event.target.value);
+              setParams(next);
+            }}>
+              <option value="suggested">Suggested recipes</option>
+              <option value="saved">My saved recipes</option>
+              <option value="all">All recipes</option>
+            </select>
+          </label>
+          <PlanRecipes filter={filter} returnTo={returnTo} />
 
           {/* Custom plans */}
           <div className="meal-plans-section-heading custom-heading">
@@ -366,10 +397,9 @@ function MealPlans() {
 
             <p>{selectedPlan.description}</p>
 
-            <div className="plan-detail-note">
-              Recipe selection and calendar scheduling
-              will be added in the next step.
-            </div>
+            {selectedPlan.type === 'preset'
+              ? <PlanRecipes plan={selectedPlan.name} returnTo={returnTo} />
+              : <p className="plan-detail-note">No recipes have been added to this custom collection yet.</p>}
 
             {selectedPlan.type === "custom" && (
               <button
