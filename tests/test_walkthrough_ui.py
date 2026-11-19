@@ -1,13 +1,43 @@
-"""SCRUM-165 browser regression. Start Vite, then run with Python Playwright:
-PANNED_OUT_UI_URL=http://127.0.0.1:5174 python -m unittest discover -s tests -p test_walkthrough_ui.py
-Uses mocked API responses; requires Edge or PLAYWRIGHT_CHANNEL.
+"""SCRUM-165 browser regression. Starts an isolated Vite server automatically.
+Run: python -m unittest discover -s tests -p test_walkthrough_ui.py
+Install frontend dependencies and Python Playwright; requires Edge or PLAYWRIGHT_CHANNEL.
 """
 import os
 import unittest
+from pathlib import Path
+import socket
+import subprocess
+import time
+from urllib.request import urlopen
+from urllib.error import URLError
 from playwright.sync_api import sync_playwright, expect
 
 
 class WalkthroughTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with socket.socket() as sock:
+            sock.bind(('127.0.0.1', 0))
+            port = sock.getsockname()[1]
+        cls.base = f'http://127.0.0.1:{port}'
+        server = subprocess.Popen(['node', 'node_modules/vite/bin/vite.js', '--host', '127.0.0.1',
+                                   '--port', str(port), '--strictPort'],
+                                  cwd=Path(__file__).resolve().parents[1] / 'frontend',
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        def cleanup():
+            server.terminate()
+            server.wait(timeout=10)
+        cls.addClassCleanup(cleanup)
+        for _ in range(100):
+            if server.poll() is not None:
+                raise RuntimeError('Vite exited before becoming ready')
+            try:
+                with urlopen(cls.base, timeout=1):
+                    return
+            except (URLError, OSError):
+                time.sleep(0.1)
+        raise RuntimeError('Vite did not become ready')
+
     def test_first_visit_completion_replay_and_account_isolation(self):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(channel=os.environ.get('PLAYWRIGHT_CHANNEL', 'msedge'))
@@ -18,7 +48,7 @@ class WalkthroughTest(unittest.TestCase):
                 account = {'id': 1, 'email': 'cook@example.com'}
                 page.route('**/api/auth/me', lambda route: route.fulfill(json=account))
                 page.route('**/api/recipes', lambda route: route.fulfill(json=[]))
-                base = os.environ.get('PANNED_OUT_UI_URL', 'http://127.0.0.1:5174')
+                base = self.base
                 page.goto(base + '/recipes')
                 dialog = page.get_by_role('dialog')
                 expect(dialog).to_be_visible()
@@ -76,7 +106,7 @@ class WalkthroughTest(unittest.TestCase):
                 page.add_init_script("Object.defineProperty(window, 'localStorage', {get() {throw new Error('Storage blocked')}})")
                 page.route('**/api/auth/me', lambda route: route.fulfill(json={'id': 3, 'email': 'cook@example.com'}))
                 page.route('**/api/recipes', lambda route: route.fulfill(json=[]))
-                page.goto(os.environ.get('PANNED_OUT_UI_URL', 'http://127.0.0.1:5174') + '/recipes')
+                page.goto(self.base + '/recipes')
                 dialog = page.get_by_role('dialog')
                 expect(dialog).to_be_visible()
                 dialog.get_by_role('button', name='Skip tour').click()
