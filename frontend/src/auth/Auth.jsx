@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { authRequest } from '../api/auth';
 import './Auth.css';
+import ChatAssistant from '../components/ChatAssistant/ChatAssistant';
 
 import { AuthContext, useAuth } from "./AuthContext";
 const CHANGE_KEY = 'panned-out-account-change';
@@ -92,5 +93,6 @@ export function PrivatePages() {
             {logoutError && <span role="alert">{logoutError}</span>}
         </div>
         <Outlet />
+        <ChatAssistant key={user.id} />
     </div>;
 }
