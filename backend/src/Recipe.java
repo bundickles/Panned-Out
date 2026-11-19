@@ -1,4 +1,10 @@
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 public class Recipe {
+
+    static final List<String> NUTRIENTS = List.of("calories", "protein", "carbohydrates", "fat", "fiber");
 
     private int id;
     private String suggestedId;
@@ -15,6 +21,7 @@ public class Recipe {
     private String ingredients;
     private String instructions;
     private String mealType;
+    private Set<String> knownNutrition = Set.of();
 
     public Recipe(int id, String name, String category, String difficulty,
                   int prepTime, int calories, int protein, int fat,
@@ -30,6 +37,7 @@ public class Recipe {
         this.carbohydrates = carbohydrates;
         this.fiber = fiber;
         this.image = image;
+        this.knownNutrition = Set.copyOf(NUTRIENTS);
     }
 
     public Recipe(int id, String name, String ingredients, String instructions, String mealType) {
@@ -113,5 +121,26 @@ public class Recipe {
 
     public String getMealType() {
         return mealType;
+    }
+
+    // Called on a newly constructed recipe. Omitted form values are not measured zeroes.
+    Recipe withKnownNutrition(Set<String> fields) {
+        Set<String> known = new LinkedHashSet<>(NUTRIENTS);
+        known.retainAll(fields);
+        knownNutrition = Set.copyOf(known);
+        return this;
+    }
+
+    boolean hasNutrition(String field) { return knownNutrition.contains(field); }
+
+    int nutrition(String field) {
+        switch (field) {
+            case "calories": return calories;
+            case "protein": return protein;
+            case "carbohydrates": return carbohydrates;
+            case "fat": return fat;
+            case "fiber": return fiber;
+            default: throw new IllegalArgumentException("Unknown nutrition field");
+        }
     }
 }
