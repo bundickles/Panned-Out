@@ -3,8 +3,11 @@
 Authenticated image understanding through Google Gemini. This endpoint returns a
 plausible recipe suggestion, not a verified reconstruction of a pictured meal.
 It never writes recipes, meals, or uploaded photos to storage. The separate
-SCRUM-84 frontend must show the draft, let the user edit it, and explicitly confirm
-before calling the existing recipe-save API.
+SCRUM-84 frontend currently previews photos on main; connecting its upload action,
+showing/editing drafts, and confirming a save remain frontend integration work.
+This backend ticket does not change that page or save recipes automatically.
+There is no dependency on another open PR: the endpoint can be exercised directly
+using the documented request contract.
 
 ## Free-tier setup
 
@@ -18,7 +21,8 @@ fallback, automatic retry, grounding, or image generation in this feature.
 - Image support: https://ai.google.dev/gemini-api/docs/image-understanding
 - API keys: https://aistudio.google.com/api-keys
 
-Use the same Gemini key as the chatbot, provided the project has model access.
+Use a Gemini key for this photo backend. The Groq chatbot is a separate local
+feature and does not supply credentials to this endpoint.
 The key is configured separately for each server process. Never put it in React,
 VITE_* variables, source control, browser localStorage, URLs, or chat messages.
 Google's free tier may use submitted content to improve its products. Tell users
