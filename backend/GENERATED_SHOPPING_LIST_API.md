@@ -54,7 +54,9 @@ grouped case-insensitively. Quantities remain literal text: `1 cup rice` and
 including repeated lines within a recipe. Source entries correspond one-to-one
 with occurrences. No unit conversion, serving scaling, aisle inference or AI
 parsing occurs. Current recipe ingredients are used; meal names come from the
-calendar snapshot. A deleted recipe produces a warning:
+calendar snapshot. Successful recipe deletion now removes its scheduled meals
+(SCRUM-181), so those meals no longer contribute ingredients. Legacy records or
+manual storage changes can still leave an unavailable recipe, which produces a warning:
 
 ```json
 {"message":"Recipe unavailable; its ingredients were omitted.","source":{"mealId":"calendar-meal-uuid","recipeId":1,"date":"2026-10-01","recipeName":"Rice bowl"}}

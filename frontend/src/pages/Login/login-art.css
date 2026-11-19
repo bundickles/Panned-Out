@@ -1,0 +1,556 @@
+
+/* =========================================================
+   PANNED OUT — LOGIN LIGHT / DARK THEMES
+
+   Full-page watercolor artwork
+   Consistent logo sizing
+   Soft dark-mode logo glow
+   Decorative login card
+   Responsive desktop, tablet and mobile layouts
+
+   Import AFTER Login.css and Logintheme.css.
+   ========================================================= */
+
+/* ==========================
+   LIGHT — ORIGINAL RUSTIC
+   ========================== */
+
+.login-page[data-login-mode="light"] {
+  --po-login-art: url("/theme-art/rustic/background.png");
+
+  --po-login-page: #f0e7d9;
+  --po-login-brand-text: #3b2d26;
+  --po-login-brand-muted: #665346;
+
+  --po-login-card-bg: #fcf8f1;
+  --po-login-card-text: #34231d;
+  --po-login-muted: #766659;
+
+  --po-login-field-bg: #fffdfa;
+  --po-login-border: #d8c7b2;
+
+  --po-login-accent: #a6533f;
+  --po-login-accent-hover: #874230;
+  --po-login-accent-text: #ffffff;
+
+  --po-login-toggle-bg: #fcf8f1;
+  --po-login-toggle-text: #34231d;
+
+  --po-login-art-opacity: 0.88;
+  --po-login-aura: rgba(255, 252, 244, 0.55);
+}
+
+/* ==========================
+   DARK — DARK BROWN
+   ========================== */
+
+.login-page[data-login-mode="dark"] {
+  --po-login-art: url("/theme-art/dark/background.png");
+
+  --po-login-page: #211814;
+  --po-login-brand-text: #f3e7d8;
+  --po-login-brand-muted: #d8bea9;
+
+  --po-login-card-bg: #382b25;
+  --po-login-card-text: #f4e9dc;
+  --po-login-muted: #d3bfb0;
+
+  --po-login-field-bg: #251c18;
+  --po-login-border: #725344;
+
+  --po-login-accent: #dc9b79;
+  --po-login-accent-hover: #efb394;
+  --po-login-accent-text: #251914;
+
+  --po-login-toggle-bg: #4b352b;
+  --po-login-toggle-text: #f5e8d8;
+
+  --po-login-art-opacity: 0.87;
+  --po-login-aura: rgba(225, 164, 109, 0.1);
+}
+
+/* ==========================================
+   FULL-PAGE WATERCOLOR BACKGROUND
+   ========================================== */
+
+.login-page[data-login-mode] {
+  position: relative;
+  isolation: isolate;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  background: var(--po-login-page);
+  color: var(--po-login-card-text);
+
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/*
+ * Apply artwork to the entire login page.
+ * 100% auto preserves the PNG's original ratio.
+ */
+
+.login-page[data-login-mode]::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  pointer-events: none;
+
+  background-image: var(--po-login-art);
+  background-position: center top;
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+
+  opacity: var(--po-login-art-opacity);
+}
+
+/* ==========================================
+   REMOVE OLD SPLIT BACKGROUNDS
+   ========================================== */
+
+.login-page[data-login-mode] .login-brand,
+.login-page[data-login-mode] .login-section {
+  position: relative;
+  z-index: 1;
+
+  background: transparent;
+}
+
+.login-page[data-login-mode] .login-brand {
+  isolation: isolate;
+  color: var(--po-login-brand-text);
+}
+
+/* Remove the old botanical SVG
+   and panel-only watercolor image */
+
+.login-page[data-login-mode] .login-brand::before,
+.login-page[data-login-mode] .login-brand::after {
+  content: none;
+  display: none;
+}
+
+/* ==========================================
+   BRAND AREA
+   ========================================== */
+
+.login-page[data-login-mode] .login-brand-content {
+  position: relative;
+  z-index: 1;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+
+  padding: 20px 10px;
+  text-align: center;
+}
+
+/* ==========================================
+   LOGO — SAME SIZE IN LIGHT AND DARK
+   ========================================== */
+
+.login-page[data-login-mode] .brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: min(100%, 420px);
+  max-width: 420px;
+  min-width: 0;
+
+  margin: 0 auto 18px;
+  padding: 0;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.login-page[data-login-mode] .brand-icon img {
+  display: block;
+
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+
+  object-fit: contain;
+}
+
+/* ==========================================
+   DARK MODE LOGO GLOW
+   ========================================== */
+
+/*
+ * Keeps the soft glow you liked,
+ * without bringing back the white square.
+ */
+
+.login-page[data-login-mode="dark"] .brand-icon {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 233, 199, 0.20) 0%,
+    rgba(255, 233, 199, 0) 73%
+  );
+}
+
+.login-page[data-login-mode="dark"] .brand-icon img {
+  filter: drop-shadow(
+    0 2px 6px rgba(255, 230, 195, 0.28)
+  );
+}
+
+/* ==========================================
+   BRAND TEXT AND DECORATION
+   ========================================== */
+
+.login-page[data-login-mode] .login-brand-content p,
+.login-page[data-login-mode] .login-brand-content span {
+  color: var(--po-login-brand-muted);
+}
+
+.login-page[data-login-mode] .login-brand .decorative-line {
+  background: var(--po-login-accent);
+  border-color: var(--po-login-accent);
+}
+
+/* ==========================================
+   LOGIN FORM SECTION
+   ========================================== */
+
+.login-page[data-login-mode] .login-section {
+  isolation: isolate;
+
+  padding-top: max(88px, 6vh);
+}
+
+/*
+ * Decorative radial glow around the login card.
+ * This creates a soft backdrop without hiding
+ * the watercolor illustration.
+ */
+
+.login-page[data-login-mode] .login-section::before {
+  content: "";
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+
+  transform: translate(-50%, -50%);
+
+  width: min(95%, 660px);
+  height: min(90%, 640px);
+
+  pointer-events: none;
+
+  background: radial-gradient(
+    ellipse at center,
+    var(--po-login-aura) 0%,
+    transparent 75%
+  );
+}
+
+/* ==========================================
+   LOGIN CARD
+   ========================================== */
+
+.login-page[data-login-mode] .login-card {
+  position: relative;
+  z-index: 1;
+
+  isolation: isolate;
+  overflow: hidden;
+
+  border: 1px solid var(--po-login-border);
+  border-radius: 18px;
+
+  background: var(--po-login-card-bg);
+
+  /* Slight transparency shows a hint of artwork */
+  background: color-mix(
+    in srgb,
+    var(--po-login-card-bg) 94%,
+    transparent
+  );
+
+  color: var(--po-login-card-text);
+
+  box-shadow:
+    0 18px 52px rgba(22, 12, 7, 0.16),
+    0 3px 10px rgba(22, 12, 7, 0.06);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ==========================================
+   SUBTLE CARD ARTWORK
+   ========================================== */
+
+/*
+ * Add a very light watercolor treatment
+ * to the card itself.
+
+ * It remains behind the form elements so
+ * the labels and fields stay readable.
+ */
+
+.login-page[data-login-mode] .login-card::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  pointer-events: none;
+
+  background-image: var(--po-login-art);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 115% auto;
+
+  opacity: 0.07;
+}
+
+.login-page[data-login-mode="dark"] .login-card::before {
+  opacity: 0.1;
+}
+
+/* ==========================================
+   LOGIN HEADINGS
+   ========================================== */
+
+.login-page[data-login-mode] .login-heading h2 {
+  color: var(--po-login-card-text);
+}
+
+.login-page[data-login-mode] .login-heading p,
+.login-page[data-login-mode] .signup-container,
+.login-page[data-login-mode] .signup-container > span {
+  color: var(--po-login-muted);
+}
+
+/* ==========================================
+   FORM LABELS AND INPUTS
+   ========================================== */
+
+.login-page[data-login-mode] .login-card label {
+  color: var(--po-login-card-text);
+}
+
+.login-page[data-login-mode] .login-card input {
+  color: var(--po-login-card-text);
+  background: var(--po-login-field-bg);
+
+  border: 1px solid var(--po-login-border);
+}
+
+.login-page[data-login-mode] .login-card input::placeholder {
+  color: var(--po-login-muted);
+  opacity: 0.8;
+}
+
+.login-page[data-login-mode] .login-card input:focus-visible {
+  outline: 2px solid var(--po-login-accent);
+  outline-offset: 2px;
+  border-color: var(--po-login-accent);
+}
+
+/* ==========================================
+   SIGN-IN BUTTON
+   ========================================== */
+
+.login-page[data-login-mode]
+.login-card button[type="submit"] {
+  background: var(--po-login-accent);
+  color: var(--po-login-accent-text);
+
+  border-color: var(--po-login-accent);
+}
+
+.login-page[data-login-mode]
+.login-card button[type="submit"]:hover {
+  background: var(--po-login-accent-hover);
+}
+
+/* ==========================================
+   CREATE ACCOUNT LINK
+   ========================================== */
+
+/* Remove browser-default rectangular styling */
+
+.login-page[data-login-mode] .signup-button {
+  padding: 0;
+  margin: 0;
+
+  appearance: none;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+  box-shadow: none;
+
+  color: var(--po-login-accent);
+
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+
+  cursor: pointer;
+}
+
+.login-page[data-login-mode] .forgot-password-button {
+  color: var(--po-login-accent);
+}
+
+/* ==========================================
+   LOGIN ERROR MESSAGES
+   ========================================== */
+
+.login-page[data-login-mode] .login-message {
+  padding: 12px;
+
+  border: 1px solid var(--po-login-border);
+  border-radius: 8px;
+
+  background: var(--po-login-field-bg);
+  color: var(--po-login-card-text);
+}
+
+/* ==========================================
+   LIGHT / DARK MODE TOGGLE
+   ========================================== */
+
+.login-page[data-login-mode] .po-login-mode-toggle {
+  position: absolute;
+  top: 20px;
+  right: clamp(14px, 3vw, 32px);
+  z-index: 5;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+
+  border: 1px solid var(--po-login-border);
+  border-radius: 999px;
+
+  background: var(--po-login-toggle-bg);
+  color: var(--po-login-toggle-text);
+
+  box-shadow: 0 4px 16px rgba(24, 14, 9, 0.09);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.login-page[data-login-mode] .po-login-mode-toggle:hover {
+  border-color: var(--po-login-accent);
+}
+
+/* ==========================================
+   KEYBOARD ACCESSIBILITY
+   ========================================== */
+
+.login-page[data-login-mode] :is(
+  .po-login-mode-toggle,
+  .signup-button,
+  .login-card button
+):focus-visible {
+  outline: 3px solid var(--po-login-accent);
+  outline-offset: 3px;
+}
+
+/* Hide the duplicate Panned Out heading visually,
+   but preserve it for screen readers. */
+
+.login-page[data-login-mode] .po-login-sr-only {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+
+  border: 0;
+}
+
+/* ==========================================
+   TABLET — 800px AND SMALLER
+   ========================================== */
+
+@media (max-width: 800px) {
+
+  .login-page[data-login-mode] .login-brand {
+    min-height: 350px;
+    padding: 72px 24px 32px;
+  }
+
+  .login-page[data-login-mode] .brand-icon {
+    width: min(100%, 320px);
+    max-width: 320px;
+  }
+
+  .login-page[data-login-mode] .login-section {
+    padding: 36px 16px 48px;
+  }
+
+  .login-page[data-login-mode]::before {
+    background-size: 100% auto;
+    background-position: center top;
+  }
+}
+
+/* ==========================================
+   MOBILE — 500px AND SMALLER
+   ========================================== */
+
+@media (max-width: 500px) {
+
+  .login-page[data-login-mode] .login-brand {
+    min-height: 310px;
+    padding: 65px 20px 24px;
+  }
+
+  .login-page[data-login-mode] .brand-icon {
+    width: min(100%, 280px);
+    max-width: 280px;
+  }
+
+  .login-page[data-login-mode] .login-card {
+    margin-inline: 0;
+    padding: 28px 20px;
+  }
+
+  .login-page[data-login-mode] .signup-container {
+    flex-wrap: wrap;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION PREFERENCE
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page[data-login-mode] * {
+    scroll-behavior: auto;
+  }
+}

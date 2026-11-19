@@ -1,0 +1,45 @@
+/* Lightly transparent hand-painted backgrounds, one for each theme.
+ * Imported AFTER theme.css and page-theme-overrides.css.
+ * These assets already have reduced alpha, so page text/cards stay crisp.
+ */
+html[data-panned-theme="rustic"] {
+  --po-theme-background-art: url("/theme-art/rustic/background.png");
+}
+html[data-panned-theme="pastel"] {
+  --po-theme-background-art: url("/theme-art/pastel/background.png");
+}
+html[data-panned-theme="dark"] {
+  --po-theme-background-art: url("/theme-art/dark/background.png");
+}
+html[data-panned-theme="playful"] {
+  --po-theme-background-art: url("/theme-art/playful/background.png");
+}
+
+/* Target the existing scrolling content, not the fixed sidebar or card surfaces.
+ * The transparent painting sits BEHIND text rather than tinting the whole UI.
+ * AI Photo is included for when its separate PR is merged into main.
+ */
+/* Watercolor backgrounds: preserve original proportions */
+
+html[data-panned-theme] :is(
+  .calendar-content,
+  .recipes-content,
+  .shopping-content,
+  .meal-plans-content,
+  .ai-photo-content,
+  .recipe-detail-page
+) {
+  background-image: var(--po-theme-background-art);
+
+  /* Maintain the PNG's original aspect ratio */
+  background-size: 100% auto;
+
+  /* Keep the entire illustration visible */
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+/* If you'd prefer even less decoration, reduce the baked image alpha or
+ * comment out the selector for the corresponding page above.
+ * CSS opacity on the content container is NOT recommended: it fades text too.
+ */

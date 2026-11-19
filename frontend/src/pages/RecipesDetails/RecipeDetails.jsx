@@ -1,14 +1,26 @@
+import ScheduleRecipe from '../../components/ScheduleRecipe/ScheduleRecipe';
+import SaveSuggestedRecipe from '../../components/SaveSuggestedRecipe/SaveSuggestedRecipe';
+import { useSavedSuggestions } from '../../hooks/useSavedSuggestions';
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getRecipes } from "../../api/recipes";
 import "./RecipeDetails.css";
+import RecipeCooking from "./RecipeCooking";
 
 
 function RecipeDetails() {
     const { id } = useParams();
+    const savedSuggestions = useSavedSuggestions();
     const navigate = useNavigate();
+    const { state } = useLocation();
+    const backToPlans = typeof state?.from === 'string' && (state.from === '/meal-plans' || state.from.startsWith('/meal-plans?'));
+    const back = () => navigate(backToPlans ? state.from : '/recipes');
+    const backLabel = backToPlans ? '← Back to Meal Plans' : '← Back to Recipes';
+    const [reload, setReload] = useState(0);
+    const [scheduling, setScheduling] = useState(false);
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [error, setError] = useState("");
     const [checkedIngredients, setCheckedIngredients] = useState([]);
 
@@ -18,9 +30,11 @@ function RecipeDetails() {
         async function loadRecipe() {
             setLoading(true);
             setError("");
+            setNotFound(false);
+            setRecipe(null);
 
             try {
-                const recipes = await getRecipes();
+                const recipes = await getRecipes({ filter: id.startsWith('suggested:') ? 'suggested' : undefined });
                 const found = recipes.find(
                     (item) => String(item.id) === id
                 );
@@ -30,12 +44,14 @@ function RecipeDetails() {
                 if (found) {
                     setRecipe(found);
                 } else {
-                    setError("Recipe not found");
+                    setNotFound(true);
                 }
 
             } catch (err) {
                 if (active) {
-                    setError(err.message || "An error occurred");
+                    if (err.status === 401) navigate('/login', { replace: true });
+                    else if (err.status === 404) setNotFound(true);
+                    else setError(err.message || "An error occurred");
                 }
             } finally {
                 if (active) {
@@ -49,7 +65,7 @@ function RecipeDetails() {
         return () => {
             active = false;
         };
-    }, [id]);
+    }, [id, reload, navigate]);
 
     if (loading) {
         return (
@@ -64,16 +80,17 @@ function RecipeDetails() {
             <main className="recipe-detal-page">
                 <button
                     className="journal-back"
-                    onClick={() => navigate("/recipes")}
+                    onClick={back}
                 >
-                    ← Back to Recipes
+                    {backLabel}
                 </button>
                 
                 <div className="journal-message">
-                    <h1>Recipe not found</h1>
+                    <h1>{notFound ? "Recipe not found" : "Unable to open recipe"}</h1>
                     <p>
                         {error || "The recipe you are looking for does not exist."}
                     </p>
+                    {!notFound && <button type="button" onClick={() => setReload(value => value + 1)}>Retry opening recipe</button>}
                 </div>
             </main>
         );
@@ -110,11 +127,7 @@ function RecipeDetails() {
         navigate("/shopping");
     }
 
-    function addToCalendar() {
-        // Opens the calendar for now. Saving a scheduled meal
-        // requires connecting this action to calendar data.
-        navigate("/calendar");
-    }
+    function addToCalendar() { setScheduling(true); }
 
     //existing form doesn't collect servings or a description, so the page uses a placeholder for servings and a short 
     //decorative sentence for the description.
@@ -124,9 +137,9 @@ function RecipeDetails() {
             <header className="journal-topbar">
                 <button
                     className="journal-back"
-                    onClick={() => navigate("/recipes")}
+                    onClick={back}
                 >
-                    ← Back to Recipes
+                    {backLabel}
                 </button>
 
                 <span className="journal-brand">Panned Out</span>
@@ -150,7 +163,7 @@ function RecipeDetails() {
                         )}
 
                         <p className="journal-photo-caption">
-                            From my recipe collection
+                            {recipe.source === 'suggested' ? 'From the suggested recipe collection' : 'From my recipe collection'}
                         </p>
                     </div>
 
@@ -195,6 +208,9 @@ function RecipeDetails() {
                             </div>
                         </div>
 
+                        <SaveSuggestedRecipe key={recipe.id} recipe={recipe} savedId={savedSuggestions.ids[recipe.id]} checking={savedSuggestions.loading} />
+                        {savedSuggestions.error && recipe.source === 'suggested' && <p role="alert">{savedSuggestions.error}<button onClick={savedSuggestions.retry}>Retry saved state</button></p>}
+                        {scheduling && <ScheduleRecipe key={recipe.id} recipe={recipe} onCancel={() => setScheduling(false)} />}
                         <div className="journal-actions">
                             <button
                                 className="journal-primary-button"
@@ -272,6 +288,8 @@ function RecipeDetails() {
                             <h2>Instructions</h2>
                             <p>There's no rush. Enjoy the process.</p>
                         </header>
+
+                        {instructions.length > 0 && <RecipeCooking key={id} instructions={instructions} name={recipe.name} />}
 
                         {instructions.length > 0 ? (
                             <ol className="journal-instructions">
