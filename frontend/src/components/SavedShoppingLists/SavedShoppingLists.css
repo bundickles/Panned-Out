@@ -13,7 +13,7 @@
 
 .saved-shopping-lists { color: var(--color-text, #51382b); font-family: inherit; }
 
-.saved-list-delete, .saved-list-delete-confirm button { padding: 10px 14px; border: 1px solid #874230; border-radius: 6px; color: #723423; background: #fff; font: inherit; cursor: pointer; }
-.saved-list-delete-confirm { border: 1px solid #874230; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.saved-list-delete, .saved-list-delete-confirm button { padding: 10px 14px; border: 1px solid var(--color-deep-accent, #874230); border-radius: 6px; color: var(--color-deep-accent, #723423); background: var(--color-surface, #fff); font: inherit; cursor: pointer; }
+.saved-list-delete-confirm { border: 1px solid var(--color-deep-accent, #874230); border-radius: 8px; padding: 12px; margin: 12px 0; }
 .saved-list-delete-confirm button + button { margin-left: 10px; }
 .saved-shopping-lists button:disabled { opacity: .6; cursor: wait; }
